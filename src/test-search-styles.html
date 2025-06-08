@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜索框样式统一性测试</title>
+    <link rel="stylesheet" href="./styles/tabler-theme.scss">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 2rem;
+            background: var(--color-background);
+            color: var(--color-text);
+        }
+        
+        .test-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: var(--color-bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--color-separator);
+        }
+        
+        .test-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--color-text);
+        }
+        
+        .theme-switcher {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .theme-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--color-separator);
+            background: var(--color-bg-card);
+            color: var(--color-text);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .theme-btn:hover {
+            background: var(--color-background2);
+            border-color: var(--color-focus-blue);
+        }
+        
+        .theme-btn.active {
+            background: var(--color-focus-blue);
+            color: white;
+            border-color: var(--color-focus-blue);
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <div class="theme-switcher">
+        <button class="theme-btn active" onclick="setTheme('light')">Light</button>
+        <button class="theme-btn" onclick="setTheme('dark')">Dark</button>
+        <button class="theme-btn" onclick="setTheme('auto')">Auto</button>
+    </div>
+
+    <h1>搜索框样式统一性测试</h1>
+    
+    <!-- 规则页面样式 -->
+    <div class="test-section">
+        <div class="test-title">规则页面搜索框</div>
+        <div class="unified-search-container">
+            <input 
+                type="text" 
+                class="unified-search-input"
+                placeholder="Search rules..."
+                value=""
+            />
+        </div>
+    </div>
+    
+    <!-- 代理页面样式 -->
+    <div class="test-section">
+        <div class="test-title">代理页面搜索框</div>
+        <div class="unified-search-container">
+            <input 
+                type="text" 
+                class="unified-search-input"
+                placeholder="Filter proxies..."
+                value="test search"
+            />
+            <button class="unified-search-clear" type="button">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- 连接页面样式 -->
+    <div class="test-section">
+        <div class="test-title">连接页面搜索框</div>
+        <div class="input-group input-group-flat unified-input-group" style="width: 300px;">
+            <span class="input-group-text">
+                <i class="ti ti-search"></i>
+            </span>
+            <input
+                type="text"
+                class="form-control"
+                placeholder="Filter by keyword..."
+                value=""
+            />
+            <span class="input-group-text">
+                <button class="btn btn-link btn-sm p-0">
+                    <i class="ti ti-x"></i>
+                </button>
+            </span>
+        </div>
+    </div>
+
+    <script>
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Update active button
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        // Initialize theme
+        document.documentElement.setAttribute('data-theme', 'light');
+    </script>
+</body>
+</html> 

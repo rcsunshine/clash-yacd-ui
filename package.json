@@ -33,6 +33,8 @@
     "@radix-ui/react-menubar": "^1.0.4",
     "@reach/tooltip": "0.18.0",
     "@reach/visually-hidden": "0.18.0",
+    "@tabler/core": "1.3.2",
+    "@tabler/icons-webfont": "3.34.0",
     "@tanstack/react-query": "4.35.3",
     "@tanstack/react-table": "^8.10.3",
     "chart.js": "4.4.0",

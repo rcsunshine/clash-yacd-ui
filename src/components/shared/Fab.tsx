@@ -1,5 +1,5 @@
 // adapted from https://github.com/dericgw/react-tiny-fab/blob/master/src/index.tsx
-import './rtf.css';
+import styles from './rtf.module.scss';
 
 import * as React from 'react';
 
@@ -23,7 +23,7 @@ interface ABProps extends React.HTMLAttributes<HTMLButtonElement> {
 }
 
 const AB: React.FC<ABProps> = ({ children, ...p }) => (
-  <button type="button" {...p} className="rtf--ab">
+  <button type="button" {...p} className={styles['rtf--ab']}>
     {children}
   </button>
 );
@@ -33,7 +33,7 @@ interface MBProps extends Omit<React.HTMLAttributes<HTMLButtonElement>, 'tabInde
 }
 
 export const MB: React.FC<MBProps> = ({ children, ...p }) => (
-  <button type="button" className="rtf--mb" {...p}>
+  <button type="button" className={styles['rtf--mb']} {...p}>
     {children}
   </button>
 );
@@ -88,7 +88,7 @@ const Fab: React.FC<FabProps> = ({
     React.Children.map(children, (ch, i) => {
       if (React.isValidElement<ABProps>(ch)) {
         return (
-          <li className={`rtf--ab__c ${'top' in style ? 'top' : ''}`}>
+          <li className={`${styles['rtf--ab__c']} ${'top' in style ? 'top' : ''}`}>
             {React.cloneElement(ch, {
               'data-testid': `action-button-${i}`,
               'aria-label': ch.props.text || `Menu button ${i + 1}`,
@@ -119,12 +119,12 @@ const Fab: React.FC<FabProps> = ({
     <ul
       onMouseEnter={enter}
       onMouseLeave={leave}
-      className={`rtf ${isOpen ? 'open' : 'closed'}`}
+      className={`${styles.rtf} ${isOpen ? styles.open : styles.closed}`}
       data-testid="fab"
       style={style}
       {...p}
     >
-      <li className="rtf--mb__c">
+      <li className={styles['rtf--mb__c']}>
         <MB
           onClick={toggle}
           style={mainButtonStyles}

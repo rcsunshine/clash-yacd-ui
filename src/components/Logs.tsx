@@ -11,7 +11,7 @@ import { connect } from 'src/components/StateProvider';
 import SvgYacd from 'src/components/SvgYacd';
 import useRemainingViewPortHeight from 'src/hooks/useRemainingViewPortHeight';
 import { logStreamingPausedAtom, useApiConfig } from 'src/store/app';
-import { appendLog, getLogsForDisplay } from 'src/store/logs';
+import { appendLog, getLogsForDisplay, updateSearchText } from 'src/store/logs';
 import { DispatchFn, Log, State } from 'src/store/types';
 
 import { useClashConfig } from '$src/store/configs';
@@ -75,6 +75,14 @@ function Logs({ dispatch, logs }: { dispatch: DispatchFn; logs: Log[] }) {
   useEffect(() => {
     fetchLogs({ ...apiConfig, logLevel }, appendLogInternal);
   }, [apiConfig, logLevel, appendLogInternal]);
+  
+  // 组件卸载时清空搜索状态
+  useEffect(() => {
+    return () => {
+      dispatch(updateSearchText(''));
+    };
+  }, [dispatch]);
+  
   const [refLogsContainer, containerHeight] = useRemainingViewPortHeight();
   const { t } = useTranslation();
 

@@ -61,13 +61,17 @@ function RouteInnerApp() {
 
 function SideBarApp() {
   return (
-    <div className={s0.app}>
+    <div className="page">
       <BackendBeacon />
+      <aside className="navbar navbar-vertical navbar-expand-lg tabler-sidebar">
       <SideBar />
-      <div className={s0.content}>
+      </aside>
+      <div className="page-wrapper">
+        <main className="page-content">
         <Suspense fallback={<Loading2 />}>
           <RouteInnerApp />
         </Suspense>
+        </main>
       </div>
     </div>
   );

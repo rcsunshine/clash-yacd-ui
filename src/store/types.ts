@@ -79,6 +79,7 @@ export type StateProxies = {
 
   showModalClosePrevConns: boolean;
   switchProxyCtx?: SwitchProxyCtx;
+  isLoading: boolean;
 };
 
 ///// store.logs

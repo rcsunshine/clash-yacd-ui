@@ -33,13 +33,14 @@ function RuleSearch({
 
   return (
     <div className={s0.RuleSearch}>
-      <div className={s0.RuleSearchContainer}>
-        <div className={s0.inputWrapper}>
-          <input type="text" value={text} onChange={onChange} className={s0.input} />
-        </div>
-        <div className={s0.iconWrapper}>
-          <SearchIcon size={20} />
-        </div>
+      <div className="unified-search-container">
+        <input 
+          type="text" 
+          value={text} 
+          onChange={onChange} 
+          className="unified-search-input"
+          placeholder="Search rules..."
+        />
       </div>
     </div>
   );

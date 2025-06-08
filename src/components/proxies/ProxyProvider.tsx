@@ -62,34 +62,116 @@ function ProxyProviderImpl({ name, proxies: all, delay, vehicleType, updatedAt, 
   }, [isOpen, updateCollapsibleIsOpen, name]);
 
   const timeAgo = formatDistance(new Date(updatedAt), new Date());
-  return (
-    <div className={s.main}>
-      <div className={s.head}>
-        <CollapsibleSectionHeader
-          name={name}
-          toggle={toggle}
-          type={vehicleType}
-          isOpen={isOpen}
-          qty={proxies.length}
-        />
 
-        <div className={s.action}>
-          <Tooltip label={'Update'}>
-            <Button kind="circular" onClick={updateProvider}>
-              <Refresh />
-            </Button>
-          </Tooltip>
-          <Tooltip label={'Health Check'}>
-            <Button kind="circular" onClick={healthcheckProvider}>
-              <ZapAnimated animate={checkingHealth.value} size={16} />
-            </Button>
-          </Tooltip>
+  const getVehicleTypeIcon = (type: string) => {
+    switch (type) {
+      case 'HTTP':
+        return 'ti-world-www';
+      case 'File':
+        return 'ti-file';
+      case 'Compatible':
+        return 'ti-puzzle';
+      default:
+        return 'ti-cloud';
+    }
+  };
+
+  const getVehicleTypeBadgeClass = (type: string) => {
+    switch (type) {
+      case 'HTTP':
+        return 'badge-info';
+      case 'File':
+        return 'badge-warning';
+      case 'Compatible':
+        return 'badge-secondary';
+      default:
+        return 'badge-outline';
+    }
+  };
+
+  return (
+    <div className={s.modernProvider}>
+      <div className={s.providerHeader}>
+        <div className={s.providerInfo}>
+          <div className={s.providerTitle}>
+            <div className="d-flex align-items-center gap-2">
+              <button
+                className={`btn btn-ghost p-0 d-flex align-items-center gap-2 ${s.toggleButton}`}
+                onClick={toggle}
+              >
+                <i className={`ti ${isOpen ? 'ti-chevron-down' : 'ti-chevron-right'} ${s.chevron}`}></i>
+                <div className="d-flex align-items-center gap-2">
+                  <i className={`ti ${getVehicleTypeIcon(vehicleType)} text-primary`}></i>
+                  <span className="fw-semibold">{name}</span>
+                </div>
+              </button>
+              
+              <Tooltip label="Health check">
+                <button
+                  className="btn btn-ghost-secondary btn-sm d-flex align-items-center justify-content-center"
+                  style={{ width: '28px', height: '28px' }}
+                  onClick={healthcheckProvider}
+                  disabled={checkingHealth.value}
+                >
+                  {checkingHealth.value ? (
+                    <div className="spinner-border spinner-border-sm" role="status" style={{ width: '14px', height: '14px' }}>
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  ) : (
+                    <i className="ti ti-bolt" style={{ fontSize: '14px' }}></i>
+                  )}
+                </button>
+              </Tooltip>
+              
+              <Tooltip label="Update provider">
+                <button
+                  className="btn btn-ghost-secondary btn-sm d-flex align-items-center justify-content-center"
+                  style={{ width: '28px', height: '28px' }}
+                  onClick={updateProvider}
+                >
+                  <i className="ti ti-refresh" style={{ fontSize: '14px' }}></i>
+                </button>
+              </Tooltip>
+            </div>
+          </div>
+          
+          <div className={s.providerMeta}>
+            <span className={`badge ${getVehicleTypeBadgeClass(vehicleType)} badge-sm`}>
+              {vehicleType}
+            </span>
+            <span className="text-muted">
+              {proxies.length} {proxies.length === 1 ? 'proxy' : 'proxies'}
+            </span>
+            {updatedAt && (
+              <div className="d-flex align-items-center gap-1 text-muted">
+                <i className="ti ti-clock" style={{ fontSize: '12px' }}></i>
+                <span style={{ fontSize: '0.8rem' }}>Updated {timeAgo} ago</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={s.providerActions}>
+          {/* 保留右侧区域以备将来扩展 */}
         </div>
       </div>
-      <div className={s.updatedAt}>
-        <small>Updated {timeAgo} ago</small>
-      </div>
-      {isOpen ? <ProxyList all={proxies} /> : <ProxyListSummaryView all={proxies} />}
+
+      {isOpen && (
+        <div className={s.providerContent}>
+          <div className={s.proxyContainer}>
+            <ProxyList all={proxies} />
+          </div>
+        </div>
+      )}
+
+      {!isOpen && proxies.length > 0 && (
+        <div className={s.summaryView}>
+          <ProxyListSummaryView all={proxies.slice(0, 20)} />
+          {proxies.length > 20 && (
+            <span className="text-muted ms-2">+{proxies.length - 20} more</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

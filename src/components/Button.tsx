@@ -43,27 +43,43 @@ function Button(props: ButtonProps, ref: React.Ref<HTMLButtonElement>) {
     },
     [isLoading, onClick],
   );
+  
+  // Map kind to Tabler button classes
+  const getTablerButtonClass = () => {
+    switch (kind) {
+      case 'primary':
+        return 'btn btn-primary tabler-btn';
+      case 'minimal':
+        return 'btn btn-ghost-secondary tabler-btn';
+      case 'circular':
+        return 'btn btn-icon btn-primary tabler-btn rounded-circle';
+      default:
+        return 'btn btn-primary tabler-btn';
+    }
+  };
+  
   const btnClassName = cx(
-    s0.btn,
-    { [s0.minimal]: kind === 'minimal', [s0.circular]: kind === 'circular' },
+    getTablerButtonClass(),
+    {
+      'btn-loading': isLoading,
+      'disabled': disabled || isLoading,
+    },
     className,
   );
+  
   return (
     <button
       className={btnClassName}
       ref={ref}
       onClick={internalOnClick}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       {...restProps}
     >
       {isLoading ? (
         <>
-          <span style={{ display: 'inline-flex', opacity: 0 }}>
-            <ButtonInternal {...internalProps} />
-          </span>
-          <span className={s0.loadingContainer}>
-            <LoadingDot />
-          </span>
+          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          <span className="visually-hidden">Loading...</span>
+          <ButtonInternal {...internalProps} />
         </>
       ) : (
         <ButtonInternal {...internalProps} />
@@ -76,7 +92,9 @@ function ButtonInternal({ children, label, text, start }: ButtonInternalProps) {
   return (
     <>
       {start ? (
-        <span className={s0.btnStart}>{typeof start === 'function' ? start() : start}</span>
+        <span className="me-2 d-inline-flex align-items-center">
+          {typeof start === 'function' ? start() : start}
+        </span>
       ) : null}
       {children || label || text}
     </>

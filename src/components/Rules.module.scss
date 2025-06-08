@@ -14,8 +14,309 @@
 }
 
 .RuleProviderItemWrapper {
-  padding: 6px 15px;
-  @media screen and (min-width: 30em) {
-    padding: 10px 40px;
+  padding: 0;
+  
+  &:not(:last-child) {
+    border-bottom: 2px solid var(--color-separator);
+  }
+}
+
+.scrollIndicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: rgba(var(--color-background-rgb), 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-separator);
+}
+
+.scrollProgress {
+  height: 3px;
+  background: var(--color-background2);
+  overflow: hidden;
+}
+
+.scrollProgressBar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  transition: width 0.2s ease-out;
+  border-radius: 0 2px 2px 0;
+}
+
+.loadTriggerHint {
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  animation: pulse 2s infinite;
+  transition: all 0.3s ease;
+  
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    
+    &::after {
+      content: '↓';
+      font-size: 14px;
+      animation: bounce 1s infinite;
+    }
+  }
+  
+  &.loading {
+    background: var(--color-primary-alpha);
+    color: var(--color-primary);
+    animation: loadingPulse 1.5s infinite;
+    
+    span::after {
+      content: '⟳';
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes loadingPulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.virtualListWrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--tblr-border-radius);
+}
+
+.virtualListContainer {
+  border-radius: var(--tblr-border-radius);
+  overflow: auto;
+  
+  scroll-behavior: smooth;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: var(--color-background2);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-separator);
+    border-radius: 3px;
+    
+    &:hover {
+      background: var(--color-text-secondary);
+    }
+  }
+}
+
+.pageHeader {
+  .page-pretitle {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .page-title {
+    color: var(--color-text);
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.statsContainer {
+  .fw-medium {
+    color: var(--tblr-primary);
+    font-weight: 600;
+  }
+}
+
+.rulesCard {
+  .card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--color-separator);
+    
+    .card-title {
+      color: var(--color-text);
+      font-weight: 600;
+      margin: 0;
+    }
+    
+    .card-actions {
+      color: var(--color-text-secondary);
+      font-size: 0.875rem;
+    }
+  }
+  
+  .card-body {
+    padding: 0;
+    
+    > div {
+      min-height: 400px;
+    }
+  }
+}
+
+// 流式加载动画
+.streamingContainer {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.loadingProgress {
+  background: var(--color-background2);
+  border-top: 1px solid var(--color-separator);
+  
+  .progressBar {
+    background: var(--color-separator);
+    border-radius: 1px;
+    overflow: hidden;
+    
+    .progressFill {
+      background: linear-gradient(90deg, var(--tblr-primary), var(--tblr-info));
+      border-radius: 1px;
+      transition: width 0.3s ease-out;
+    }
+  }
+}
+
+// 动画效果
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 统计数字动画
+.statsContainer {
+  .fw-medium {
+    transition: color 0.3s ease;
+    
+    &.loading {
+      color: var(--tblr-info);
+    }
+    
+    &.complete {
+      color: var(--tblr-success);
+    }
+  }
+}
+
+// 滚动加载样式
+.scrollLoadingIndicator {
+  background: var(--color-background2);
+  border-top: 1px solid var(--color-separator);
+  animation: fadeIn 0.3s ease-out;
+  
+  .loadingText {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+  }
+}
+
+.loadMoreButton {
+  transition: all 0.3s ease;
+  border-color: var(--tblr-primary);
+  color: var(--tblr-primary);
+  
+  &:hover {
+    background: var(--tblr-primary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(var(--tblr-primary-rgb), 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+// 自适应加载动画
+.adaptiveLoading {
+  .progressBar {
+    background: linear-gradient(90deg, 
+      var(--color-separator) 0%, 
+      var(--tblr-primary) 50%, 
+      var(--color-separator) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+:root[data-theme='dark'] {
+  .RuleProviderItemWrapper {
+    border-color: var(--color-separator);
+  }
+  
+  .virtualListContainer {
+    &::-webkit-scrollbar-track {
+      background: var(--color-background2);
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: var(--color-separator);
+      
+      &:hover {
+        background: var(--color-text-secondary);
+      }
+    }
+  }
+}
+
+:root[data-theme='auto'] {
+  @media (prefers-color-scheme: dark) {
+    .RuleProviderItemWrapper {
+      border-color: var(--color-separator);
+    }
+    
+    .virtualListContainer {
+      &::-webkit-scrollbar-track {
+        background: var(--color-background2);
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: var(--color-separator);
+        
+        &:hover {
+          background: var(--color-text-secondary);
+        }
+      }
+    }
   }
 }

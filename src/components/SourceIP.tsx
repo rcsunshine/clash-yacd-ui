@@ -1,4 +1,4 @@
-import './SourceIP.css';
+import styles from './SourceIP.module.scss';
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +14,7 @@ type Props = {
 function SourceIp({ setFilterIpStr: toggle, connIPset: conns }: Props) {
   const { t } = useTranslation();
   return (
-    <div className="src-ips">
+    <div className={styles.srcIps}>
       <Button onClick={() => toggle('')} kind="minimal">
         {t('All')}
       </Button>
