@@ -1,5 +1,5 @@
-*.
-.*
+.idea/*
+./node_modules/*
 !.eslintrc.yml
 *.tar.gz
 *.tar.xz
