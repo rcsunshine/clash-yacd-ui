@@ -1,6 +1,5 @@
 import debounce from 'lodash-es/debounce';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Search as SearchIcon } from 'react-feather';
 
 import { DispatchFn } from '$src/store/types';
 

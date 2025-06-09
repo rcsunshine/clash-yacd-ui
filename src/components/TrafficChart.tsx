@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { fetchData } from '../api/traffic';
 import useLineChart from '../hooks/useLineChart';
-import { chartJSResource, getChartStyles, commonDataSetProps } from '../misc/chart';
+import { chartJSResource, commonDataSetProps,getChartStyles } from '../misc/chart';
 import { selectedChartStyleIndexAtom, useApiConfig } from '../store/app';
 
 const { useMemo, useRef, useEffect, useState } = React;

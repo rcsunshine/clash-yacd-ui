@@ -1,7 +1,7 @@
+import { useAtom } from 'jotai';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { areEqual, VariableSizeList } from 'react-window';
-import { useAtom } from 'jotai';
 
 import { RuleProviderItem } from '$src/components/rules/RuleProviderItem';
 import { useRuleAndProvider } from '$src/components/rules/rules.hooks';
@@ -12,7 +12,6 @@ import { ruleFilterTextAtom } from '$src/store/rules';
 import { ClashAPIConfig, RuleType } from '$src/types';
 
 import useRemainingViewPortHeight from '../hooks/useRemainingViewPortHeight';
-import { ContentHeader } from './ContentHeader';
 import Rule from './Rule';
 import s from './Rules.module.scss';
 

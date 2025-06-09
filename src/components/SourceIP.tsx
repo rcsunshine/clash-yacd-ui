@@ -1,10 +1,9 @@
-import styles from './SourceIP.module.scss';
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { List } from 'reselect/es/types';
 
 import Button from './Button';
+import styles from './SourceIP.module.scss';
 
 type Props = {
   setFilterIpStr?: (string) => void;

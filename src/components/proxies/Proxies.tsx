@@ -2,8 +2,6 @@ import { Tooltip } from '@reach/tooltip';
 import { useAtom } from 'jotai';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import Button from 'src/components/Button';
-import { ContentHeader } from 'src/components/ContentHeader';
 import { ClosePrevConns } from 'src/components/proxies/ClosePrevConns';
 import { ProxyGroup } from 'src/components/proxies/ProxyGroup';
 import { ProxyPageFab } from 'src/components/proxies/ProxyPageFab';
@@ -11,23 +9,21 @@ import { ProxyProviderList } from 'src/components/proxies/ProxyProviderList';
 import Settings from 'src/components/proxies/Settings';
 import BaseModal from 'src/components/shared/BaseModal';
 import { connect, useStoreActions } from 'src/components/StateProvider';
-import Equalizer from 'src/components/svg/Equalizer';
+import { collapsibleIsOpenAtom } from 'src/store/app';
 import {
   fetchProxies,
   getDelay,
+  getProxiesLoading,
   getProxyGroupNames,
   getProxyProviders,
-  getProxiesLoading,
   getShowModalClosePrevConns,
   proxyFilterTextAtom,
 } from 'src/store/proxies';
-import { collapsibleIsOpenAtom } from 'src/store/app';
 import type { DelayMapping, DispatchFn, FormattedProxyProvider, State } from 'src/store/types';
 
 import { TextFilter } from '$src/components/shared/TextFilter';
 import { useApiConfig } from '$src/store/app';
 
-import s0 from './Proxies.module.scss';
 
 const { useState, useEffect, useCallback, useRef, useMemo, startTransition } = React;
 

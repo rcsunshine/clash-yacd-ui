@@ -1,5 +1,3 @@
-import styles from './Connections.module.scss';
-
 import React from 'react';
 import { Pause, Play, X as IconClose } from 'react-feather';
 import { useTranslation } from 'react-i18next';
@@ -12,16 +10,11 @@ import { useApiConfig } from '$src/store/app';
 
 import * as connAPI from '../api/connections';
 import useRemainingViewPortHeight from '../hooks/useRemainingViewPortHeight';
-import Button from './Button';
-import s from './Connections.module.scss';
-import modernStyles from './ConnectionsModern.module.scss';
+import styles from './Connections.module.scss';
 import ConnectionTable from './ConnectionTable';
 import { MutableConnRefCtx } from './conns/ConnCtx';
-import { ContentHeader } from './ContentHeader';
 import ModalCloseAllConnections from './ModalCloseAllConnections';
-import { Action, Fab, position as fabPosition } from './shared/Fab';
 import SourceIP from './SourceIP';
-import SvgYacd from './SvgYacd';
 
 const { useEffect, useState, useRef, useCallback } = React;
 
@@ -130,7 +123,7 @@ function fmtConnItem(
   return ret;
 }
 
-function renderTableOrPlaceholder(conns: FormattedConn[], type: 'active' | 'closed' = 'active') {
+function RenderTableOrPlaceholder({ conns, type = 'active' }: { conns: FormattedConn[], type?: 'active' | 'closed' }) {
   const { t } = useTranslation();
   
   return conns.length > 0 ? (
@@ -160,7 +153,7 @@ function connQty({ qty }) {
 }
 
 // 连接统计组件
-function ConnectionStats({ activeCount, closedCount, isLoading = false }) {
+function ConnectionStats({ activeCount, closedCount, isLoading = false }: { activeCount: number, closedCount: number, isLoading?: boolean }) {
   const { t } = useTranslation();
   
   return (
@@ -453,14 +446,14 @@ export default function Conn() {
             <TabPanel>
                       <div className="p-3">
                         <div className={`tab-panel-content ${activeTabIndex === 0 ? 'active' : ''}`}>
-                          {renderTableOrPlaceholder(filteredConns, 'active')}
+                          <RenderTableOrPlaceholder conns={filteredConns} type="active" />
                         </div>
                       </div>
             </TabPanel>
             <TabPanel>
                       <div className="p-3">
                         <div className={`tab-panel-content ${activeTabIndex === 1 ? 'active' : ''}`}>
-                          {renderTableOrPlaceholder(filteredClosedConns, 'closed')}
+                          <RenderTableOrPlaceholder conns={filteredClosedConns} type="closed" />
                         </div>
                       </div>
             </TabPanel>

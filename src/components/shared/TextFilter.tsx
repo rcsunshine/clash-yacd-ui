@@ -1,10 +1,9 @@
-import * as React from 'react';
 import { useAtom } from 'jotai';
+import * as React from 'react';
 import { useTextInput } from 'src/hooks/useTextInput';
 
 import { TextAtom } from '$src/store/rules';
 
-import s from './TextFilter.module.scss';
 
 const { useCallback } = React;
 

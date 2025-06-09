@@ -1,7 +1,6 @@
 import { Tooltip } from '@reach/tooltip';
 import cx from 'clsx';
 import * as React from 'react';
-import { Info } from 'react-feather';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 

@@ -2,17 +2,14 @@ import { Tooltip } from '@reach/tooltip';
 import { useAtom } from 'jotai';
 import * as React from 'react';
 
-import Button from '$src/components/Button';
-import CollapsibleSectionHeader from '$src/components/CollapsibleSectionHeader';
-import { ZapAnimated } from '$src/components/shared/ZapAnimated';
 import { connect, useStoreActions } from '$src/components/StateProvider';
 import { useState2 } from '$src/hooks/basic';
 import {
   autoCloseOldConnsAtom,
   collapsibleIsOpenAtom,
   hideUnavailableProxiesAtom,
-  proxySortByAtom,
   latencyTestUrlAtom,
+  proxySortByAtom,
 } from '$src/store/app';
 import { getProxies, switchProxy } from '$src/store/proxies';
 import { DelayMapping, DispatchFn, ProxiesMapping, State } from '$src/store/types';

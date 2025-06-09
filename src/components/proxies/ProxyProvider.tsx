@@ -3,8 +3,6 @@ import { formatDistance } from 'date-fns';
 import { useAtom } from 'jotai';
 import * as React from 'react';
 import { RotateCw } from 'react-feather';
-import Button from 'src/components/Button';
-import CollapsibleSectionHeader from 'src/components/CollapsibleSectionHeader';
 import { useUpdateProviderItem } from 'src/components/proxies/proxies.hooks';
 import { connect } from 'src/components/StateProvider';
 import { framerMotionResource } from 'src/misc/motion';
@@ -17,7 +15,6 @@ import {
 import { getDelay, healthcheckProviderByName } from 'src/store/proxies';
 import { DelayMapping, State } from 'src/store/types';
 
-import { ZapAnimated } from '$src/components/shared/ZapAnimated';
 import { useState2 } from '$src/hooks/basic';
 
 import { useFilteredAndSorted } from './hooks';

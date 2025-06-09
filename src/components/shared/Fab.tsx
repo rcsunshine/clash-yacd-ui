@@ -1,9 +1,8 @@
 // adapted from https://github.com/dericgw/react-tiny-fab/blob/master/src/index.tsx
-import styles from './rtf.module.scss';
-
 import * as React from 'react';
 
 import s from './Fab.module.scss';
+import styles from './rtf.module.scss';
 
 const { useState } = React;
 

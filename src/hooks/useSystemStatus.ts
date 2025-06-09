@@ -1,11 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useMemo,useState } from 'react';
 
 import * as connAPI from '../api/connections';
 import { fetchProxies } from '../api/proxies';
 import { fetchRules } from '../api/rules';
 import { useApiConfig } from '../store/app';
-import { ClashAPIConfig } from '../types';
 
 interface SystemStatus {
   connectionStatus: 'active' | 'inactive' | 'error';
