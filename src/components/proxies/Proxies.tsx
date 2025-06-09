@@ -145,7 +145,7 @@ function Proxies({
     <div className="page-wrapper">
       {/* Page Header */}
       <div className="page-header d-print-none">
-        <div className="container-xl">
+        <div className="container-fluid px-4">
           <div className="row g-2 align-items-center">
             <div className="col">
               <div className="page-pretitle">
@@ -157,23 +157,23 @@ function Proxies({
               </h2>
             </div>
             <div className="col-auto">
-              <div className="d-flex gap-2 align-items-center">
+              <div className="d-flex gap-2 align-items-center flex-wrap">
                 {/* Statistics */}
                 <div className="d-flex align-items-center gap-3 text-muted">
                   <div className="d-flex align-items-center gap-1">
                     <i className="ti ti-server"></i>
                     <span className="fw-medium">{groupNames.length}</span>
-                    <span className="text-muted">Groups</span>
+                    <span className="text-muted d-none d-sm-inline">Groups</span>
                   </div>
                   <div className="d-flex align-items-center gap-1">
                     <i className="ti ti-database"></i>
                     <span className="fw-medium">{totalProviders}</span>
-                    <span className="text-muted">Providers</span>
+                    <span className="text-muted d-none d-sm-inline">Providers</span>
                   </div>
                 </div>
                 
                 {/* Search Filter */}
-                <div style={{ minWidth: '300px' }}>
+                <div style={{ minWidth: '200px', maxWidth: '300px', flex: '1 1 auto' }}>
                   <TextFilter textAtom={proxyFilterTextAtom} placeholder={t('Search proxies...')} />
                 </div>
                 
@@ -195,7 +195,7 @@ function Proxies({
 
       {/* Page Body */}
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid px-4">
           {/* Proxy Groups */}
           {groupNames.length > 0 && (
             <div className="card mb-3">
