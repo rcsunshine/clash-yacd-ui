@@ -110,6 +110,7 @@ export default function Rules() {
   const [refRulesContainer, containerHeight] = useRemainingViewPortHeight();
   const { rules, provider } = useRuleAndProvider(apiConfig);
   const [filterText, setFilterText] = useAtom(ruleFilterTextAtom);
+  const { t } = useTranslation();
   
   // 流式加载状态
   const [visibleItemCount, setVisibleItemCount] = useState(0);
@@ -471,7 +472,6 @@ export default function Rules() {
   }
 
   const getItemSize = getItemSizeFactory({ provider: visibleData.provider });
-  const { t } = useTranslation();
 
   return (
     <div className="page-wrapper">
