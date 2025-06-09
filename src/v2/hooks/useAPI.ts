@@ -197,11 +197,98 @@ export function useConnections() {
   );
 }
 
-// 流量监控Hook - 使用现有的 WebSocket 连接
+// 规则Hook - 使用现有的 API
+export function useRules() {
+  const apiConfig = useApiConfig();
+  useApiConfigEffect();
+  
+  return useQuery2<any[]>(
+    'rules',
+    async () => {
+      const data = await query({
+        queryKey: ['/rules', apiConfig] as const
+      });
+      return data;
+    },
+    { staleTime: 30000 }
+  );
+}
+
+// 连接统计Hook - 获取总流量等统计信息
+export function useConnectionStats() {
+  const apiConfig = useApiConfig();
+  const [stats, setStats] = useState({
+    activeConnections: 0,
+    uploadTotal: 0,
+    downloadTotal: 0,
+    isConnected: false,
+  });
+  const unsubscribeRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    if (!apiConfig?.baseURL) {
+      setStats(prev => ({ ...prev, isConnected: false }));
+      return;
+    }
+
+    // 清理之前的连接
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+      unsubscribeRef.current = null;
+    }
+
+    const connectAPI = () => {
+      try {
+        // 使用连接 API 来获取统计数据
+        const result = connAPI.fetchData(apiConfig, (data: any) => {
+          setStats({
+            activeConnections: Array.isArray(data.connections) ? data.connections.length : 0,
+            uploadTotal: data.uploadTotal || 0,
+            downloadTotal: data.downloadTotal || 0,
+            isConnected: true,
+          });
+        });
+        
+        if (typeof result === 'function') {
+          unsubscribeRef.current = result;
+        }
+      } catch (error) {
+        console.error('Failed to connect connection stats API:', error);
+        setStats(prev => ({ ...prev, isConnected: false }));
+      }
+    };
+
+    connectAPI();
+
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+        unsubscribeRef.current = null;
+      }
+    };
+  }, [apiConfig]);
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  return {
+    ...stats,
+    uploadTotalFormatted: formatBytes(stats.uploadTotal),
+    downloadTotalFormatted: formatBytes(stats.downloadTotal),
+  };
+}
+
+// 流量监控Hook - 使用正确的 /traffic WebSocket 端点
 export function useTraffic() {
   const apiConfig = useApiConfig();
   const [trafficData, setTrafficData] = useState<TrafficData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const wsRef = useRef<WebSocket | null>(null);
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const maxDataPoints = 150;
 
@@ -212,6 +299,10 @@ export function useTraffic() {
     }
 
     // 清理之前的连接
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
     if (unsubscribeRef.current) {
       unsubscribeRef.current();
       unsubscribeRef.current = null;
@@ -219,12 +310,24 @@ export function useTraffic() {
 
     const connectWebSocket = () => {
       try {
-        // 使用现有的连接 API 来获取流量数据
-        const result = connAPI.fetchData(apiConfig, (data: any) => {
-          if (data.uploadTotal !== undefined && data.downloadTotal !== undefined) {
+        // 使用正确的 /traffic WebSocket 端点
+        const baseWsUrl = apiConfig.baseURL.replace(/^http/, 'ws');
+        const wsUrl = baseWsUrl + '/traffic' + (apiConfig.secret ? `?token=${encodeURIComponent(apiConfig.secret)}` : '');
+        const ws = new WebSocket(wsUrl);
+        wsRef.current = ws;
+
+        ws.onopen = () => {
+          setIsConnected(true);
+          console.log('Traffic WebSocket connected');
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            // 解析实时速率数据 (bytes/s)
+            const data = JSON.parse(event.data);
             const trafficPoint: TrafficData = {
-              up: data.uploadTotal || 0,
-              down: data.downloadTotal || 0,
+              up: data.up || 0,      // 当前上传速率 bytes/s
+              down: data.down || 0,  // 当前下载速率 bytes/s  
               timestamp: Date.now(),
             };
             
@@ -232,13 +335,22 @@ export function useTraffic() {
               const newData = [...prev, trafficPoint];
               return newData.slice(-maxDataPoints);
             });
+          } catch (error) {
+            console.error('Failed to parse traffic data:', error);
           }
-        });
-        
-        if (typeof result === 'function') {
-          unsubscribeRef.current = result;
-          setIsConnected(true);
-        }
+        };
+
+        ws.onclose = () => {
+          setIsConnected(false);
+          console.log('Traffic WebSocket disconnected');
+          // 重连逻辑
+          setTimeout(connectWebSocket, 3000);
+        };
+
+        ws.onerror = (error) => {
+          console.error('Traffic WebSocket error:', error);
+          setIsConnected(false);
+        };
       } catch (error) {
         console.error('Failed to connect traffic WebSocket:', error);
         setIsConnected(false);
@@ -250,6 +362,10 @@ export function useTraffic() {
     connectWebSocket();
 
     return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
       if (unsubscribeRef.current) {
         unsubscribeRef.current();
         unsubscribeRef.current = null;
