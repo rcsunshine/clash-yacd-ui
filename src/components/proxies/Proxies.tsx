@@ -104,8 +104,8 @@ function Proxies({
     setVisibleGroupCount(0);
     setIsGroupsLoading(true);
 
-    const BATCH_SIZE = 4; // 每批加载4个组
-    const LOAD_DELAY = 100; // 每批之间的延迟
+    const BATCH_SIZE = 6; // 增加每批加载数量
+    const LOAD_DELAY = 50; // 减少延迟以提高响应性
 
     let currentCount = 0;
     const loadNextBatch = () => {
@@ -130,7 +130,7 @@ function Proxies({
     };
 
     // 开始加载
-    setTimeout(loadNextBatch, 50);
+    setTimeout(loadNextBatch, 20);
   }, [groupNames.length]);
 
   // Calculate statistics
