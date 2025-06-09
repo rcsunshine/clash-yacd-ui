@@ -24,7 +24,6 @@ import { ErrorFallback } from './error/ErrorFallback';
 import { BackendBeacon } from './fn/BackendBeacon';
 import Home from './Home';
 import Loading2 from './Loading2';
-import s0 from './Root.module.scss';
 import SideBar from './SideBar';
 import StateProvider from './StateProvider';
 

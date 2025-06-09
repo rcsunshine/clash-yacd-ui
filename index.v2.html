@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="auto">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YACD V2 - Yet Another Clash Dashboard</title>
+    <meta name="description" content="YACD V2 - 现代化的 Clash 仪表板" />
+    
+    <!-- 预加载字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 主题切换脚本 -->
+    <script>
+      // 防止主题闪烁
+      (function() {
+        const theme = localStorage.getItem('theme') || 'auto';
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        if (theme === 'auto') {
+          const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.classList.toggle('dark', isDark);
+        } else {
+          document.documentElement.classList.toggle('dark', theme === 'dark');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/v2/dev.tsx"></script>
+  </body>
+</html> 

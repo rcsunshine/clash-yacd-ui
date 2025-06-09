@@ -39,6 +39,140 @@
   --tblr-font-family-monospace: var(--font-mono);
 }
 
+// 响应式容器优化
+.container-fluid {
+  max-width: none !important;
+  
+  // 大屏幕优化 - 更好地利用空间
+  @media (min-width: 1400px) {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+  
+  @media (min-width: 1600px) {
+    padding-left: 2.5rem !important;
+    padding-right: 2.5rem !important;
+  }
+  
+  @media (min-width: 1920px) {
+    padding-left: 3rem !important;
+    padding-right: 3rem !important;
+  }
+  
+  @media (min-width: 2560px) {
+    padding-left: 4rem !important;
+    padding-right: 4rem !important;
+  }
+}
+
+// 页面布局优化
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-header {
+  flex-shrink: 0;
+  
+  // 粘性头部优化
+  &.sticky-top {
+    backdrop-filter: blur(10px);
+    background: rgba(var(--tblr-body-bg-rgb), 0.95) !important;
+    border-bottom: 1px solid var(--color-separator);
+  }
+}
+
+.page-body {
+  flex: 1;
+  min-height: 0; // 防止flex子元素溢出
+}
+
+// 卡片响应式优化
+.card {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  // 移动端卡片优化
+  @media (max-width: 768px) {
+    border-radius: 8px !important;
+    margin-bottom: 1rem;
+    
+    .card-header {
+      padding: 1rem !important;
+      
+      .card-title {
+        font-size: 1rem !important;
+      }
+    }
+    
+    .card-body {
+      padding: 1rem !important;
+    }
+  }
+}
+
+// 网格系统优化
+.row {
+  // 更好的间距控制
+  &.row-cards {
+    > .col,
+    > [class*="col-"] {
+      margin-bottom: 1.5rem;
+      
+      @media (max-width: 768px) {
+        margin-bottom: 1rem;
+      }
+    }
+  }
+}
+
+// 按钮组响应式优化
+.btn-group {
+  @media (max-width: 576px) {
+    .btn {
+      padding: 0.375rem 0.5rem !important;
+      font-size: 0.875rem !important;
+      
+      .d-none.d-sm-inline {
+        display: none !important;
+      }
+    }
+  }
+}
+
+// 输入组响应式优化
+.input-group {
+  @media (max-width: 576px) {
+    .form-control {
+      font-size: 0.875rem !important;
+    }
+    
+    .input-group-text {
+      padding: 0.375rem 0.5rem !important;
+    }
+  }
+}
+
+// 表格响应式优化
+.table-responsive {
+  @media (max-width: 768px) {
+    border-radius: 8px;
+    
+    .table {
+      font-size: 0.875rem;
+      
+      th, td {
+        padding: 0.5rem !important;
+      }
+    }
+  }
+}
+
 // Dark theme overrides
 :root[data-theme='dark'] {
   --tblr-body-bg: var(--color-background);
@@ -47,6 +181,7 @@
   --tblr-border-color: var(--color-separator);
   --tblr-navbar-bg: var(--color-bg-sidebar);
   --tblr-sidebar-bg: var(--color-bg-sidebar);
+  --tblr-body-bg-rgb: 32, 32, 32;
 }
 
 // Light theme overrides  
@@ -57,6 +192,7 @@
   --tblr-border-color: var(--color-separator);
   --tblr-navbar-bg: var(--color-bg-sidebar);
   --tblr-sidebar-bg: var(--color-bg-sidebar);
+  --tblr-body-bg-rgb: 238, 238, 238;
   
   // 浅色主题下的代理卡片优化
   .proxy-card {
@@ -87,6 +223,7 @@
     --tblr-border-color: var(--color-separator);
     --tblr-navbar-bg: var(--color-bg-sidebar);
     --tblr-sidebar-bg: var(--color-bg-sidebar);
+    --tblr-body-bg-rgb: 32, 32, 32;
     
     // Chart background improvements for auto dark theme
     --chart-grid-color: rgba(255, 255, 255, 0.2);
@@ -100,10 +237,98 @@
     --tblr-border-color: var(--color-separator);
     --tblr-navbar-bg: var(--color-bg-sidebar);
     --tblr-sidebar-bg: var(--color-bg-sidebar);
+    --tblr-body-bg-rgb: 238, 238, 238;
     
     // Chart settings for auto light theme
     --chart-grid-color: rgba(0, 0, 0, 0.1);
     --chart-text-color: var(--color-text);
+  }
+}
+
+// 动画优化
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+// 滚动条优化
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-separator);
+  border-radius: 4px;
+  
+  &:hover {
+    background: var(--color-text-secondary);
+  }
+}
+
+// 移动端优化
+@media (max-width: 768px) {
+  // 减少移动端的间距
+  .page-header {
+    padding: 1rem 0 !important;
+  }
+  
+  .page-body {
+    padding: 1rem 0 !important;
+  }
+  
+  // 优化移动端的统计信息显示
+  .d-flex.align-items-center.gap-3 {
+    gap: 1rem !important;
+    
+    .d-flex.align-items-center.gap-1 {
+      gap: 0.5rem !important;
+    }
+  }
+  
+  // 移动端按钮优化
+  .btn {
+    padding: 0.5rem 0.75rem !important;
+    
+    &.btn-sm {
+      padding: 0.25rem 0.5rem !important;
+    }
+  }
+}
+
+// 超大屏幕优化
+@media (min-width: 1920px) {
+  .card {
+    .card-header {
+      padding: 1.5rem 2rem !important;
+    }
+    
+    .card-body {
+      padding: 1.5rem 2rem !important;
+    }
+  }
+  
+  .page-header {
+    padding: 2rem 0 1.5rem 0 !important;
+  }
+  
+  .page-body {
+    padding: 2rem 0 !important;
   }
 }
 
@@ -2010,4 +2235,5 @@ div[data-latency="very-slow"] { background-color: #ef5350 !important; }      // 
 div[data-latency="extremely-slow"] { background-color: #c62828 !important; } // 极慢 (> 5000ms) - 深红色
 
 div[data-proxy-type="direct"] { background-color: #2e7d32 !important; }      // 直连 - 深绿色
+div[data-proxy-type="reject"] { background-color: #c62828 !important; }      // 拒绝 - 深红色
 div[data-proxy-type="reject"] { background-color: #c62828 !important; }      // 拒绝 - 深红色

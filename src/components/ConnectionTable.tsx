@@ -11,7 +11,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import prettyBytes from '../misc/pretty-bytes';
-import s from './ConnectionTable.module.scss';
 import { MutableConnRefCtx } from './conns/ConnCtx';
 
 const COLUMN_SORT = [{ id: 'id', desc: true }];

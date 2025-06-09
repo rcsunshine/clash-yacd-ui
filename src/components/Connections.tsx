@@ -1,5 +1,3 @@
-import styles from './Connections.module.scss';
-
 import React from 'react';
 import { Pause, Play, X as IconClose } from 'react-feather';
 import { useTranslation } from 'react-i18next';
@@ -12,16 +10,11 @@ import { useApiConfig } from '$src/store/app';
 
 import * as connAPI from '../api/connections';
 import useRemainingViewPortHeight from '../hooks/useRemainingViewPortHeight';
-import Button from './Button';
-import s from './Connections.module.scss';
-import modernStyles from './ConnectionsModern.module.scss';
+import styles from './Connections.module.scss';
 import ConnectionTable from './ConnectionTable';
 import { MutableConnRefCtx } from './conns/ConnCtx';
-import { ContentHeader } from './ContentHeader';
 import ModalCloseAllConnections from './ModalCloseAllConnections';
-import { Action, Fab, position as fabPosition } from './shared/Fab';
 import SourceIP from './SourceIP';
-import SvgYacd from './SvgYacd';
 
 const { useEffect, useState, useRef, useCallback } = React;
 
@@ -130,7 +123,7 @@ function fmtConnItem(
   return ret;
 }
 
-function renderTableOrPlaceholder(conns: FormattedConn[], type: 'active' | 'closed' = 'active') {
+function RenderTableOrPlaceholder({ conns, type = 'active' }: { conns: FormattedConn[], type?: 'active' | 'closed' }) {
   const { t } = useTranslation();
   
   return conns.length > 0 ? (
@@ -160,7 +153,7 @@ function connQty({ qty }) {
 }
 
 // 连接统计组件
-function ConnectionStats({ activeCount, closedCount, isLoading = false }) {
+function ConnectionStats({ activeCount, closedCount, isLoading = false }: { activeCount: number, closedCount: number, isLoading?: boolean }) {
   const { t } = useTranslation();
   
   return (
@@ -311,7 +304,7 @@ export default function Conn() {
     <div className="page-wrapper">
       {/* Page Header */}
       <div className="page-header d-print-none">
-        <div className="container-xl">
+        <div className="container-fluid px-4">
           <div className="row g-2 align-items-center">
             <div className="col">
               <div className="page-pretitle">
@@ -329,7 +322,7 @@ export default function Conn() {
               </h2>
             </div>
             <div className="col-auto">
-              <div className="d-flex gap-2 align-items-center">
+              <div className="d-flex gap-2 align-items-center flex-wrap">
                 {/* Statistics */}
                 <ConnectionStats 
                   activeCount={filteredConns.length}
@@ -338,20 +331,22 @@ export default function Conn() {
                 />
                 
                 {/* Action Buttons */}
-                <button
-                  className={`btn ${isRefreshPaused ? 'btn-danger' : 'btn-primary'} d-flex align-items-center gap-2`}
-                  onClick={toggleIsRefreshPaused}
-                >
-                  {isRefreshPaused ? <Play size={16} /> : <Pause size={16} />}
-                  {isRefreshPaused ? t('Resume') : t('Pause')}
-                </button>
-                <button
-                  className="btn btn-outline-danger d-flex align-items-center gap-2"
-                  onClick={openCloseAllModal}
-                >
-                  <IconClose size={16} />
-                  {t('Close All')}
-                </button>
+                <div className="btn-group" role="group">
+                  <button
+                    className={`btn ${isRefreshPaused ? 'btn-danger' : 'btn-primary'} d-flex align-items-center gap-2`}
+                    onClick={toggleIsRefreshPaused}
+                  >
+                    {isRefreshPaused ? <Play size={16} /> : <Pause size={16} />}
+                    <span className="d-none d-sm-inline">{isRefreshPaused ? t('Resume') : t('Pause')}</span>
+                  </button>
+                  <button
+                    className="btn btn-outline-danger d-flex align-items-center gap-2"
+                    onClick={openCloseAllModal}
+                  >
+                    <IconClose size={16} />
+                    <span className="d-none d-sm-inline">{t('Close All')}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -360,10 +355,7 @@ export default function Conn() {
 
       {/* Page Body */}
       <div className="page-body">
-        <div className="container-xl">
-
-
-
+        <div className="container-fluid px-4">
           {/* Main Content Card */}
           <div className="card">
             <div className="card-header">
@@ -372,19 +364,19 @@ export default function Conn() {
                 {t('Connection List')}
               </h3>
               <div className="card-actions">
-                <div className="d-flex gap-2">
+                <div className="d-flex gap-2 flex-wrap">
                   {/* Search Input */}
-                  <div className="input-group input-group-flat unified-input-group" style={{ width: '250px' }}>
+                  <div className="input-group input-group-flat unified-input-group" style={{ minWidth: '200px', maxWidth: '300px' }}>
                     <span className="input-group-text">
                       <i className="ti ti-search"></i>
                     </span>
-            <input
-              type="text"
+                    <input
+                      type="text"
                       className="form-control"
                       placeholder={t('Filter by keyword...')}
                       value={filterKeyword}
-              onChange={(e) => setFilterKeyword(e.target.value)}
-            />
+                      onChange={(e) => setFilterKeyword(e.target.value)}
+                    />
                     {filterKeyword && (
                       <span className="input-group-text">
                         <button
@@ -403,11 +395,11 @@ export default function Conn() {
                     onClick={openExtraModal}
                   >
                     <i className="ti ti-filter"></i>
-                    {t('Filter by IP')}
+                    <span className="d-none d-md-inline">{t('Filter by IP')}</span>
                   </button>
                 </div>
-          </div>
-        </div>
+              </div>
+            </div>
 
             {/* Tabs */}
             <Tabs 
@@ -453,14 +445,14 @@ export default function Conn() {
             <TabPanel>
                       <div className="p-3">
                         <div className={`tab-panel-content ${activeTabIndex === 0 ? 'active' : ''}`}>
-                          {renderTableOrPlaceholder(filteredConns, 'active')}
+                          <RenderTableOrPlaceholder conns={filteredConns} type="active" />
                         </div>
                       </div>
             </TabPanel>
             <TabPanel>
                       <div className="p-3">
                         <div className={`tab-panel-content ${activeTabIndex === 1 ? 'active' : ''}`}>
-                          {renderTableOrPlaceholder(filteredClosedConns, 'closed')}
+                          <RenderTableOrPlaceholder conns={filteredClosedConns} type="closed" />
                         </div>
                       </div>
             </TabPanel>

@@ -2,8 +2,6 @@ import React, { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useSystemStatus } from '../hooks/useSystemStatus';
-import { ContentHeader } from './ContentHeader';
-import s0 from './Home.module.scss';
 import Loading from './Loading';
 import TrafficChart from './TrafficChart';
 import TrafficNow from './TrafficNow';
@@ -15,7 +13,7 @@ export default function Home() {
   return (
     <div className="page-wrapper">
       <div className="page-header d-print-none">
-        <div className="container-xl">
+        <div className="container-fluid px-4">
           <div className="row g-2 align-items-center">
             <div className="col">
               <div className="page-pretitle">
@@ -30,8 +28,8 @@ export default function Home() {
       </div>
       
       <div className="page-body">
-        <div className="container-xl">
-          <div className="row row-deck row-cards">
+        <div className="container-fluid px-4">
+          <div className="row row-deck row-cards g-3">
             {/* Traffic Statistics Card */}
             <div className="col-12 col-lg-6">
               <div className="card tabler-card fade-in">

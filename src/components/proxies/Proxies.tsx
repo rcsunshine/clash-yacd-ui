@@ -2,8 +2,6 @@ import { Tooltip } from '@reach/tooltip';
 import { useAtom } from 'jotai';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import Button from 'src/components/Button';
-import { ContentHeader } from 'src/components/ContentHeader';
 import { ClosePrevConns } from 'src/components/proxies/ClosePrevConns';
 import { ProxyGroup } from 'src/components/proxies/ProxyGroup';
 import { ProxyPageFab } from 'src/components/proxies/ProxyPageFab';
@@ -11,23 +9,21 @@ import { ProxyProviderList } from 'src/components/proxies/ProxyProviderList';
 import Settings from 'src/components/proxies/Settings';
 import BaseModal from 'src/components/shared/BaseModal';
 import { connect, useStoreActions } from 'src/components/StateProvider';
-import Equalizer from 'src/components/svg/Equalizer';
+import { collapsibleIsOpenAtom } from 'src/store/app';
 import {
   fetchProxies,
   getDelay,
+  getProxiesLoading,
   getProxyGroupNames,
   getProxyProviders,
-  getProxiesLoading,
   getShowModalClosePrevConns,
   proxyFilterTextAtom,
 } from 'src/store/proxies';
-import { collapsibleIsOpenAtom } from 'src/store/app';
 import type { DelayMapping, DispatchFn, FormattedProxyProvider, State } from 'src/store/types';
 
 import { TextFilter } from '$src/components/shared/TextFilter';
 import { useApiConfig } from '$src/store/app';
 
-import s0 from './Proxies.module.scss';
 
 const { useState, useEffect, useCallback, useRef, useMemo, startTransition } = React;
 
@@ -108,8 +104,8 @@ function Proxies({
     setVisibleGroupCount(0);
     setIsGroupsLoading(true);
 
-    const BATCH_SIZE = 4; // 每批加载4个组
-    const LOAD_DELAY = 100; // 每批之间的延迟
+    const BATCH_SIZE = 6; // 增加每批加载数量
+    const LOAD_DELAY = 50; // 减少延迟以提高响应性
 
     let currentCount = 0;
     const loadNextBatch = () => {
@@ -134,7 +130,7 @@ function Proxies({
     };
 
     // 开始加载
-    setTimeout(loadNextBatch, 50);
+    setTimeout(loadNextBatch, 20);
   }, [groupNames.length]);
 
   // Calculate statistics
@@ -149,7 +145,7 @@ function Proxies({
     <div className="page-wrapper">
       {/* Page Header */}
       <div className="page-header d-print-none">
-        <div className="container-xl">
+        <div className="container-fluid px-4">
           <div className="row g-2 align-items-center">
             <div className="col">
               <div className="page-pretitle">
@@ -161,23 +157,23 @@ function Proxies({
               </h2>
             </div>
             <div className="col-auto">
-              <div className="d-flex gap-2 align-items-center">
+              <div className="d-flex gap-2 align-items-center flex-wrap">
                 {/* Statistics */}
                 <div className="d-flex align-items-center gap-3 text-muted">
                   <div className="d-flex align-items-center gap-1">
                     <i className="ti ti-server"></i>
                     <span className="fw-medium">{groupNames.length}</span>
-                    <span className="text-muted">Groups</span>
+                    <span className="text-muted d-none d-sm-inline">Groups</span>
                   </div>
                   <div className="d-flex align-items-center gap-1">
                     <i className="ti ti-database"></i>
                     <span className="fw-medium">{totalProviders}</span>
-                    <span className="text-muted">Providers</span>
+                    <span className="text-muted d-none d-sm-inline">Providers</span>
                   </div>
                 </div>
                 
                 {/* Search Filter */}
-                <div style={{ minWidth: '300px' }}>
+                <div style={{ minWidth: '200px', maxWidth: '300px', flex: '1 1 auto' }}>
                   <TextFilter textAtom={proxyFilterTextAtom} placeholder={t('Search proxies...')} />
                 </div>
                 
@@ -199,7 +195,7 @@ function Proxies({
 
       {/* Page Body */}
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid px-4">
           {/* Proxy Groups */}
           {groupNames.length > 0 && (
             <div className="card mb-3">

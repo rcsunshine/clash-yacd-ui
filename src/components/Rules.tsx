@@ -1,7 +1,7 @@
+import { useAtom } from 'jotai';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { areEqual, VariableSizeList } from 'react-window';
-import { useAtom } from 'jotai';
 
 import { RuleProviderItem } from '$src/components/rules/RuleProviderItem';
 import { useRuleAndProvider } from '$src/components/rules/rules.hooks';
@@ -12,7 +12,6 @@ import { ruleFilterTextAtom } from '$src/store/rules';
 import { ClashAPIConfig, RuleType } from '$src/types';
 
 import useRemainingViewPortHeight from '../hooks/useRemainingViewPortHeight';
-import { ContentHeader } from './ContentHeader';
 import Rule from './Rule';
 import s from './Rules.module.scss';
 
@@ -110,6 +109,7 @@ export default function Rules() {
   const [refRulesContainer, containerHeight] = useRemainingViewPortHeight();
   const { rules, provider } = useRuleAndProvider(apiConfig);
   const [filterText, setFilterText] = useAtom(ruleFilterTextAtom);
+  const { t } = useTranslation();
   
   // 流式加载状态
   const [visibleItemCount, setVisibleItemCount] = useState(0);
@@ -471,13 +471,12 @@ export default function Rules() {
   }
 
   const getItemSize = getItemSizeFactory({ provider: visibleData.provider });
-  const { t } = useTranslation();
 
   return (
     <div className="page-wrapper">
       {/* Page Header */}
       <div className="page-header d-print-none">
-        <div className="container-xl">
+        <div className="container-fluid px-4">
           <div className="row g-2 align-items-center">
             <div className="col">
               <div className="page-pretitle">
@@ -489,7 +488,7 @@ export default function Rules() {
               </h2>
             </div>
             <div className="col-auto">
-              <div className="d-flex gap-2">
+              <div className="d-flex gap-2 flex-wrap">
                 {/* Statistics */}
                 <div className={`d-flex align-items-center gap-3 text-muted ${s.statsContainer}`}>
                   <div className="d-flex align-items-center gap-1">
@@ -497,11 +496,11 @@ export default function Rules() {
                     <span className="fw-medium">
                       {provider?.names?.length || 0}
                     </span>
-                    <span className="text-muted">Providers</span>
+                    <span className="text-muted d-none d-sm-inline">Providers</span>
                     {filterText && (
                       <span className="badge badge-outline badge-sm text-info">
                         <i className="ti ti-filter me-1"></i>
-                        Filtered
+                        <span className="d-none d-md-inline">Filtered</span>
                       </span>
                     )}
                   </div>
@@ -510,17 +509,17 @@ export default function Rules() {
                     <span className="fw-medium">
                       {rules?.length || 0}
                     </span>
-                    <span className="text-muted">Rules</span>
+                    <span className="text-muted d-none d-sm-inline">Rules</span>
                     {filterText && (
                       <span className="badge badge-outline badge-sm text-info">
                         <i className="ti ti-filter me-1"></i>
-                        Filtered
+                        <span className="d-none d-md-inline">Filtered</span>
                       </span>
                     )}
                   </div>
                 </div>
                 {/* Search Filter */}
-                <div style={{ minWidth: '300px' }}>
+                <div style={{ minWidth: '200px', maxWidth: '300px', flex: '1 1 auto' }}>
                   <TextFilter placeholder={t('Search rules...')} textAtom={ruleFilterTextAtom} />
                 </div>
               </div>
@@ -531,7 +530,7 @@ export default function Rules() {
 
       {/* Page Body */}
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid px-4">
           <div className={`card tabler-card ${s.rulesCard}`}>
             <div className="card-header">
               <h3 className="card-title d-flex align-items-center gap-2">
@@ -545,7 +544,7 @@ export default function Rules() {
                     {filterText && (
                       <span className="badge badge-outline badge-sm text-info ms-2">
                         <i className="ti ti-filter me-1"></i>
-                        Filtered Results
+                        <span className="d-none d-sm-inline">Filtered Results</span>
                       </span>
                     )}
                   </span>

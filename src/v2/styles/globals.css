@@ -1,0 +1,252 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* V2 全局样式 - 现代化设计系统 */
+
+/* CSS 变量定义 */
+:root {
+  /* 字体 */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
+  
+  /* 间距系统 */
+  --spacing-xs: 0.25rem;    /* 4px */
+  --spacing-sm: 0.5rem;     /* 8px */
+  --spacing-md: 1rem;       /* 16px */
+  --spacing-lg: 1.5rem;     /* 24px */
+  --spacing-xl: 2rem;       /* 32px */
+  --spacing-2xl: 3rem;      /* 48px */
+  
+  /* 圆角系统 */
+  --radius-sm: 0.25rem;     /* 4px */
+  --radius-md: 0.375rem;    /* 6px */
+  --radius-lg: 0.5rem;      /* 8px */
+  --radius-xl: 0.75rem;     /* 12px */
+  
+  /* 阴影系统 */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* 动画 */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+  
+  /* Z-index 层级 */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+}
+
+/* 浅色主题 */
+:root[data-theme="light"] {
+  /* 背景色 */
+  --color-background: #ffffff;
+  --color-background-secondary: #f8fafc;
+  --color-background-tertiary: #f1f5f9;
+  
+  /* 表面色 */
+  --color-surface: #ffffff;
+  --color-surface-hover: #f8fafc;
+  --color-surface-active: #f1f5f9;
+  
+  /* 边框色 */
+  --color-border: #e2e8f0;
+  --color-border-hover: #cbd5e1;
+  --color-border-focus: #3b82f6;
+  
+  /* 文本色 */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
+  --color-text-disabled: #94a3b8;
+  
+  /* 品牌色 */
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-active: #1d4ed8;
+  
+  /* 状态色 */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #06b6d4;
+  
+  /* 侧边栏 */
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-border: #e2e8f0;
+  --color-sidebar-item-hover: #f8fafc;
+  --color-sidebar-item-active: #eff6ff;
+}
+
+/* 深色主题 */
+:root[data-theme="dark"] {
+  /* 背景色 */
+  --color-background: #0f172a;
+  --color-background-secondary: #1e293b;
+  --color-background-tertiary: #334155;
+  
+  /* 表面色 */
+  --color-surface: #1e293b;
+  --color-surface-hover: #334155;
+  --color-surface-active: #475569;
+  
+  /* 边框色 */
+  --color-border: #334155;
+  --color-border-hover: #475569;
+  --color-border-focus: #3b82f6;
+  
+  /* 文本色 */
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-tertiary: #94a3b8;
+  --color-text-disabled: #64748b;
+  
+  /* 品牌色 */
+  --color-primary: #3b82f6;
+  --color-primary-hover: #60a5fa;
+  --color-primary-active: #93c5fd;
+  
+  /* 状态色 */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #06b6d4;
+  
+  /* 侧边栏 */
+  --color-sidebar-bg: #1e293b;
+  --color-sidebar-border: #334155;
+  --color-sidebar-item-hover: #334155;
+  --color-sidebar-item-active: #1e40af;
+}
+
+/* 自动主题 */
+:root[data-theme="auto"] {
+  @media (prefers-color-scheme: light) {
+    /* 浅色主题变量 */
+    --color-background: #ffffff;
+    --color-background-secondary: #f8fafc;
+    --color-background-tertiary: #f1f5f9;
+    --color-surface: #ffffff;
+    --color-surface-hover: #f8fafc;
+    --color-surface-active: #f1f5f9;
+    --color-border: #e2e8f0;
+    --color-border-hover: #cbd5e1;
+    --color-border-focus: #3b82f6;
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #475569;
+    --color-text-tertiary: #64748b;
+    --color-text-disabled: #94a3b8;
+    --color-primary: #3b82f6;
+    --color-primary-hover: #2563eb;
+    --color-primary-active: #1d4ed8;
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+    --color-info: #06b6d4;
+    --color-sidebar-bg: #ffffff;
+    --color-sidebar-border: #e2e8f0;
+    --color-sidebar-item-hover: #f8fafc;
+    --color-sidebar-item-active: #eff6ff;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    /* 深色主题变量 */
+    --color-background: #0f172a;
+    --color-background-secondary: #1e293b;
+    --color-background-tertiary: #334155;
+    --color-surface: #1e293b;
+    --color-surface-hover: #334155;
+    --color-surface-active: #475569;
+    --color-border: #334155;
+    --color-border-hover: #475569;
+    --color-border-focus: #3b82f6;
+    --color-text-primary: #f8fafc;
+    --color-text-secondary: #cbd5e1;
+    --color-text-tertiary: #94a3b8;
+    --color-text-disabled: #64748b;
+    --color-primary: #3b82f6;
+    --color-primary-hover: #60a5fa;
+    --color-primary-active: #93c5fd;
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+    --color-info: #06b6d4;
+    --color-sidebar-bg: #1e293b;
+    --color-sidebar-border: #334155;
+    --color-sidebar-item-hover: #334155;
+    --color-sidebar-item-active: #1e40af;
+  }
+}
+
+/* 基础样式重置 */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-hover);
+  border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* 焦点样式 */
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* 选择文本样式 */
+::selection {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* 工具类 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+} 

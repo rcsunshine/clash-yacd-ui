@@ -10,8 +10,12 @@
   "scripts": {
     "lint": "eslint --fix --cache src",
     "dev": "vite",
+    "dev:v2": "vite --config vite.v2.config.ts",
+    "dev:both": "concurrently \"npm run dev\" \"npm run dev:v2\"",
     "start": "vite",
     "build": "vite build",
+    "build:v2": "vite build --config vite.v2.config.ts",
+    "build:all": "npm run build && npm run build:v2",
     "serve": "vite preview",
     "pretty": "prettier --log-level warn --write 'src/**/*.{js,scss,ts,tsx,md}'",
     "fmt": "pnpm lint && pnpm pretty"
@@ -85,6 +89,7 @@
     "@typescript-eslint/parser": "6.7.3",
     "@vitejs/plugin-react": "4.1.0",
     "autoprefixer": "10.4.16",
+    "concurrently": "^8.2.2",
     "eslint": "8.50.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-prettier": "9.0.0",
