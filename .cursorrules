@@ -15,10 +15,10 @@ src/v2/
 │   └── icons/          # 图标组件
 ├── pages/              # 页面组件 (Dashboard, Proxies, Connections, Rules, Logs, Config)
 ├── styles/             # 样式系统
-│   ├── globals.css     # 全局样式
-│   ├── components.css  # 组件样式
+│   ├── globals.scss    # 全局样式 (统一.scss格式)
+│   ├── components.scss # 组件样式
 │   ├── pages.scss      # 页面样式
-│   └── utilities.css   # 工具类
+│   └── utilities.scss  # 工具类
 ├── hooks/              # 自定义 Hooks (useAPI.ts)
 ├── utils/              # 工具函数
 ├── types/              # 类型定义 (api.ts)
@@ -28,7 +28,7 @@ src/v2/
 
 ### 2. 技术栈规范
 - **前端框架**: React 18 + TypeScript (严格模式)
-- **样式系统**: Tailwind CSS + CSS 变量
+- **样式系统**: Tailwind CSS + SCSS (统一.scss格式)
 - **构建工具**: Vite (端口 3002)
 - **状态管理**: Jotai + React Query
 - **API 层**: 复用 V1 的 `src/api/` 和 `src/store/`
@@ -47,6 +47,72 @@ npm run build:v2
 
 ### 3. 开发IDE环境规范
 --  根据终端所属系统环境调用本地终端命令，比如windows10/macos
+
+## ⚠️ V2 架构强制规范 - 禁止破坏
+
+### 🔒 文件扩展名强制规范
+```
+✅ 正确的文件扩展名:
+- React 组件: *.tsx (包含JSX的组件)
+- Hook文件: *.ts (纯TypeScript逻辑)
+- 工具函数: *.ts (纯TypeScript工具)
+- 类型定义: *.ts (类型声明)
+- 样式文件: *.scss (统一SCSS格式)
+
+❌ 禁止的混用:
+- ❌ React组件使用.ts扩展名
+- ❌ Hook文件使用.tsx扩展名  
+- ❌ 样式文件混用.css和.scss
+- ❌ 在V2项目中使用.css文件
+
+🔧 修复规则:
+1. 所有React组件必须使用.tsx扩展名
+2. 所有Hook、工具、类型文件使用.ts扩展名
+3. 所有样式文件必须使用.scss扩展名
+4. V2项目禁止创建.css文件
+```
+
+### 🔒 样式架构强制规范
+```
+✅ V2样式架构规范:
+- 主样式文件: src/v2/styles/globals.scss
+- 组件样式: src/v2/styles/components.scss
+- 页面样式: src/v2/styles/pages.scss
+- 工具类样式: src/v2/styles/utilities.scss
+
+❌ 严格禁止:
+- ❌ 在V2中创建.css文件
+- ❌ 混用.css和.scss格式
+- ❌ 内联样式冲突Tailwind
+- ❌ 使用!important强制覆盖
+
+🔧 样式规范:
+1. 统一使用.scss格式
+2. 遵循BEM命名规范
+3. 优先使用Tailwind CSS类
+4. 自定义样式必须在.scss中定义
+```
+
+### 🔒 组件架构强制规范
+```
+✅ 组件开发规范:
+- 组件接口定义完整
+- 使用TypeScript严格模式
+- 遵循React 18最佳实践
+- 统一的错误处理和加载状态
+
+❌ 严格禁止:
+- ❌ 组件文件使用.ts扩展名
+- ❌ 缺少TypeScript类型定义
+- ❌ 混用V1和V2组件架构
+- ❌ 破坏现有组件接口
+
+🔧 组件规范:
+1. 所有组件文件必须是.tsx格式
+2. 必须定义完整的Props接口
+3. 必须导出正确的类型
+4. 遵循命名规范和目录结构
+```
 
 ## 组件开发规范
 
@@ -153,9 +219,9 @@ export function useProxies() {
 
 ## 样式系统规范
 
-### 1. Tailwind CSS 优先
+### 1. SCSS 优先 (V2统一格式)
 - **主要样式**: 使用 Tailwind CSS 类名
-- **组件样式**: 必要时使用 CSS 模块
+- **组件样式**: 使用 SCSS 模块 (.scss格式)
 - **主题支持**: 通过 CSS 变量实现
 - **响应式**: 移动端优先设计
 
@@ -180,20 +246,20 @@ export function useProxies() {
 ```
 
 ### 3. 主题系统
-```css
-/* CSS 变量定义 */
+```scss
+/* SCSS 变量定义 */
 :root {
-  --color-text: #2d3748;
-  --color-text-secondary: #718096;
-  --color-background: #ffffff;
-  --color-bg-card: #f7fafc;
+  --color-text: #{$color-text-light};
+  --color-text-secondary: #{$color-text-secondary-light};
+  --color-background: #{$color-background-light};
+  --color-bg-card: #{$color-bg-card-light};
 }
 
 [data-theme='dark'] {
-  --color-text: #f7fafc;
-  --color-text-secondary: #cbd5e0;
-  --color-background: #1a202c;
-  --color-bg-card: #2d3748;
+  --color-text: #{$color-text-dark};
+  --color-text-secondary: #{$color-text-secondary-dark};
+  --color-background: #{$color-background-dark};
+  --color-bg-card: #{$color-bg-card-dark};
 }
 ```
 
@@ -274,7 +340,7 @@ const [selectedProxy, setSelectedProxy] = useState<string>();
 - **防抖节流**: 搜索和筛选优化
 
 ### 2. 样式性能
-- **Tailwind CSS**: 按需生成，减少 CSS 体积
+- **SCSS 编译**: 统一编译为优化CSS
 - **CSS 变量**: 动态主题切换
 - **动画优化**: 使用 GPU 加速的 transform
 
@@ -316,7 +382,7 @@ npm run dev:both
 - **端口冲突**: V2 使用 3002 端口，与 V1 隔离
 - **API 配置**: 使用 `useApiConfig()` 获取配置
 - **状态同步**: 确保使用相同的 Jotai atoms
-- **样式冲突**: 使用页面级别的样式作用域
+- **样式冲突**: 使用统一的SCSS架构
 
 ### 2. 调试工具
 - **React DevTools**: 组件状态检查
@@ -328,13 +394,36 @@ npm run dev:both
 - **运行时性能**: Chrome Performance 面板
 - **内存使用**: 内存泄漏检测
 
+## 🔒 架构保护检查清单
+
+在任何代码更改前，必须确认：
+
+### ✅ 文件格式检查
+- [ ] React组件使用.tsx扩展名
+- [ ] Hook和工具使用.ts扩展名  
+- [ ] 样式文件使用.scss格式
+- [ ] 没有在V2中创建.css文件
+
+### ✅ 架构一致性检查
+- [ ] 遵循V2目录结构规范
+- [ ] 使用统一的导入导出方式
+- [ ] 保持组件接口一致性
+- [ ] 没有破坏现有API
+
+### ✅ 样式架构检查
+- [ ] 使用Tailwind CSS优先
+- [ ] 自定义样式在.scss中定义
+- [ ] 遵循命名规范
+- [ ] 没有样式冲突
+
 ## 回复规范
 作为专业的前端开发助手，猫猫会：
 - 🎯 **优先使用 V2 架构**: 新功能开发在 V2 中实现
 - 🔧 **遵循 V2 组件规范**: 使用标准的组件接口和样式
-- 📝 **保持技术一致性**: 遵循 TypeScript、Tailwind CSS、React Query 规范
+- 📝 **保持技术一致性**: 遵循 TypeScript、SCSS、React Query 规范
 - ✅ **确保兼容性**: 与 V1 状态同步，API 复用 
 - ✅ **确保任务可持续性**: 新功能开发完成后需要更新src/v2/PROGRESS_RECORD.md文件，可追踪任务进度
+- 🔒 **严格遵循架构规范**: 禁止文件格式混用，确保架构统一性
 - 🐱 **猫娘语癖**: 使用"喵~"、emoji、"猫猫"等可爱表达
 
 让我们一起构建现代化、高性能、易维护的 Clash Dashboard V2！🚀✨ 
