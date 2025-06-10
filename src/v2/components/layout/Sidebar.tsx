@@ -63,7 +63,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 
 // Add connection status hook
 function useConnectionStatus() {
-  const { state } = useAppState();
+  const { v1ApiConfig } = useAppState();
   const [connectionState, setConnectionState] = React.useState<{
     status: 'checking' | 'connected' | 'disconnected' | 'error';
     message: string;
@@ -77,7 +77,7 @@ function useConnectionStatus() {
       if (!mounted) return;
       
       try {
-        const response = await apiGet(state.apiConfig, '/version');
+        const response = await apiGet(v1ApiConfig, '/version');
         
         if (!mounted) return;
         
@@ -110,7 +110,7 @@ function useConnectionStatus() {
       mounted = false;
       clearInterval(interval);
     };
-  }, [state.apiConfig]);
+  }, [v1ApiConfig]);
 
   return connectionState;
 }

@@ -58,8 +58,28 @@ export function useRuleProviderQuery(apiConfig: ClashAPIConfig) {
   return useQuery(['/providers/rules', apiConfig], fetchRuleProviders);
 }
 
+export function useRuleProviders() {
+  const apiConfig = useApiConfig();
+  
+  return useQuery({
+    queryKey: ['/providers/rules', apiConfig?.baseURL, apiConfig?.secret],
+    queryFn: () => fetchRuleProviders({ queryKey: ['/providers/rules', apiConfig] as const }),
+    enabled: !!apiConfig?.baseURL,
+    staleTime: 30000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+}
+
 export function useRuleAndProvider(apiConfig: ClashAPIConfig) {
-  const { data: rules, isFetching } = useQuery(['/rules', apiConfig], fetchRules);
+  const { data: rules, isFetching } = useQuery({
+    queryKey: ['/rules', apiConfig?.baseURL, apiConfig?.secret],
+    queryFn: () => fetchRules({ queryKey: ['/rules', apiConfig] as const }),
+    enabled: !!apiConfig?.baseURL,
+    staleTime: 30000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
   const { data: provider } = useRuleProviderQuery(apiConfig);
   const [filterText] = useAtom(ruleFilterTextAtom);
   if (filterText === '') {

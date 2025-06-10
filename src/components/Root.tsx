@@ -33,7 +33,7 @@ const Connections = lazy(() => import('./Connections'));
 const Config = lazy(() => import('./Config'));
 const Logs = lazy(() => import('./Logs'));
 const Proxies = lazy(() => import('./proxies/Proxies'));
-const Rules = lazy(() => import('./Rules'));
+const Rules = lazy(() => import('../v2/pages/Rules').then(module => ({ default: module.Rules })));
 const StyleGuide = lazy(() => import('$src/components/style/StyleGuide'));
 
 const routes = [

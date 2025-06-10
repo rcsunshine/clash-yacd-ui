@@ -8,6 +8,8 @@ import { fetchProxies } from '../../api/proxies';
 import { fetchRules } from '../../api/rules';
 import * as connAPI from '../../api/connections';
 import { useApiConfig } from '../../store/app';
+
+// 导入 V2 类型定义
 import { 
   ClashAPIConfig, 
   APIResponse, 
@@ -17,10 +19,15 @@ import {
   ConnectionItem,
   LogItem,
   ClashConfig,
-  SystemInfo
+  SystemInfo,
+  RulesResponse,
+  ProxiesResponse,
+  ConnectionsResponse,
+  UseQueryResult,
+  LogLevel
 } from '../types/api';
 
-// 基础查询Hook - 使用现有的 React Query 集成
+// 改进的基础查询Hook - 自动处理API配置变化
 export function useQuery2<T>(
   queryKey: string,
   queryFn: () => Promise<T>,
@@ -30,9 +37,9 @@ export function useQuery2<T>(
   const apiConfig = useApiConfig();
   
   return useQuery({
-    queryKey: [queryKey, apiConfig],
+    queryKey: [queryKey, apiConfig?.baseURL, apiConfig?.secret],
     queryFn,
-    enabled,
+    enabled: enabled && !!apiConfig?.baseURL,
     refetchInterval,
     staleTime,
     retry: 3,
@@ -40,32 +47,52 @@ export function useQuery2<T>(
   });
 }
 
-// API 配置变更监听Hook
+// 优化的API配置变更监听Hook - 只在App级别使用
 export function useApiConfigEffect() {
   const queryClient = useQueryClient();
   const apiConfig = useApiConfig();
   const prevApiConfigRef = useRef<typeof apiConfig>();
+  const isFirstRun = useRef(true);
 
   useEffect(() => {
+    // 跳过首次运行
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      prevApiConfigRef.current = apiConfig;
+      return;
+    }
+
     // 检查 API 配置是否发生变化
     if (prevApiConfigRef.current && 
         (prevApiConfigRef.current.baseURL !== apiConfig.baseURL || 
          prevApiConfigRef.current.secret !== apiConfig.secret)) {
       
-      console.log('API config changed, invalidating all queries');
-      // 清除所有查询缓存
-      queryClient.invalidateQueries();
-      queryClient.clear();
+      console.log('🔄 API config changed from', prevApiConfigRef.current.baseURL, 'to', apiConfig.baseURL);
+      
+      // 只清理特定的查询，避免清除所有缓存
+      const apiRelatedKeys = [
+        'system-info',
+        'clash-config', 
+        'proxies',
+        'connections',
+        'rules'
+      ];
+      
+      apiRelatedKeys.forEach(key => {
+        queryClient.invalidateQueries({ queryKey: [key] });
+      });
+      
+      // 强制重新获取关键数据
+      queryClient.refetchQueries({ queryKey: ['system-info'] });
     }
     
     prevApiConfigRef.current = apiConfig;
   }, [apiConfig, queryClient]);
 }
 
-// 系统信息Hook - 使用现有的 API
+// 系统信息Hook - 移除重复的useApiConfigEffect调用
 export function useSystemInfo() {
   const apiConfig = useApiConfig();
-  useApiConfigEffect();
   
   return useQuery2<SystemInfo>(
     'system-info',
@@ -79,11 +106,10 @@ export function useSystemInfo() {
   );
 }
 
-// 配置Hook - 使用现有的 API
+// 配置Hook - 移除重复的useApiConfigEffect调用
 export function useClashConfig() {
   const apiConfig = useApiConfig();
   const queryClient = useQueryClient();
-  useApiConfigEffect();
   
   const queryResult = useQuery2<ClashConfig>(
     'clash-config',
@@ -97,8 +123,11 @@ export function useClashConfig() {
   );
 
   const updateConfig = useCallback(async (newConfig: Partial<ClashConfig>) => {
+    if (!apiConfig?.baseURL) {
+      return { error: 'API configuration not available' };
+    }
+
     try {
-      // 使用现有的 API 更新配置
       const response = await fetch(`${apiConfig.baseURL}/configs`, {
         method: 'PATCH',
         headers: {
@@ -126,11 +155,10 @@ export function useClashConfig() {
   };
 }
 
-// 代理Hook - 使用现有的 API
+// 代理Hook - 移除重复的useApiConfigEffect调用
 export function useProxies() {
   const apiConfig = useApiConfig();
   const queryClient = useQueryClient();
-  useApiConfigEffect();
   
   const queryResult = useQuery2<{ proxies: Record<string, ProxyItem> }>(
     'proxies',
@@ -139,6 +167,10 @@ export function useProxies() {
   );
 
   const switchProxy = useCallback(async (groupName: string, proxyName: string) => {
+    if (!apiConfig?.baseURL) {
+      return { error: 'API configuration not available' };
+    }
+
     try {
       const response = await fetch(`${apiConfig.baseURL}/proxies/${encodeURIComponent(groupName)}`, {
         method: 'PUT',
@@ -161,6 +193,10 @@ export function useProxies() {
   }, [apiConfig, queryClient]);
 
   const testDelay = useCallback(async (proxyName: string, testUrl?: string) => {
+    if (!apiConfig?.baseURL) {
+      return { error: 'API configuration not available' };
+    }
+
     try {
       const url = testUrl || 'http://www.gstatic.com/generate_204';
       const endpoint = `/proxies/${encodeURIComponent(proxyName)}/delay?timeout=5000&url=${encodeURIComponent(url)}`;
@@ -180,10 +216,9 @@ export function useProxies() {
   };
 }
 
-// 连接Hook - 使用现有的 API
+// 连接Hook - 移除重复的useApiConfigEffect调用
 export function useConnections() {
   const apiConfig = useApiConfig();
-  useApiConfigEffect();
   
   return useQuery2<{ connections: ConnectionItem[] }>(
     'connections',
@@ -197,24 +232,38 @@ export function useConnections() {
   );
 }
 
-// 规则Hook - 使用现有的 API
-export function useRules() {
+// 规则Hook - 移除重复的useApiConfigEffect调用
+export function useRules(): UseQueryResult<RulesResponse> {
   const apiConfig = useApiConfig();
-  useApiConfigEffect();
   
-  return useQuery2<any[]>(
+  return useQuery2<RulesResponse>(
     'rules',
     async () => {
-      const data = await query({
+      // 获取规则和规则提供者
+      const rulesData = await query({
         queryKey: ['/rules', apiConfig] as const
       });
-      return data;
+      
+      let providersData = {};
+      try {
+        providersData = await query({
+          queryKey: ['/providers/rules', apiConfig] as const
+        });
+      } catch (error) {
+        console.log('No rule providers found:', error);
+        providersData = {};
+      }
+      
+      return {
+        rules: rulesData?.rules || rulesData || [],
+        providers: providersData || {}
+      };
     },
     { staleTime: 30000 }
   );
 }
 
-// 连接统计Hook - 获取总流量等统计信息
+// 连接统计Hook - 优化API配置检查和WebSocket管理
 export function useConnectionStats() {
   const apiConfig = useApiConfig();
   const [stats, setStats] = useState({
@@ -283,7 +332,7 @@ export function useConnectionStats() {
   };
 }
 
-// 流量监控Hook - 使用正确的 /traffic WebSocket 端点
+// 流量监控Hook - 优化WebSocket连接管理
 export function useTraffic() {
   const apiConfig = useApiConfig();
   const [trafficData, setTrafficData] = useState<TrafficData[]>([]);
@@ -295,6 +344,7 @@ export function useTraffic() {
   useEffect(() => {
     if (!apiConfig?.baseURL) {
       setIsConnected(false);
+      setTrafficData([]);
       return;
     }
 
@@ -318,7 +368,7 @@ export function useTraffic() {
 
         ws.onopen = () => {
           setIsConnected(true);
-          console.log('Traffic WebSocket connected');
+          console.log('🔗 Traffic WebSocket connected to', apiConfig.baseURL);
         };
 
         ws.onmessage = (event) => {
@@ -342,13 +392,13 @@ export function useTraffic() {
 
         ws.onclose = () => {
           setIsConnected(false);
-          console.log('Traffic WebSocket disconnected');
+          console.log('💔 Traffic WebSocket disconnected');
           // 重连逻辑
           setTimeout(connectWebSocket, 3000);
         };
 
         ws.onerror = (error) => {
-          console.error('Traffic WebSocket error:', error);
+          console.error('❌ Traffic WebSocket error:', error);
           setIsConnected(false);
         };
       } catch (error) {
@@ -384,7 +434,7 @@ export function useTraffic() {
   };
 }
 
-// 日志Hook - 使用现有的日志 API
+// 日志Hook - 优化WebSocket连接管理
 export function useLogs() {
   const apiConfig = useApiConfig();
   const [logs, setLogs] = useState<LogItem[]>([]);
@@ -395,6 +445,7 @@ export function useLogs() {
   useEffect(() => {
     if (!apiConfig?.baseURL) {
       setIsConnected(false);
+      setLogs([]);
       return;
     }
 
@@ -406,13 +457,14 @@ export function useLogs() {
 
     const connectWebSocket = () => {
       try {
-        const wsUrl = apiConfig.baseURL.replace(/^http/, 'ws') + '/logs';
-        const ws = new WebSocket(wsUrl + (apiConfig.secret ? `?token=${encodeURIComponent(apiConfig.secret)}` : ''));
+        const baseWsUrl = apiConfig.baseURL.replace(/^http/, 'ws');
+        const wsUrl = baseWsUrl + '/logs' + (apiConfig.secret ? `?token=${encodeURIComponent(apiConfig.secret)}` : '');
+        const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
         ws.onopen = () => {
           setIsConnected(true);
-          console.log('Logs WebSocket connected');
+          console.log('📝 Logs WebSocket connected to', apiConfig.baseURL);
         };
 
         ws.onmessage = (event) => {
@@ -429,16 +481,19 @@ export function useLogs() {
 
         ws.onclose = () => {
           setIsConnected(false);
-          console.log('Logs WebSocket disconnected');
+          console.log('💔 Logs WebSocket disconnected');
+          // 重连逻辑
           setTimeout(connectWebSocket, 3000);
         };
 
         ws.onerror = (error) => {
-          console.error('Logs WebSocket error:', error);
+          console.error('❌ Logs WebSocket error:', error);
           setIsConnected(false);
         };
       } catch (error) {
         console.error('Failed to connect logs WebSocket:', error);
+        setIsConnected(false);
+        // 重连逻辑
         setTimeout(connectWebSocket, 3000);
       }
     };
@@ -448,6 +503,7 @@ export function useLogs() {
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
+        wsRef.current = null;
       }
     };
   }, [apiConfig]);
@@ -457,7 +513,7 @@ export function useLogs() {
   }, []);
 
   return {
-    data: logs,
+    logs,
     isConnected,
     clearLogs,
   };

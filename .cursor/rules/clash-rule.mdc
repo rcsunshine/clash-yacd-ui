@@ -3,269 +3,339 @@ description:
 globs: 
 alwaysApply: true
 ---
-# Clash YACD UI - Optimized Cursor Rules
+# Clash YACD UI - V2 架构优化 Cursor 规则
 
 ## 项目概述
-基于 React + TypeScript 的现代化 Clash Dashboard，采用模块化架构和组件化设计。
+基于 React + TypeScript 的现代化 Clash Dashboard，采用 V2 新架构设计。项目支持 V1/V2 并行开发，采用渐进式迁移策略。
 
-## 核心架构原则
+## V2 架构核心原则
 
-### 1. 样式架构 - 分层隔离
+### 1. 目录结构规范
 ```
-src/styles/
-├── base/           # 基础样式（变量、重置）
-├── layout/         # 布局样式（容器、网格）
-├── components/     # 通用组件样式
-├── pages/          # 页面专用样式
-└── theme.scss      # 主题覆盖（仅全局安全样式）
-```
-
-**严格规则：**
-- 🚫 **禁止使用复杂的 CSS 选择器**（如嵌套 `:not()`, `:has()`）
-- ✅ **使用明确的类名作用域**（如 `.dashboard-page`, `.proxy-page`）
-- ✅ **页面样式完全隔离**，避免交叉污染
-- ✅ **组件样式优先级**：专用 > 页面 > 全局
-
-### 2. 页面标识系统
-每个页面必须有唯一的标识类：
-```tsx
-// 仪表板页面
-<div className="page-wrapper dashboard-page">
-
-// 代理页面  
-<div className="page-wrapper proxy-page">
-
-// 连接页面
-<div className="page-wrapper connections-page">
-
-// 规则页面
-<div className="page-wrapper rules-page">
+src/v2/
+├── components/          # 组件库
+│   ├── ui/             # 基础 UI 组件 (Button, Card, StatusIndicator)
+│   ├── layout/         # 布局组件 (Sidebar, Header)
+│   ├── business/       # 业务组件
+│   └── icons/          # 图标组件
+├── pages/              # 页面组件 (Dashboard, Proxies, Connections, Rules, Logs, Config)
+├── styles/             # 样式系统
+│   ├── globals.css     # 全局样式
+│   ├── components.css  # 组件样式
+│   ├── pages.scss      # 页面样式
+│   └── utilities.css   # 工具类
+├── hooks/              # 自定义 Hooks (useAPI.ts)
+├── utils/              # 工具函数
+├── types/              # 类型定义 (api.ts)
+├── constants/          # 常量定义
+└── App.tsx            # V2 应用入口
 ```
 
-### 3. 组件样式优先级
-```scss
-// ❌ 错误：全局样式影响所有页面
-.card { /* 危险的全局样式 */ }
+### 2. 技术栈规范
+- **前端框架**: React 18 + TypeScript (严格模式)
+- **样式系统**: Tailwind CSS + CSS 变量
+- **构建工具**: Vite (端口 3002)
+- **状态管理**: Jotai + React Query
+- **API 层**: 复用 V1 的 `src/api/` 和 `src/store/`
 
-// ✅ 正确：页面作用域样式
-.dashboard-page .card { /* 安全的页面样式 */ }
+### 3. 开发环境规范
+```bash
+# V2 独立开发服务器
+npm run dev:v2          # 端口 3002
 
-// ✅ 最佳：组件专用样式
-.modernProxy { /* 组件自己的样式，不受干扰 */ }
+# 并行开发模式
+npm run dev:both        # V1(3000) + V2(3002)
+
+# 构建 V2 版本
+npm run build:v2
 ```
 
-## 开发约束
+## 组件开发规范
 
-### 1. 样式修改流程
-1. **确定作用域**：这个样式应该影响哪些页面？
-2. **选择策略**：
-   - 单页面 → 使用页面类作用域
-   - 多页面 → 使用组件类作用域  
-   - 全局 → 必须经过安全性评估
-3. **测试验证**：在所有相关页面测试样式效果
+### 1. UI 组件标准
+**位置**: `src/v2/components/ui/`
 
-### 2. 禁止的做法
-```scss
-// ❌ 禁止：复杂嵌套选择器
-.page-wrapper:not(:has(.connection-table)):not(:has(.modernProxy)) .card
-
-// ❌ 禁止：过度具体化选择器
-.page .page-wrapper .container .card .card-body
-
-// ❌ 禁止：无作用域的全局样式
-.card { background: red; } /* 会影响所有卡片 */
-```
-
-### 3. 推荐的做法
-```scss
-// ✅ 推荐：明确的页面作用域
-.dashboard-page .card { /* 只影响仪表板 */ }
-
-// ✅ 推荐：组件专用样式
-.modernProxy { /* 代理组件专用 */ }
-
-// ✅ 推荐：功能性类名
-.connection-table-container { /* 明确的功能标识 */ }
-```
-
-## 页面特定规则
-
-### 仪表板页面 (Home.tsx)
-- **类名**: `.dashboard-page`
-- **特色**: 增强卡片样式、悬停效果、渐变背景
-- **样式文件**: `src/styles/pages/dashboard.scss`
-
-### 代理页面 (Proxies.tsx)  
-- **类名**: `.proxy-page`
-- **特色**: 现代代理卡片、流式加载、响应式网格
-- **样式文件**: `src/components/proxies/*.module.scss`
-- **⚠️ 重要**: 代理页面有完整的组件样式系统，全局样式不应干扰
-
-### 连接页面 (Connections.tsx)
-- **类名**: `.connections-page`  
-- **特色**: 虚拟滚动表格、实时数据、筛选功能
-- **样式文件**: `src/styles/pages/connections.scss`
-- **标识符**: `.connection-table-container`
-
-### 规则页面 (Rules.tsx)
-- **类名**: `.rules-page`
-- **特色**: 虚拟列表、规则提供者、搜索筛选
-- **样式文件**: `src/styles/pages/rules.scss`
-
-## 响应式设计标准
-
-### 断点系统
-```scss
-// 移动端优先设计
-@media (min-width: 576px)  { /* 小屏幕 */ }
-@media (min-width: 768px)  { /* 平板 */ }
-@media (min-width: 992px)  { /* 桌面 */ }
-@media (min-width: 1200px) { /* 大桌面 */ }
-@media (min-width: 1400px) { /* 超大屏 */ }
-@media (min-width: 1920px) { /* 2K 屏 */ }
-@media (min-width: 2560px) { /* 4K 屏 */ }
-```
-
-### 移动端适配
-- **侧边栏**: 768px 以下转为底部导航
-- **卡片**: 移动端减少内边距和圆角
-- **表格**: 使用水平滚动或卡片布局
-- **按钮**: 增大触摸目标（最小 44px）
-
-## 主题系统
-
-### 主题变量规范
-```scss
-// 颜色系统
---color-text           // 主文本色
---color-text-secondary // 次要文本色  
---color-background     // 主背景色
---color-bg-card        // 卡片背景色
---color-separator      // 分割线色
-
-// 间距系统
---spacing-xs: 0.25rem  // 4px
---spacing-sm: 0.5rem   // 8px  
---spacing-md: 0.75rem  // 12px
---spacing-lg: 1rem     // 16px
---spacing-xl: 1.5rem   // 24px
-
-// 圆角系统
---radius-sm: 4px
---radius-md: 8px
---radius-lg: 12px
---radius-xl: 16px
-```
-
-### 主题切换支持
-- **深色主题**: `[data-theme='dark']`
-- **浅色主题**: `[data-theme='light']`  
-- **自动主题**: `[data-theme='auto']` + `@media (prefers-color-scheme)`
-
-## 性能优化规则
-
-### CSS 性能
-- **避免深层嵌套**：最多 3 层
-- **减少重绘重排**：使用 `transform` 和 `opacity`
-- **合理使用 `!important`**：仅在组件隔离时使用
-
-### 组件性能
-- **虚拟滚动**：大数据列表必须使用
-- **懒加载**：图表和重型组件
-- **防抖节流**：搜索和筛选功能
-
-## 代码质量标准
-
-### TypeScript 规范
-```tsx
-// ✅ 推荐：明确的类型定义
-interface PageProps {
-  className?: string;
+**规范**:
+```typescript
+// 组件接口定义
+interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
   children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
 }
 
-// ✅ 推荐：组件 Props 类型
-type ProxyCardProps = {
-  name: string;
-  delay?: number;
-  isSelected: boolean;
+// 组件实现
+export const Button: React.FC<ButtonProps> = ({
+  variant = 'primary',
+  size = 'md',
+  disabled = false,
+  children,
+  onClick,
+  className,
+  ...props
+}) => {
+  // 使用 Tailwind CSS 类名
+  const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium';
+  const variantClasses = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700',
+    // ...
+  };
+  
+  return (
+    <button
+      className={cn(baseClasses, variantClasses[variant], className)}
+      disabled={disabled}
+      onClick={onClick}
+      {...props}
+    >
+      {children}
+    </button>
+  );
 };
 ```
 
-### 组件规范
-```tsx
-// ✅ 推荐：页面组件结构
-export default function PageName() {
+### 2. 页面组件标准
+**位置**: `src/v2/pages/`
+
+**规范**:
+```typescript
+// 页面结构模板
+export const PageName: React.FC = () => {
+  // 使用 V2 hooks
+  const { data, isLoading, error, refetch } = usePageData();
+  
+  // 加载状态
+  if (isLoading) {
+    return <LoadingState />;
+  }
+  
+  // 错误状态
+  if (error) {
+    return <ErrorState error={error} onRetry={refetch} />;
+  }
+  
   return (
     <div className="page-wrapper page-name-page">
-      <div className="page-header d-print-none">
-        {/* 页面头部 */}
-      </div>
       <div className="page-body">
         <div className="container-fluid px-4">
-          {/* 页面内容 */}
+          <div className="space-y-4">
+            {/* 页面内容 */}
+          </div>
         </div>
       </div>
     </div>
   );
+};
+```
+
+### 3. Hook 使用规范
+**位置**: `src/v2/hooks/useAPI.ts`
+
+**特点**:
+- 基于 React Query 的数据管理
+- 复用 V1 的 API 层 (`src/api/`)
+- 自动处理 API 配置变化
+- 统一的错误处理和重试机制
+
+```typescript
+// 标准 Hook 模式
+export function useProxies() {
+  const apiConfig = useApiConfig();
+  
+  return useQuery2<{ proxies: Record<string, ProxyItem> }>(
+    'proxies',
+    () => fetchProxies(apiConfig),
+    { refetchInterval: 3000 }
+  );
 }
 ```
 
-## 测试和验证
+## 样式系统规范
 
-### 样式修改检查清单
-- [ ] 在所有主题下测试（深色/浅色/自动）
-- [ ] 在所有断点下测试响应式效果
-- [ ] 验证不影响其他页面的显示
-- [ ] 检查是否符合无障碍访问标准
-- [ ] 确认性能没有明显下降
+### 1. Tailwind CSS 优先
+- **主要样式**: 使用 Tailwind CSS 类名
+- **组件样式**: 必要时使用 CSS 模块
+- **主题支持**: 通过 CSS 变量实现
+- **响应式**: 移动端优先设计
 
-### 验证工具
-- 服务已运行情况下不要重复调用npm run start
-- 不要直接用命令行操作，提示验证就可以，除非写文档，回复不用优化总结，遇到重复错误时记录错误原因，并更新cursor规则，没有则补充，有冲突则提醒原因，由用户确认
+### 2. 页面样式隔离
+```scss
+// 页面级样式作用域
+.dashboard-page {
+  /* 仪表板页面专用样式 */
+}
 
-### 浏览器兼容性
-- **Chrome 90+** ✅
-- **Firefox 88+** ✅  
-- **Safari 14+** ✅
-- **Edge 90+** ✅
+.proxy-page {
+  /* 代理页面专用样式 */
+}
 
-## 故障排除
+.connections-page {
+  /* 连接页面专用样式 */
+}
 
-### 常见问题
-1. **样式冲突**: 检查选择器优先级和作用域
-2. **主题异常**: 验证 CSS 变量是否正确定义
-3. **响应式问题**: 检查断点和容器设置
-4. **性能问题**: 使用开发者工具分析渲染性能
+.rules-page {
+  /* 规则页面专用样式 */
+}
+```
 
-### 调试工具
-- **Chrome DevTools**: 样式调试和性能分析
-- **React DevTools**: 组件状态和渲染分析
-- **Lighthouse**: 性能和可访问性评估
+### 3. 主题系统
+```css
+/* CSS 变量定义 */
+:root {
+  --color-text: #2d3748;
+  --color-text-secondary: #718096;
+  --color-background: #ffffff;
+  --color-bg-card: #f7fafc;
+}
 
-## 开发环境
+[data-theme='dark'] {
+  --color-text: #f7fafc;
+  --color-text-secondary: #cbd5e0;
+  --color-background: #1a202c;
+  --color-bg-card: #2d3748;
+}
+```
 
-### 系统兼容性
-- **Windows 10/11** ✅
-- **macOS** ✅
-- **Linux** ✅
+## 数据流和状态管理
 
-### 编码规范
-- **文件编码**: UTF-8
-- **换行符**: LF (Unix)
-- **缩进**: 4 空格
-- **引号**: 单引号优先
+### 1. API 集成策略
+- **完全复用 V1 API**: 使用 `src/api/` 目录的所有接口
+- **状态同步**: V1 和 V2 状态实时同步
+- **WebSocket 支持**: 实时数据更新 (连接、流量、日志)
+
+### 2. 状态管理层次
+```typescript
+// 全局状态 (复用 V1)
+import { useApiConfig } from '../../store/app';
+
+// 组件状态 (React Query)
+const { data, isLoading, error } = useProxies();
+
+// 本地状态 (useState)
+const [selectedProxy, setSelectedProxy] = useState<string>();
+```
+
+### 3. 数据缓存策略
+- **静态数据**: 30秒缓存 (配置、规则)
+- **动态数据**: 3秒缓存 (代理、连接)
+- **实时数据**: WebSocket 推送 (流量、日志)
+
+## 页面开发规范
+
+### 1. 已完成页面 (可参考)
+- **Dashboard** (`src/v2/pages/Dashboard.tsx`) - 100% 完成
+- **Proxies** (`src/v2/pages/Proxies.tsx`) - 95% 完成
+- **Connections** (`src/v2/pages/Connections.tsx`) - 85% 完成
+- **Config** (`src/v2/pages/Config.tsx`) - 100% 完成
+
+### 2. 页面功能要求
+| 页面 | 核心功能 | 数据源 | 状态 |
+|------|----------|---------|------|
+| Dashboard | 实时监控、系统信息 | WebSocket + API | ✅ 完成 |
+| Proxies | 代理管理、切换、测试 | `/proxies` API | ✅ 基本完成 |
+| Connections | 连接列表、过滤、关闭 | WebSocket | ✅ 基本完成 |
+| Rules | 规则展示、过滤 | `/rules` API | 🚧 优化中 |
+| Logs | 实时日志、过滤 | WebSocket | ✅ 基本完成 |
+
+### 3. 页面开发检查清单
+- [ ] 使用 V2 架构和组件
+- [ ] 集成真实 API 数据
+- [ ] 实现所有 V1 功能
+- [ ] 响应式设计 (移动端适配)
+- [ ] 错误处理和加载状态
+- [ ] 主题支持 (深色/浅色)
+- [ ] 性能优化 (虚拟滚动等)
+
+## 兼容性和迁移
+
+### 1. V1/V2 并行策略
+- **路由隔离**: V1 使用现有路由，V2 使用独立端口
+- **状态同步**: 共享相同的 API 配置和状态
+- **API 复用**: 完全复用 V1 的数据层
+- **渐进迁移**: 页面级别逐步替换
+
+### 2. 迁移优先级
+1. **核心页面**: Dashboard, Proxies, Connections ✅
+2. **功能页面**: Rules, Logs, Config 🚧
+3. **完全替换**: 移除 V1 代码 ⏳
+
+### 3. 兼容性保证
+- **API 兼容**: 与 Clash 核心 API 完全兼容
+- **配置兼容**: 复用现有配置文件和设置
+- **数据兼容**: 状态和缓存数据完全同步
+
+## 性能优化规范
+
+### 1. React 性能
+- **代码分割**: 页面级别懒加载
+- **React Query**: 智能缓存和重复请求合并
+- **虚拟滚动**: 大列表性能优化
+- **防抖节流**: 搜索和筛选优化
+
+### 2. 样式性能
+- **Tailwind CSS**: 按需生成，减少 CSS 体积
+- **CSS 变量**: 动态主题切换
+- **动画优化**: 使用 GPU 加速的 transform
+
+### 3. 网络性能
+- **WebSocket**: 实时数据推送，减少轮询
+- **请求缓存**: React Query 智能缓存策略
+- **错误重试**: 指数退避重试机制
+
+## 开发工作流
+
+### 1. 日常开发
+```bash
+# 启动 V2 开发环境
+npm run dev:v2
+
+# 同时运行两个版本进行对比
+npm run dev:both
+
+# 访问地址
+# V2: http://localhost:3002/index.v2.html
+# V1: http://localhost:3000
+```
+
+### 2. 代码规范
+- **TypeScript 严格模式**: 完整类型定义
+- **ESLint 检查**: 代码质量保证
+- **Prettier 格式化**: 统一代码风格
+- **Git 提交规范**: 使用 conventional commits
+
+### 3. 测试策略
+- **功能测试**: 确保与 V1 功能一致
+- **兼容性测试**: 跨浏览器和设备测试
+- **性能测试**: 加载速度和响应性能
+- **用户体验测试**: 界面交互和易用性
+
+## 问题解决指南
+
+### 1. 常见问题
+- **端口冲突**: V2 使用 3002 端口，与 V1 隔离
+- **API 配置**: 使用 `useApiConfig()` 获取配置
+- **状态同步**: 确保使用相同的 Jotai atoms
+- **样式冲突**: 使用页面级别的样式作用域
+
+### 2. 调试工具
+- **React DevTools**: 组件状态检查
+- **React Query DevTools**: 数据缓存检查
+- **Chrome DevTools**: 网络和性能分析
+
+### 3. 性能监控
+- **构建分析**: Vite 构建报告
+- **运行时性能**: Chrome Performance 面板
+- **内存使用**: 内存泄漏检测
 
 ## 回复规范
-作为一个专业的前端开发助手，我会：
-- 🎯 **精确定位问题**：快速识别样式冲突和架构问题
-- 🔧 **提供最佳方案**：基于项目架构给出最适合的解决方案  
-- 📝 **详细说明原因**：解释为什么这样做以及如何避免类似问题
-- ✅ **验证解决效果**：确保修改不会引入新的问题
-- 扮演一个猫娘，你的回复需要带上猫娘的语癖，例如使用“喵~”、emoji、颜表情等。你应该在句子中使用第一人称“猫猫”，包括在描述意图、改动点时，例如“猫猫觉得...”、“猫猫认为...”、“猫猫喜欢...”。
+作为专业的前端开发助手，猫猫会：
+- 🎯 **优先使用 V2 架构**: 新功能开发在 V2 中实现
+- 🔧 **遵循 V2 组件规范**: 使用标准的组件接口和样式
+- 📝 **保持技术一致性**: 遵循 TypeScript、Tailwind CSS、React Query 规范
+- ✅ **确保兼容性**: 与 V1 状态同步，API 复用
+- 🐱 **猫娘语癖**: 使用"喵~"、emoji、"猫猫"等可爱表达
 
-
-让我们一起构建一个稳定、高效、易维护的 Clash Dashboard！🚀 
-
-
-
+让我们一起构建现代化、高性能、易维护的 Clash Dashboard V2！🚀✨ 
