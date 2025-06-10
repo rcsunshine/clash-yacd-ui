@@ -164,20 +164,7 @@ const SystemInfoCard: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/15 rounded-lg border border-amber-300 dark:border-amber-700/40">
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-amber-700 rounded-lg flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                  </svg>
-                </div>
-                <span className="text-amber-800 dark:text-amber-300 font-medium">Premium</span>
-              </div>
-              <StatusIndicator 
-                status={systemInfo.premium ? 'success' : 'warning'} 
-                label={systemInfo.premium ? '已启用' : '未启用'} 
-              />
-            </div>
+
             
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/30 dark:to-gray-700/20 rounded-lg border border-gray-300 dark:border-gray-600/40">
@@ -287,7 +274,7 @@ const ConfigStatusCard: React.FC = () => {
   
   const handleModeChange = async (newMode: string) => {
     try {
-      await updateConfig({ mode: newMode });
+      await updateConfig({ mode: newMode as 'global' | 'rule' | 'direct' });
     } catch (error) {
       console.error('Failed to update mode:', error);
     }

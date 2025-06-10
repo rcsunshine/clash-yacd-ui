@@ -13,9 +13,7 @@ export type QueryCtx = {
 };
 
 export function req(url: string, init: RequestInit) {
-  if (import.meta.env.DEV) {
-    return import('./mock').then((mod) => mod.mock(url, init));
-  }
+  // 禁用mock，总是使用真实API
   return fetch(url, init);
 }
 

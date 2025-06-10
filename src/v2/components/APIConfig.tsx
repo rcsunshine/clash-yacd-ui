@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
-import { useAppState, actions } from '../store';
+import { useAtom } from 'jotai';
 import { Button } from './ui/Button';
 import { Card, CardHeader, CardContent } from './ui/Card';
-import { apiGet } from '../utils/api';
 import { ClashAPIConfig } from '../types/api';
+import { createAPIClient } from '../api/client';
+import { v2ApiConfigsAtom, v2SelectedApiConfigIndexAtom } from '../store/atoms';
 
 export function APIConfig() {
-  const { state, dispatch } = useAppState();
-  const [tempConfig, setTempConfig] = useState<ClashAPIConfig>(state.apiConfig);
+  const [apiConfigs, setApiConfigs] = useAtom(v2ApiConfigsAtom);
+  const [selectedIndex, setSelectedIndex] = useAtom(v2SelectedApiConfigIndexAtom);
+  
+  const currentConfig = apiConfigs[selectedIndex] || {
+    baseURL: 'http://127.0.0.1:9090',
+    secret: '',
+  };
+  
+  const [tempConfig, setTempConfig] = useState<ClashAPIConfig>(currentConfig);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<{
     type: 'success' | 'error' | null;
@@ -19,7 +27,8 @@ export function APIConfig() {
     setConnectionStatus({ type: null, message: '' });
 
     try {
-      const response = await apiGet(tempConfig, '/version');
+      const client = createAPIClient(tempConfig);
+      const response = await client.get('/version');
       
       if (response.status === 200 && response.data) {
         setConnectionStatus({
@@ -43,7 +52,11 @@ export function APIConfig() {
   };
 
   const handleSave = () => {
-    dispatch(actions.setApiConfig(tempConfig));
+    // 更新现有配置
+    const newConfigs = [...apiConfigs];
+    newConfigs[selectedIndex] = tempConfig;
+    setApiConfigs(newConfigs);
+    
     setConnectionStatus({
       type: 'success',
       message: 'API 配置已保存'

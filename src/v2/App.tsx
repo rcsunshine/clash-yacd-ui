@@ -2,8 +2,8 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
 
-// 导入现有的 V1 状态管理
-import { themeAtom, setTheme } from '../store/app';
+// 导入V2独立的状态管理
+import { v2ThemeAtom, v2CurrentPageAtom } from './store/atoms';
 import { AppLayout } from './components/layout/AppLayout';
 import { Dashboard } from './pages/Dashboard';
 import { TestPage } from './pages/TestPage';
@@ -13,9 +13,7 @@ import { Rules } from './pages/Rules';
 import { Logs } from './pages/Logs';
 import { Config } from './pages/Config';
 import { APIConfig } from './pages/APIConfig';
-import { useAppState, actions } from './store';
-import { useApiConfigEffect } from './hooks/useAPI';
-import { AppConfigSideEffect } from '../components/fn/AppConfigSideEffect';
+import { useV1V2Sync } from './hooks/useV1V2Sync';
 import './styles/globals.css';
 
 // 创建 React Query 客户端
@@ -31,15 +29,10 @@ const queryClient = new QueryClient({
 });
 
 const useThemeManager = () => {
-  const [v1Theme, setV1Theme] = useAtom(themeAtom);
+  const [theme] = useAtom(v2ThemeAtom);
   
   React.useEffect(() => {
-    // 使用现有的 V1 主题设置函数
-    setTheme(v1Theme);
-  }, [v1Theme]);
-  
-  React.useEffect(() => {
-    if (v1Theme === 'auto') {
+    if (theme === 'auto') {
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       document.documentElement.classList.toggle('dark', isDark);
       
@@ -51,27 +44,27 @@ const useThemeManager = () => {
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     } else {
-      document.documentElement.classList.toggle('dark', v1Theme === 'dark');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
     }
-  }, [v1Theme]);
+  }, [theme]);
 };
 
 const useRouter = () => {
-  const { state, dispatch } = useAppState();
+  const [currentPage, setCurrentPage] = useAtom(v2CurrentPageAtom);
   
   React.useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1) || 'dashboard';
-      dispatch(actions.setCurrentPage(hash));
+      setCurrentPage(hash);
     };
     
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
     
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [dispatch]);
+  }, [setCurrentPage]);
   
-  return state.currentPage;
+  return currentPage;
 };
 
 const PageRenderer: React.FC<{ currentPage: string }> = ({ currentPage }) => {
@@ -97,10 +90,8 @@ const PageRenderer: React.FC<{ currentPage: string }> = ({ currentPage }) => {
 };
 
 const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { dispatch } = useAppState();
-  
-  // 添加全局 API 配置监听
-  useApiConfigEffect();
+  // V1和V2状态同步
+  useV1V2Sync();
   
   React.useEffect(() => {
     // V2 特有的初始化逻辑
@@ -108,12 +99,12 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
     if (savedPreferences) {
       try {
         const preferences = JSON.parse(savedPreferences);
-        dispatch(actions.updatePreferences(preferences));
+        console.log('V2 preferences loaded:', preferences);
       } catch (error) {
         console.warn('Failed to parse saved V2 preferences:', error);
       }
     }
-  }, [dispatch]);
+  }, []);
   
   return <>{children}</>;
 };
@@ -125,7 +116,6 @@ export const AppV2: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AppInitializer>
-        <AppConfigSideEffect />
         <AppLayout>
           <PageRenderer currentPage={currentPage} />
         </AppLayout>

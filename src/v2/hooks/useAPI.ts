@@ -2,12 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
 
-// 导入现有的 V1 API 和状态管理
-import { query } from '../../api/fetch';
-import { fetchProxies } from '../../api/proxies';
-import { fetchRules } from '../../api/rules';
-import * as connAPI from '../../api/connections';
-import { useApiConfig } from '../../store/app';
+// 导入 V2 独立的 API 和状态管理
+import { useApiConfig } from './useApiConfig';
+import { createAPIClient } from '../api/client';
 
 // 导入 V2 类型定义
 import { 
@@ -90,17 +87,19 @@ export function useApiConfigEffect() {
   }, [apiConfig, queryClient]);
 }
 
-// 系统信息Hook - 移除重复的useApiConfigEffect调用
+// 系统信息Hook - 使用V2独立API
 export function useSystemInfo() {
   const apiConfig = useApiConfig();
   
   return useQuery2<SystemInfo>(
     'system-info',
     async () => {
-      const data = await query({
-        queryKey: ['/', apiConfig] as const
-      });
-      return data;
+      const client = createAPIClient(apiConfig);
+      const response = await client.get('/');
+      if (response.data) {
+        return response.data;
+      }
+      throw new Error(response.error || 'Failed to fetch system info');
     },
     { refetchInterval: 5000 }
   );
@@ -114,10 +113,12 @@ export function useClashConfig() {
   const queryResult = useQuery2<ClashConfig>(
     'clash-config',
     async () => {
-      const data = await query({
-        queryKey: ['/configs', apiConfig] as const
-      });
-      return data;
+      const client = createAPIClient(apiConfig);
+      const response = await client.get('/configs');
+      if (response.data) {
+        return response.data;
+      }
+      throw new Error(response.error || 'Failed to fetch config');
     },
     { staleTime: 30000 }
   );
@@ -162,7 +163,14 @@ export function useProxies() {
   
   const queryResult = useQuery2<{ proxies: Record<string, ProxyItem> }>(
     'proxies',
-    () => fetchProxies(apiConfig),
+    async () => {
+      const client = createAPIClient(apiConfig);
+      const response = await client.get('/proxies');
+      if (response.data) {
+        return response.data;
+      }
+      throw new Error(response.error || 'Failed to fetch proxies');
+    },
     { refetchInterval: 3000 }
   );
 
@@ -200,10 +208,12 @@ export function useProxies() {
     try {
       const url = testUrl || 'http://www.gstatic.com/generate_204';
       const endpoint = `/proxies/${encodeURIComponent(proxyName)}/delay?timeout=5000&url=${encodeURIComponent(url)}`;
-      const data = await query({
-        queryKey: [endpoint, apiConfig] as const
-      });
-      return { data, error: null };
+      const client = createAPIClient(apiConfig);
+      const response = await client.get(endpoint);
+      if (response.data) {
+        return { data: response.data, error: null };
+      }
+      return { data: null, error: response.error || 'Failed to test delay' };
     } catch (error) {
       return { error: error instanceof Error ? error.message : 'Unknown error' };
     }
@@ -216,17 +226,19 @@ export function useProxies() {
   };
 }
 
-// 连接Hook - 移除重复的useApiConfigEffect调用
+// 连接Hook - 使用V2独立API
 export function useConnections() {
   const apiConfig = useApiConfig();
   
   return useQuery2<{ connections: ConnectionItem[] }>(
     'connections',
     async () => {
-      const data = await query({
-        queryKey: ['/connections', apiConfig] as const
-      });
-      return data;
+      const client = createAPIClient(apiConfig);
+      const response = await client.get('/connections');
+      if (response.data) {
+        return response.data;
+      }
+      throw new Error(response.error || 'Failed to fetch connections');
     },
     { refetchInterval: 1000 }
   );
@@ -239,23 +251,24 @@ export function useRules(): UseQueryResult<RulesResponse> {
   return useQuery2<RulesResponse>(
     'rules',
     async () => {
-      // 获取规则和规则提供者
-      const rulesData = await query({
-        queryKey: ['/rules', apiConfig] as const
-      });
+      const client = createAPIClient(apiConfig);
       
+      // 获取规则
+      const rulesResponse = await client.get('/rules');
+      const rulesData = rulesResponse.data || [];
+      
+      // 获取规则提供者
       let providersData = {};
       try {
-        providersData = await query({
-          queryKey: ['/providers/rules', apiConfig] as const
-        });
+        const providersResponse = await client.get('/providers/rules');
+        providersData = providersResponse.data || {};
       } catch (error) {
         console.log('No rule providers found:', error);
         providersData = {};
       }
       
       return {
-        rules: rulesData?.rules || rulesData || [],
+        rules: Array.isArray(rulesData) ? rulesData : (rulesData?.rules || []),
         providers: providersData || {}
       };
     },
@@ -273,8 +286,11 @@ export function useConnectionStats() {
     isConnected: false,
   });
   const unsubscribeRef = useRef<(() => void) | null>(null);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
+    
     if (!apiConfig?.baseURL) {
       setStats(prev => ({ ...prev, isConnected: false }));
       return;
@@ -288,19 +304,36 @@ export function useConnectionStats() {
 
     const connectAPI = () => {
       try {
-        // 使用连接 API 来获取统计数据
-        const result = connAPI.fetchData(apiConfig, (data: any) => {
-          setStats({
-            activeConnections: Array.isArray(data.connections) ? data.connections.length : 0,
-            uploadTotal: data.uploadTotal || 0,
-            downloadTotal: data.downloadTotal || 0,
-            isConnected: true,
-          });
-        });
+        // 使用V2独立的API客户端
+        const client = createAPIClient(apiConfig);
         
-        if (typeof result === 'function') {
-          unsubscribeRef.current = result;
-        }
+        const fetchStats = async () => {
+          if (!mountedRef.current) return;
+          
+          try {
+            const response = await client.get('/connections');
+            if (response.data && mountedRef.current) {
+              setStats({
+                activeConnections: Array.isArray(response.data.connections) ? response.data.connections.length : 0,
+                uploadTotal: response.data.uploadTotal || 0,
+                downloadTotal: response.data.downloadTotal || 0,
+                isConnected: true,
+              });
+            }
+          } catch (error) {
+            if (mountedRef.current) {
+              setStats(prev => ({ ...prev, isConnected: false }));
+            }
+          }
+        };
+        
+        // 立即获取一次数据
+        fetchStats();
+        
+        // 设置定时更新
+        const interval = setInterval(fetchStats, 3000);
+        unsubscribeRef.current = () => clearInterval(interval);
+        
       } catch (error) {
         console.error('Failed to connect connection stats API:', error);
         setStats(prev => ({ ...prev, isConnected: false }));
@@ -310,6 +343,7 @@ export function useConnectionStats() {
     connectAPI();
 
     return () => {
+      mountedRef.current = false;
       if (unsubscribeRef.current) {
         unsubscribeRef.current();
         unsubscribeRef.current = null;
@@ -338,40 +372,58 @@ export function useTraffic() {
   const [trafficData, setTrafficData] = useState<TrafficData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
-  const unsubscribeRef = useRef<(() => void) | null>(null);
+  const reconnectTimeoutRef = useRef<number | null>(null);
+  const mountedRef = useRef(true);
   const maxDataPoints = 150;
 
   useEffect(() => {
-    if (!apiConfig?.baseURL) {
+    mountedRef.current = true;
+    
+    // 确保 API 配置已正确设置且不是默认值
+    if (!apiConfig?.baseURL || apiConfig.baseURL === 'http://127.0.0.1:9090') {
+      console.log('⏳ Traffic WebSocket: Waiting for API config, current:', apiConfig?.baseURL);
       setIsConnected(false);
       setTrafficData([]);
       return;
     }
 
-    // 清理之前的连接
-    if (wsRef.current) {
+    // 清理之前的连接和定时器
+    if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
       wsRef.current.close();
       wsRef.current = null;
     }
-    if (unsubscribeRef.current) {
-      unsubscribeRef.current();
-      unsubscribeRef.current = null;
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
     }
 
     const connectWebSocket = () => {
+      if (!mountedRef.current) return;
+      
       try {
         // 使用正确的 /traffic WebSocket 端点
         const baseWsUrl = apiConfig.baseURL.replace(/^http/, 'ws');
         const wsUrl = baseWsUrl + '/traffic' + (apiConfig.secret ? `?token=${encodeURIComponent(apiConfig.secret)}` : '');
+        
+        // 在React严格模式下延迟连接，避免重复连接
         const ws = new WebSocket(wsUrl);
+        
+        // 立即检查组件是否仍然挂载
+        if (!mountedRef.current) {
+          ws.close();
+          return;
+        }
+        
         wsRef.current = ws;
 
         ws.onopen = () => {
+          if (!mountedRef.current) return;
           setIsConnected(true);
           console.log('🔗 Traffic WebSocket connected to', apiConfig.baseURL);
         };
 
         ws.onmessage = (event) => {
+          if (!mountedRef.current) return;
           try {
             // 解析实时速率数据 (bytes/s)
             const data = JSON.parse(event.data);
@@ -390,35 +442,60 @@ export function useTraffic() {
           }
         };
 
-        ws.onclose = () => {
+        ws.onclose = (event) => {
+          if (!mountedRef.current) return;
           setIsConnected(false);
-          console.log('💔 Traffic WebSocket disconnected');
-          // 重连逻辑
-          setTimeout(connectWebSocket, 3000);
+          
+          // 只有在非正常关闭时才重连
+          if (event.code !== 1000 && event.code !== 1001) {
+            console.log('💔 Traffic WebSocket disconnected, attempting reconnect...');
+            reconnectTimeoutRef.current = setTimeout(() => {
+              if (mountedRef.current) {
+                connectWebSocket();
+              }
+            }, 3000);
+          }
         };
 
         ws.onerror = (error) => {
+          if (!mountedRef.current) return;
           console.error('❌ Traffic WebSocket error:', error);
           setIsConnected(false);
         };
       } catch (error) {
+        if (!mountedRef.current) return;
         console.error('Failed to connect traffic WebSocket:', error);
         setIsConnected(false);
         // 重连逻辑
-        setTimeout(connectWebSocket, 3000);
+        reconnectTimeoutRef.current = setTimeout(() => {
+          if (mountedRef.current) {
+            connectWebSocket();
+          }
+        }, 3000);
       }
     };
 
     connectWebSocket();
 
     return () => {
+      mountedRef.current = false;
       if (wsRef.current) {
-        wsRef.current.close();
+        const ws = wsRef.current;
         wsRef.current = null;
+        
+        // 只关闭已连接或正在连接的WebSocket
+        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+          try {
+            ws.close(1000, 'Component unmounted');
+          } catch (error) {
+            // 忽略关闭时的错误，这通常发生在连接还没建立时
+            console.debug('Traffic WebSocket close error (ignored):', error);
+          }
+        }
       }
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-        unsubscribeRef.current = null;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
     };
   }, [apiConfig]);
@@ -440,22 +517,34 @@ export function useLogs() {
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<number | null>(null);
+  const mountedRef = useRef(true);
   const maxLogs = 500;
 
   useEffect(() => {
-    if (!apiConfig?.baseURL) {
+    mountedRef.current = true;
+    
+    // 确保 API 配置已正确设置且不是默认值
+    if (!apiConfig?.baseURL || apiConfig.baseURL === 'http://127.0.0.1:9090') {
+      console.log('⏳ Logs WebSocket: Waiting for API config, current:', apiConfig?.baseURL);
       setIsConnected(false);
       setLogs([]);
       return;
     }
 
-    // 清理之前的连接
-    if (wsRef.current) {
+    // 清理之前的连接和定时器
+    if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
       wsRef.current.close();
       wsRef.current = null;
     }
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
 
     const connectWebSocket = () => {
+      if (!mountedRef.current) return;
+      
       try {
         const baseWsUrl = apiConfig.baseURL.replace(/^http/, 'ws');
         const wsUrl = baseWsUrl + '/logs' + (apiConfig.secret ? `?token=${encodeURIComponent(apiConfig.secret)}` : '');
@@ -463,11 +552,13 @@ export function useLogs() {
         wsRef.current = ws;
 
         ws.onopen = () => {
+          if (!mountedRef.current) return;
           setIsConnected(true);
           console.log('📝 Logs WebSocket connected to', apiConfig.baseURL);
         };
 
         ws.onmessage = (event) => {
+          if (!mountedRef.current) return;
           try {
             const logItem: LogItem = JSON.parse(event.data);
             setLogs(prev => {
@@ -479,31 +570,60 @@ export function useLogs() {
           }
         };
 
-        ws.onclose = () => {
+        ws.onclose = (event) => {
+          if (!mountedRef.current) return;
           setIsConnected(false);
-          console.log('💔 Logs WebSocket disconnected');
-          // 重连逻辑
-          setTimeout(connectWebSocket, 3000);
+          
+          // 只有在非正常关闭时才重连
+          if (event.code !== 1000 && event.code !== 1001) {
+            console.log('💔 Logs WebSocket disconnected, attempting reconnect...');
+            reconnectTimeoutRef.current = setTimeout(() => {
+              if (mountedRef.current) {
+                connectWebSocket();
+              }
+            }, 3000);
+          }
         };
 
         ws.onerror = (error) => {
+          if (!mountedRef.current) return;
           console.error('❌ Logs WebSocket error:', error);
           setIsConnected(false);
         };
       } catch (error) {
+        if (!mountedRef.current) return;
         console.error('Failed to connect logs WebSocket:', error);
         setIsConnected(false);
         // 重连逻辑
-        setTimeout(connectWebSocket, 3000);
+        reconnectTimeoutRef.current = setTimeout(() => {
+          if (mountedRef.current) {
+            connectWebSocket();
+          }
+        }, 3000);
       }
     };
 
     connectWebSocket();
 
     return () => {
+      mountedRef.current = false;
       if (wsRef.current) {
-        wsRef.current.close();
+        const ws = wsRef.current;
         wsRef.current = null;
+        
+        // 只关闭已连接或正在连接的WebSocket
+        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+          try {
+            ws.close(1000, 'Component unmounted');
+          } catch (error) {
+            // 忽略关闭时的错误，这通常发生在连接还没建立时
+            console.debug('Logs WebSocket close error (ignored):', error);
+          }
+        }
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
     };
   }, [apiConfig]);

@@ -50,6 +50,9 @@ npm run dev:both        # V1(3000) + V2(3002)
 npm run build:v2
 ```
 
+### 3. 开发IDE环境规范
+--  根据终端所属系统环境调用本地终端命令，比如windows10/macos
+
 ## 组件开发规范
 
 ### 1. UI 组件标准
@@ -335,7 +338,8 @@ npm run dev:both
 - 🎯 **优先使用 V2 架构**: 新功能开发在 V2 中实现
 - 🔧 **遵循 V2 组件规范**: 使用标准的组件接口和样式
 - 📝 **保持技术一致性**: 遵循 TypeScript、Tailwind CSS、React Query 规范
-- ✅ **确保兼容性**: 与 V1 状态同步，API 复用
+- ✅ **确保兼容性**: 与 V1 状态同步，API 复用 
+- ✅ **确保任务可持续性**: 新功能开发完成后需要更新src/v2/PROGRESS_RECORD.md文件，可追踪任务进度
 - 🐱 **猫娘语癖**: 使用"喵~"、emoji、"猫猫"等可爱表达
 
 让我们一起构建现代化、高性能、易维护的 Clash Dashboard V2！🚀✨ 

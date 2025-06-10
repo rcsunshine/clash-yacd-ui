@@ -1,8 +1,8 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
-import { useAppState, actions } from '../../store';
 import { StatusIndicator } from '../ui/StatusIndicator';
-import { apiGet } from '../../utils/api';
+import { useApiConfig } from '../../hooks/useApiConfig';
+import { createAPIClient } from '../../api/client';
 
 export interface SidebarProps {
   className?: string;
@@ -61,9 +61,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   );
 };
 
-// Add connection status hook
+// V2独立的连接状态Hook
 function useConnectionStatus() {
-  const { v1ApiConfig } = useAppState();
+  const apiConfig = useApiConfig();
   const [connectionState, setConnectionState] = React.useState<{
     status: 'checking' | 'connected' | 'disconnected' | 'error';
     message: string;
@@ -77,7 +77,8 @@ function useConnectionStatus() {
       if (!mounted) return;
       
       try {
-        const response = await apiGet(v1ApiConfig, '/version');
+        const client = createAPIClient(apiConfig);
+        const response = await client.get('/version');
         
         if (!mounted) return;
         
@@ -110,14 +111,13 @@ function useConnectionStatus() {
       mounted = false;
       clearInterval(interval);
     };
-  }, [v1ApiConfig]);
+  }, [apiConfig]);
 
   return connectionState;
 }
 
 export function Sidebar(props: SidebarProps = {}) {
   const { className } = props;
-  const { state, dispatch } = useAppState();
   const connectionState = useConnectionStatus();
   const [currentPage, setCurrentPage] = React.useState('dashboard');
   
@@ -297,14 +297,12 @@ export function Sidebar(props: SidebarProps = {}) {
       </div>
 
       {/* Connection Status */}
-      {!state.sidebarCollapsed && (
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-          <StatusIndicator 
-            status={getStatusType()} 
-            label={getDisplayMessage()}
-          />
-        </div>
-      )}
+      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <StatusIndicator 
+          status={getStatusType()} 
+          label={getDisplayMessage()}
+        />
+      </div>
     </aside>
   );
 } 

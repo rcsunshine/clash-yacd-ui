@@ -53,7 +53,7 @@ export const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
     return (
       <div
         ref={ref}
-        className={cn('flex items-start justify-between space-y-1.5 pb-4', className)}
+        className={cn('flex items-center justify-between space-y-1.5 pb-4', className)}
         {...props}
       >
         <div className="space-y-1">

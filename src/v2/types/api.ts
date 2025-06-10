@@ -177,7 +177,7 @@ export interface ClashAPIConfig {
 export interface UseQueryResult<T> {
   data?: T;
   isLoading: boolean;
-  error: Error | null;
+  error: unknown;
   refetch: () => void;
   isFetching?: boolean;
   isError?: boolean;
