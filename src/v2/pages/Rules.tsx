@@ -2,12 +2,18 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
+import { FixedVirtualList } from '../components/ui/VirtualList';
+import { PageErrorBoundary } from '../components/ui/ErrorBoundary';
+import { ErrorAlert, NetworkErrorAlert, APIErrorAlert } from '../components/ui/ErrorAlert';
+import { PageLoader } from '../components/ui/LoadingState';
 import { useRules } from '../hooks/useAPI';
+import { useAPIErrorHandler } from '../hooks/useErrorHandler';
 import { Rule, RuleProvider, RuleType } from '../types/api';
 import '../styles/pages.scss';
 
-export const Rules: React.FC = () => {
+const RulesContent: React.FC = () => {
   const { data: rulesData, isLoading, error, refetch } = useRules();
+  const { handleError } = useAPIErrorHandler();
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<RuleType | 'all'>('all');
   const [activeTab, setActiveTab] = useState<'rules' | 'providers'>('rules');
@@ -42,22 +48,19 @@ export const Rules: React.FC = () => {
     return types.sort();
   }, [rulesData?.rules]);
 
+    // 处理API错误
+  React.useEffect(() => {
+    if (error) {
+      handleError(error, '规则页面数据加载失败');
+    }
+  }, [error, handleError]);
+
   if (isLoading) {
     return (
       <div className="page-wrapper rules-page">
         <div className="page-body">
           <div className="container-fluid px-4">
-            <div className="space-y-4">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">规则</h1>
-              <Card>
-                <CardContent>
-                  <div className="animate-pulse space-y-4">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <PageLoader text="正在加载规则数据..." />
           </div>
         </div>
       </div>
@@ -65,23 +68,43 @@ export const Rules: React.FC = () => {
   }
 
   if (error) {
+    const isNetworkError = error instanceof TypeError && error.message.includes('fetch');
+    const isAPIError = error instanceof Error && (
+      error.message.includes('401') || 
+      error.message.includes('404') ||
+      error.message.includes('API')
+    );
+
     return (
       <div className="page-wrapper rules-page">
         <div className="page-body">
           <div className="container-fluid px-4">
             <div className="space-y-4">
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">规则</h1>
-              <Card>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                      加载失败
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4">{String(error)}</p>
-                    <Button onClick={() => refetch()}>重试</Button>
-                  </div>
-                </CardContent>
-              </Card>
+              
+              {isNetworkError ? (
+                <NetworkErrorAlert
+                  message="无法连接到 Clash API，请检查网络连接和API配置"
+                  details={String(error)}
+                  onRetry={() => refetch()}
+                  showDetails={process.env.NODE_ENV === 'development'}
+                />
+              ) : isAPIError ? (
+                <APIErrorAlert
+                  message="API 请求失败，请检查API配置或权限"
+                  details={String(error)}
+                  onRetry={() => refetch()}
+                  showDetails={process.env.NODE_ENV === 'development'}
+                />
+              ) : (
+                <ErrorAlert
+                  title="规则数据加载失败"
+                  message="无法获取规则信息，请稍后重试"
+                  details={String(error)}
+                  onRetry={() => refetch()}
+                  showDetails={process.env.NODE_ENV === 'development'}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -274,32 +297,38 @@ export const Rules: React.FC = () => {
                           <span>按优先级排序</span>
                         </div>
                         <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
-                          {rules.map((rule, index) => (
-                            <div 
-                              key={index}
-                              className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center space-x-2 mb-1">
-                                    <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full font-medium">
-                                      {rule.type}
-                                    </span>
-                                    <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                      {rule.payload}
-                                    </span>
+                          <FixedVirtualList<Rule>
+                            items={rules}
+                            height={384}
+                            itemHeight={60}
+                            renderItem={(rule: Rule, index: number) => (
+                              <div 
+                                key={index}
+                                className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 m-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center space-x-2 mb-1">
+                                      <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full font-medium">
+                                        {rule.type}
+                                      </span>
+                                      <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                        {rule.payload}
+                                      </span>
+                                    </div>
+                                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                                      <span className="font-medium">代理: </span>
+                                      <span className="text-gray-700 dark:text-gray-300">{rule.proxy}</span>
+                                    </div>
                                   </div>
-                                  <div className="text-xs text-gray-600 dark:text-gray-400">
-                                    <span className="font-medium">代理: </span>
-                                    <span className="text-gray-700 dark:text-gray-300">{rule.proxy}</span>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
+                                    #{index + 1}
                                   </div>
-                                </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                                  #{index + 1}
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            )}
+                            className="space-y-0"
+                          />
                         </div>
                       </div>
                     )}
@@ -332,54 +361,59 @@ export const Rules: React.FC = () => {
                         <span>实时状态</span>
                       </div>
                       <div className="grid gap-4">
-                        {providers.map((provider, index) => (
-                          <div 
-                            key={provider.name}
-                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-2">
-                                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                                    {provider.name}
-                                  </h3>
-                                  <span className="text-xs px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full">
-                                    {provider.type}
-                                  </span>
+                        <FixedVirtualList
+                          items={providers}
+                          itemHeight={60}
+                          itemCount={providers.length}
+                          renderItem={(index) => (
+                            <div 
+                              key={providers[index].name}
+                              className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-2 mb-2">
+                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                      {providers[index].name}
+                                    </h3>
+                                    <span className="text-xs px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full">
+                                      {providers[index].type}
+                                    </span>
+                                  </div>
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                    <div>
+                                      <span className="text-gray-600 dark:text-gray-400">行为:</span>
+                                      <div className="font-medium text-gray-900 dark:text-white">
+                                        {providers[index].behavior || 'domain'}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600 dark:text-gray-400">规则数:</span>
+                                      <div className="font-medium text-gray-900 dark:text-white">
+                                        {providers[index].ruleCount || 0}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600 dark:text-gray-400">载体:</span>
+                                      <div className="font-medium text-gray-900 dark:text-white">
+                                        {providers[index].vehicleType || 'HTTP'}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600 dark:text-gray-400">更新时间:</span>
+                                      <div className="font-medium text-gray-900 dark:text-white">
+                                        {providers[index].updatedAt ? new Date(providers[index].updatedAt).toLocaleString() : '未知'}
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                                  <div>
-                                    <span className="text-gray-600 dark:text-gray-400">行为:</span>
-                                    <div className="font-medium text-gray-900 dark:text-white">
-                                      {provider.behavior || 'domain'}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600 dark:text-gray-400">规则数:</span>
-                                    <div className="font-medium text-gray-900 dark:text-white">
-                                      {provider.ruleCount || 0}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600 dark:text-gray-400">载体:</span>
-                                    <div className="font-medium text-gray-900 dark:text-white">
-                                      {provider.vehicleType || 'HTTP'}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600 dark:text-gray-400">更新时间:</span>
-                                    <div className="font-medium text-gray-900 dark:text-white">
-                                      {provider.updatedAt ? new Date(provider.updatedAt).toLocaleString() : '未知'}
-                                    </div>
-                                  </div>
-                                </div>
+                                <Button variant="outline" size="sm" className="ml-4 text-xs">
+                                  更新
+                                </Button>
                               </div>
-                              <Button variant="outline" size="sm" className="ml-4 text-xs">
-                                更新
-                              </Button>
                             </div>
-                          </div>
-                        ))}
+                          )}
+                        />
                       </div>
                     </div>
                   )}
@@ -390,5 +424,14 @@ export const Rules: React.FC = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// 包装错误边界的主要导出组件
+export const Rules: React.FC = () => {
+  return (
+    <PageErrorBoundary>
+      <RulesContent />
+    </PageErrorBoundary>
   );
 };

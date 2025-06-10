@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
 
 // 导入 V2 独立的 API 和状态管理
@@ -637,4 +637,54 @@ export function useLogs() {
     isConnected,
     clearLogs,
   };
+}
+
+// 关闭连接Hook
+export function useCloseConnection() {
+  const apiConfig = useApiConfig();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (connectionId: string) => {
+      if (!apiConfig) throw new Error('API config not available');
+      
+      const client = createAPIClient(apiConfig);
+      const response = await client.delete(`/connections/${connectionId}`);
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      return response.data;
+    },
+    onSuccess: () => {
+      // 刷新连接列表
+      queryClient.invalidateQueries({ queryKey: ['connections'] });
+    },
+  });
+}
+
+// 批量关闭连接Hook
+export function useCloseAllConnections() {
+  const apiConfig = useApiConfig();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!apiConfig) throw new Error('API config not available');
+      
+      const client = createAPIClient(apiConfig);
+      const response = await client.delete('/connections');
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      return response.data;
+    },
+    onSuccess: () => {
+      // 刷新连接列表
+      queryClient.invalidateQueries({ queryKey: ['connections'] });
+    },
+  });
 }

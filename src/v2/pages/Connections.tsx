@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
-import { useConnections } from '../hooks/useAPI';
+import { FixedVirtualList } from '../components/ui/VirtualList';
+import { useConnections, useCloseConnection, useCloseAllConnections } from '../hooks/useAPI';
 
 interface Connection {
   id: string;
@@ -28,6 +29,49 @@ export const Connections: React.FC = () => {
   const { data: connectionsData, isLoading, error, refetch } = useConnections();
   const [searchQuery, setSearchQuery] = useState('');
   const [networkFilter, setNetworkFilter] = useState<string>('all');
+  const [selectedConnections, setSelectedConnections] = useState<Set<string>>(new Set());
+  
+  const closeConnection = useCloseConnection();
+  const closeAllConnections = useCloseAllConnections();
+
+  // 处理单个连接关闭
+  const handleCloseConnection = async (connectionId: string) => {
+    try {
+      await closeConnection.mutateAsync(connectionId);
+    } catch (error) {
+      console.error('关闭连接失败:', error);
+    }
+  };
+
+  // 处理批量连接关闭
+  const handleCloseAllConnections = async () => {
+    try {
+      await closeAllConnections.mutateAsync();
+      setSelectedConnections(new Set());
+    } catch (error) {
+      console.error('关闭所有连接失败:', error);
+    }
+  };
+
+  // 处理选中的连接
+  const toggleConnectionSelection = (connectionId: string) => {
+    const newSelected = new Set(selectedConnections);
+    if (newSelected.has(connectionId)) {
+      newSelected.delete(connectionId);
+    } else {
+      newSelected.add(connectionId);
+    }
+    setSelectedConnections(newSelected);
+  };
+
+  // 全选/取消全选
+  const toggleAllConnections = () => {
+    if (selectedConnections.size === connections.length) {
+      setSelectedConnections(new Set());
+    } else {
+      setSelectedConnections(new Set(connections.map(conn => conn.id)));
+    }
+  };
 
   if (isLoading) {
     return (
@@ -123,12 +167,28 @@ export const Connections: React.FC = () => {
             </p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="text-sm">
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          刷新
-        </Button>
+        <div className="flex items-center space-x-2">
+          {totalConnections > 0 && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleCloseAllConnections}
+              disabled={closeAllConnections.isLoading}
+              className="text-sm text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              {closeAllConnections.isLoading ? '关闭中...' : '关闭所有'}
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="text-sm">
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            刷新
+          </Button>
+        </div>
       </div>
 
       {/* 统计信息 */}
@@ -266,61 +326,82 @@ export const Connections: React.FC = () => {
                 <span>实时更新</span>
               </div>
               <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
-                {connections.map((connection, index) => {
-                  const destination = connection.metadata.host || 
-                    `${connection.metadata.destinationIP}:${connection.metadata.destinationPort}`;
-                  
-                  return (
-                    <div 
-                      key={connection.id || index}
-                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <div className={`w-2 h-2 rounded-full ${
-                              connection.metadata.network === 'tcp' ? 'bg-blue-500' : 
-                              connection.metadata.network === 'udp' ? 'bg-green-500' : 'bg-gray-500'
-                            }`}></div>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                              {destination}
-                            </span>
-                            <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full">
-                              {connection.metadata.network?.toUpperCase()}
-                            </span>
+                <FixedVirtualList
+                  items={connections}
+                  height={384}
+                  itemHeight={120}
+                  renderItem={(connection, index) => {
+                    const destination = connection.metadata.host || 
+                      `${connection.metadata.destinationIP}:${connection.metadata.destinationPort}`;
+                    
+                    return (
+                      <div 
+                        key={connection.id || index}
+                        className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 m-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <div className={`w-2 h-2 rounded-full ${
+                                connection.metadata.network === 'tcp' ? 'bg-blue-500' : 
+                                connection.metadata.network === 'udp' ? 'bg-green-500' : 'bg-gray-500'
+                              }`}></div>
+                              <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                {destination}
+                              </span>
+                              <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full">
+                                {connection.metadata.network?.toUpperCase()}
+                              </span>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-600 dark:text-gray-400">
+                              <div>
+                                <span className="font-medium">代理链:</span>
+                                <div className="truncate text-gray-700 dark:text-gray-300">
+                                  {connection.chains?.join(' → ') || 'Direct'}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="font-medium">规则:</span>
+                                <div className="truncate text-gray-700 dark:text-gray-300">
+                                  {connection.rule || 'Unknown'}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="font-medium">流量:</span>
+                                <div className="text-gray-700 dark:text-gray-300">
+                                  ↑{formatBytes(connection.upload)} ↓{formatBytes(connection.download)}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="font-medium">持续时间:</span>
+                                <div className="text-gray-700 dark:text-gray-300">
+                                  {formatDuration(connection.start)}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                           
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-600 dark:text-gray-400">
-                            <div>
-                              <span className="font-medium">代理链:</span>
-                              <div className="truncate text-gray-700 dark:text-gray-300">
-                                {connection.chains?.join(' → ') || 'Direct'}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="font-medium">规则:</span>
-                              <div className="truncate text-gray-700 dark:text-gray-300">
-                                {connection.rule || 'Unknown'}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="font-medium">流量:</span>
-                              <div className="text-gray-700 dark:text-gray-300">
-                                ↑{formatBytes(connection.upload)} ↓{formatBytes(connection.download)}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="font-medium">持续时间:</span>
-                              <div className="text-gray-700 dark:text-gray-300">
-                                {formatDuration(connection.start)}
-                              </div>
-                            </div>
+                          {/* 连接操作按钮 */}
+                          <div className="flex items-center space-x-2 ml-4">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleCloseConnection(connection.id)}
+                              disabled={closeConnection.isLoading}
+                              className="text-xs px-2 py-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </Button>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  }}
+                  className="space-y-0"
+                />
               </div>
             </div>
           )}

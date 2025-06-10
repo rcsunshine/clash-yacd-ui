@@ -39,10 +39,13 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     <button
       onClick={handleClick}
       className={cn(
-        'flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors',
-        'hover:bg-gray-100 dark:hover:bg-gray-800',
+        'flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200',
+        'hover:bg-gray-100 dark:hover:bg-gray-700',
+        'focus:outline-none focus:ring-2 focus:ring-blue-500',
+        // 移动端触摸优化
+        'min-h-[44px] active:scale-95',
         active
-          ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+          ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 shadow-sm'
           : 'text-gray-700 dark:text-gray-300'
       )}
     >
@@ -53,7 +56,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       )}
       <span className="flex-1 text-left">{label}</span>
       {badge && (
-        <span className="ml-2 px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-700 rounded-full">
+        <span className={cn(
+          'ml-2 px-2 py-0.5 text-xs rounded-full font-medium',
+          active
+            ? 'bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-200'
+            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+        )}>
           {badge}
         </span>
       )}
@@ -233,8 +241,8 @@ export function Sidebar(props: SidebarProps = {}) {
 
   return (
     <aside className={cn(
-      'w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700',
-      'flex flex-col h-screen',
+      'hidden lg:flex w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700',
+      'flex-col h-screen flex-shrink-0',
       className
     )}>
       {/* Logo 区域 */}
@@ -262,16 +270,22 @@ export function Sidebar(props: SidebarProps = {}) {
       </nav>
 
       {/* 底部区域 */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
               V2 运行中
             </span>
           </div>
           <button 
-            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className={cn(
+              'p-2 rounded-lg transition-all duration-200',
+              'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300',
+              'hover:bg-gray-100 dark:hover:bg-gray-700',
+              'focus:outline-none focus:ring-2 focus:ring-blue-500',
+              'min-h-[40px] min-w-[40px] active:scale-95'
+            )}
             onClick={() => {
               const currentTheme = document.documentElement.getAttribute('data-theme') || 'auto';
               const themes = ['light', 'dark', 'auto'];
@@ -288,6 +302,7 @@ export function Sidebar(props: SidebarProps = {}) {
                 document.documentElement.classList.toggle('dark', nextTheme === 'dark');
               }
             }}
+            aria-label="切换主题"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />

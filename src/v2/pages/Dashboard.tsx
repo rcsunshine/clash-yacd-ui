@@ -4,6 +4,8 @@ import { Button } from '../components/ui/Button';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { useSystemInfo, useClashConfig, useTraffic, useConnections, useConnectionStats } from '../hooks/useAPI';
 import { useAppState } from '../store';
+import { useAtom } from 'jotai';
+import { v2CurrentPageAtom } from '../store/atoms';
 
 const TrafficChart: React.FC = () => {
   const { data: trafficData, isConnected } = useTraffic();
@@ -366,6 +368,35 @@ const ConfigStatusCard: React.FC = () => {
 };
 
 export const Dashboard: React.FC = () => {
+  // 获取所有API hooks的refetch方法
+  const { refetch: refetchSystemInfo } = useSystemInfo();
+  const { refetch: refetchConfig } = useClashConfig();
+  const { refetch: refetchConnections } = useConnections();
+  
+  // 页面导航
+  const [, setCurrentPage] = useAtom(v2CurrentPageAtom);
+
+  // 手动刷新所有数据
+  const handleRefresh = async () => {
+    try {
+      console.log('🔄 Manually refreshing all dashboard data...');
+      await Promise.all([
+        refetchSystemInfo(),
+        refetchConfig(),
+        refetchConnections()
+      ]);
+      console.log('✅ Dashboard refresh completed');
+    } catch (error) {
+      console.error('❌ Dashboard refresh failed:', error);
+    }
+  };
+
+  // 快速操作导航函数
+  const navigateToPage = (page: string) => {
+    window.location.hash = page;
+    setCurrentPage(page);
+  };
+
   return (
     <div className="space-y-4">
       {/* 紧凑的页面头部 */}
@@ -381,7 +412,7 @@ export const Dashboard: React.FC = () => {
             <p className="text-sm text-gray-600 dark:text-gray-400">Clash 代理服务状态总览</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" className="text-sm">
+        <Button variant="outline" size="sm" className="text-sm" onClick={handleRefresh}>
           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
@@ -406,25 +437,49 @@ export const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent className="p-4">
             <div className="space-y-2">
-              <Button variant="outline" size="sm" fullWidth className="text-xs justify-start">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                fullWidth 
+                className="text-xs justify-start hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                onClick={() => navigateToPage('proxies')}
+              >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9m0 9c-5 0-9-4-9-9s4-9 9-9" />
                 </svg>
                 代理设置
               </Button>
-              <Button variant="outline" size="sm" fullWidth className="text-xs justify-start">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                fullWidth 
+                className="text-xs justify-start hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                onClick={() => navigateToPage('rules')}
+              >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 规则管理
               </Button>
-              <Button variant="outline" size="sm" fullWidth className="text-xs justify-start">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                fullWidth 
+                className="text-xs justify-start hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                onClick={() => navigateToPage('connections')}
+              >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
                 </svg>
                 连接管理
               </Button>
-              <Button variant="outline" size="sm" fullWidth className="text-xs justify-start">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                fullWidth 
+                className="text-xs justify-start hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                onClick={() => navigateToPage('logs')}
+              >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>

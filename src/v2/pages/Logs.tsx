@@ -1,49 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { FixedVirtualList } from '../components/ui/VirtualList';
+import { useLogs } from '../hooks/useAPI';
+import { LogItem, LogLevel } from '../types/api';
 
 interface LogEntry {
   id: string;
   time: string;
-  level: 'info' | 'warning' | 'error' | 'debug';
+  level: LogLevel;
   message: string;
   source?: string;
 }
 
 export const Logs: React.FC = () => {
-  const [logs, setLogs] = useState<LogEntry[]>([
-    {
-      id: '1',
-      time: new Date().toLocaleTimeString(),
-      level: 'info',
-      message: '代理服务器连接成功',
-      source: 'Core'
-    },
-    {
-      id: '2',
-      time: new Date(Date.now() - 1000).toLocaleTimeString(),
-      level: 'warning',
-      message: '某些规则可能存在冲突',
-      source: 'Rules'
-    },
-    {
-      id: '3',
-      time: new Date(Date.now() - 2000).toLocaleTimeString(),
-      level: 'error',
-      message: '无法连接到代理服务器 proxy.example.com:1080',
-      source: 'Proxy'
-    },
-    {
-      id: '4',
-      time: new Date(Date.now() - 3000).toLocaleTimeString(),
-      level: 'debug',
-      message: 'DNS 查询: google.com -> 142.250.191.14',
-      source: 'DNS'
-    }
-  ]);
-
-  const [filter, setFilter] = useState<'all' | 'info' | 'warning' | 'error' | 'debug'>('all');
+  const { logs: rawLogs, isConnected, clearLogs: clearApiLogs } = useLogs();
+  const [filter, setFilter] = useState<LogLevel | 'all'>('all');
   const [autoScroll, setAutoScroll] = useState(true);
+
+  // 转换API日志格式为组件需要的格式
+  const logs: LogEntry[] = rawLogs.map((log, index) => ({
+    id: `${log.time || Date.now()}-${index}`,
+    time: log.time || new Date().toLocaleTimeString(),
+    level: log.type,
+    message: log.payload,
+    source: undefined // API日志没有source字段
+  }));
 
   const filteredLogs = logs.filter(log => filter === 'all' || log.level === filter);
 
@@ -95,7 +77,37 @@ export const Logs: React.FC = () => {
   };
 
   const clearLogs = () => {
-    setLogs([]);
+    clearApiLogs();
+  };
+
+  // 导出日志为JSON格式
+  const exportLogsAsJSON = () => {
+    const dataStr = JSON.stringify(filteredLogs, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `clash-logs-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // 导出日志为文本格式
+  const exportLogsAsText = () => {
+    const textContent = filteredLogs.map(log => 
+      `[${log.time}] [${log.level.toUpperCase()}] ${log.source ? `[${log.source}] ` : ''}${log.message}`
+    ).join('\n');
+    const dataBlob = new Blob([textContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `clash-logs-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -111,11 +123,35 @@ export const Logs: React.FC = () => {
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">日志</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              系统运行日志 • 共 {logs.length} 条记录
+              系统运行日志 • 共 {logs.length} 条记录 • {isConnected ? '✅ 已连接' : '❌ 未连接'}
             </p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-sm"
+            onClick={exportLogsAsJSON}
+            disabled={filteredLogs.length === 0}
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            导出 JSON
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-sm"
+            onClick={exportLogsAsText}
+            disabled={filteredLogs.length === 0}
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            导出 TXT
+          </Button>
           <Button 
             variant="outline" 
             size="sm" 
@@ -222,7 +258,7 @@ export const Logs: React.FC = () => {
                 {(['all', 'info', 'warning', 'error', 'debug'] as const).map((level) => (
                   <button
                     key={level}
-                    onClick={() => setFilter(level)}
+                    onClick={() => setFilter(level as LogLevel)}
                     className={`px-3 py-1 text-xs rounded-full transition-colors ${
                       filter === level
                         ? 'bg-slate-600 text-white'
@@ -268,40 +304,46 @@ export const Logs: React.FC = () => {
                 </p>
               </div>
             ) : (
-              filteredLogs.map((log, index) => (
-                <div 
-                  key={log.id}
-                  className={`p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${
-                    index === filteredLogs.length - 1 ? 'border-b-0' : ''
-                  }`}
-                >
-                  <div className="flex items-start space-x-3">
-                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${getLevelColor(log.level)}`}>
-                      {getLevelIcon(log.level)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center space-x-2">
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${getLevelColor(log.level)}`}>
-                            {log.level.toUpperCase()}
-                          </span>
-                          {log.source && (
-                            <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full">
-                              {log.source}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                          {log.time}
-                        </span>
+              <FixedVirtualList<LogEntry>
+                items={filteredLogs}
+                height={384}
+                itemHeight={80}
+                renderItem={(log: LogEntry, index: number) => (
+                  <div 
+                    key={log.id}
+                    className={`p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${
+                      index === filteredLogs.length - 1 ? 'border-b-0' : ''
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${getLevelColor(log.level)}`}>
+                        {getLevelIcon(log.level)}
                       </div>
-                      <p className="text-sm text-gray-900 dark:text-white font-mono break-all">
-                        {log.message}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getLevelColor(log.level)}`}>
+                              {log.level.toUpperCase()}
+                            </span>
+                            {log.source && (
+                              <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full">
+                                {log.source}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {log.time}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-900 dark:text-white break-words">
+                          {log.message}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                )}
+                className="space-y-0"
+              />
             )}
           </div>
         </CardContent>

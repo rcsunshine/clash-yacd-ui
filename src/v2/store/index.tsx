@@ -46,8 +46,8 @@ const defaultState: V2State = {
     compactMode: false,
   },
   apiConfig: {
-    baseURL: 'http://127.0.0.1:9090',
-    secret: '',
+    baseURL: 'http://10.8.87.121:9090',
+    secret: '4e431a56ead99c',
   },
   theme: 'auto',
 };

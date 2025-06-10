@@ -4,8 +4,8 @@ import { ClashAPIConfig } from '../types/api';
 // V2独立的API配置状态
 export const v2ApiConfigsAtom = atom<ClashAPIConfig[]>([
   {
-    baseURL: 'http://127.0.0.1:9090',
-    secret: '',
+    baseURL: 'http://10.8.87.121:9090',
+    secret: '4e431a56ead99c',
   }
 ]);
 
@@ -17,8 +17,8 @@ export const v2CurrentApiConfigAtom = atom<ClashAPIConfig>(
     const configs = get(v2ApiConfigsAtom);
     const index = get(v2SelectedApiConfigIndexAtom);
     return configs[index] || configs[0] || {
-      baseURL: 'http://127.0.0.1:9090',
-      secret: '',
+      baseURL: 'http://10.8.87.121:9090',
+      secret: '4e431a56ead99c',
     };
   }
 );

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
-import { useClashConfig } from '../hooks/useAPI';
+import { useClashConfig, useSystemInfo } from '../hooks/useAPI';
+import { LogLevel } from '../types/api';
 import { useAppState } from '../store';
 
 const ConfigSection: React.FC<{
@@ -43,19 +44,14 @@ const ConfigItem: React.FC<{
 
 export const Config: React.FC = () => {
   const { data: config, isLoading, error, updateConfig } = useClashConfig();
+  const { data: systemInfo, isLoading: systemLoading } = useSystemInfo();
   const { state, dispatch } = useAppState();
   const [saving, setSaving] = useState(false);
-
-  // Mock system info - in real implementation, this would come from a separate API
-  const systemInfo = {
-    version: 'Clash Premium 1.18.0',
-    premium: true
-  };
 
   const handleModeChange = async (newMode: string) => {
     setSaving(true);
     try {
-      await updateConfig({ mode: newMode });
+      await updateConfig({ mode: newMode as 'global' | 'rule' | 'direct' });
     } catch (error) {
       console.error('Failed to update mode:', error);
     } finally {
@@ -66,7 +62,7 @@ export const Config: React.FC = () => {
   const handleLogLevelChange = async (newLevel: string) => {
     setSaving(true);
     try {
-      await updateConfig({ 'log-level': newLevel });
+      await updateConfig({ 'log-level': newLevel as LogLevel });
     } catch (error) {
       console.error('Failed to update log level:', error);
     } finally {
@@ -134,6 +130,66 @@ export const Config: React.FC = () => {
           label={saving ? '保存中...' : '已同步'} 
         />
       </div>
+
+      {/* 系统信息 */}
+      <ConfigSection 
+        title="系统信息" 
+        description="Clash 核心版本和运行状态信息"
+      >
+        <div className="space-y-0">
+          <ConfigItem 
+            label="Clash 版本" 
+            description="当前运行的 Clash 核心版本"
+          >
+            {systemLoading ? (
+              <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            ) : (
+              <span className="text-gray-900 dark:text-white font-mono">
+                {systemInfo?.version || 'N/A'}
+              </span>
+            )}
+          </ConfigItem>
+
+          <ConfigItem 
+            label="版本类型" 
+            description="是否为高级版本"
+          >
+            {systemLoading ? (
+              <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            ) : (
+              <span className={`px-2 py-1 text-xs rounded-full ${
+                systemInfo?.premium 
+                  ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                  : 'bg-gray-100 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400'
+              }`}>
+                {systemInfo?.premium ? '高级版' : '开源版'}
+              </span>
+            )}
+          </ConfigItem>
+
+          {systemInfo?.platform && (
+            <ConfigItem 
+              label="平台" 
+              description="系统平台信息"
+            >
+              <span className="text-gray-900 dark:text-white font-mono">
+                {systemInfo.platform} {systemInfo.arch && `(${systemInfo.arch})`}
+              </span>
+            </ConfigItem>
+          )}
+
+          {systemInfo?.stack && (
+            <ConfigItem 
+              label="网络栈" 
+              description="TCP/IP 栈类型"
+            >
+              <span className="text-gray-900 dark:text-white font-mono">
+                {systemInfo.stack}
+              </span>
+            </ConfigItem>
+          )}
+        </div>
+      </ConfigSection>
 
       {/* Clash 核心配置 */}
       <ConfigSection 

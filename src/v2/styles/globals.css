@@ -462,7 +462,36 @@ body {
 }
 
 /* 响应式设计增强 */
+@media (max-width: 1024px) {
+  /* 移动端和平板端优化 */
+  .responsive-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .responsive-text {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  
+  .responsive-padding {
+    padding: 1rem;
+  }
+  
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  /* 卡片在移动端的适配 */
+  .mobile-card {
+    margin: 0.75rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+}
+
 @media (max-width: 768px) {
+  /* 手机端专用样式 */
   .mobile-padding {
     padding-left: 1rem;
     padding-right: 1rem;
@@ -472,8 +501,50 @@ body {
     font-size: 0.875rem;
   }
   
-  .mobile-hidden {
-    display: none;
+  .mobile-text-xs {
+    font-size: 0.75rem;
+  }
+  
+  /* 触摸优化 */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* 表格在移动端的优化 */
+  .mobile-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .mobile-table {
+    min-width: 600px;
+  }
+  
+  /* 移动端专用间距 */
+  .mobile-space-y-3 > * + * {
+    margin-top: 0.75rem;
+  }
+  
+  .mobile-space-y-4 > * + * {
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  /* 小屏手机端 */
+  .sm-mobile-full-width {
+    width: 100% !important;
+  }
+  
+  .sm-mobile-text-center {
+    text-align: center;
+  }
+  
+  /* 按钮在小屏上的适配 */
+  .sm-mobile-button {
+    width: 100%;
+    justify-content: center;
   }
 }
 

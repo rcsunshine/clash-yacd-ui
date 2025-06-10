@@ -6,9 +6,16 @@ import { Provider as JotaiProvider } from 'jotai';
 import { initialState } from '../store/app';
 import { AppStateProvider } from './store';
 import { AppV2 } from './App';
+import { initGlobalErrorHandling } from './hooks/useErrorHandler';
 
 // 初始化 V1 状态
 initialState();
+
+// 初始化全局错误处理
+const cleanupErrorHandling = initGlobalErrorHandling();
+
+// 页面卸载时清理
+window.addEventListener('beforeunload', cleanupErrorHandling);
 
 // 简单的错误边界
 class ErrorBoundary extends React.Component<

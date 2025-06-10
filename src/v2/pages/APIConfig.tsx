@@ -135,7 +135,7 @@ const AddAPIForm: React.FC<{
   onCancel: () => void;
 }> = ({ onAdd, onCancel }) => {
   const [formData, setFormData] = useState({
-    baseURL: 'http://127.0.0.1:9090',
+    baseURL: 'http://10.8.87.121:9090',
     secret: '',
     metaLabel: ''
   });
@@ -226,7 +226,7 @@ const AddAPIForm: React.FC<{
               type="url"
               value={formData.baseURL}
               onChange={(e) => setFormData({ ...formData, baseURL: e.target.value })}
-              placeholder="http://127.0.0.1:9090"
+              placeholder="http://10.8.87.121:9090"
               required
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white
