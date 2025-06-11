@@ -12,7 +12,7 @@ interface ConfigFormData {
   secret: string;
 }
 
-export default function APIConfig() {
+export const APIConfig: React.FC = () => {
   const {
     configs,
     selectedIndex,
@@ -281,4 +281,4 @@ export default function APIConfig() {
       </div>
     </div>
   );
-} 
+}; 
