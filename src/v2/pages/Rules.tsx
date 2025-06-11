@@ -7,6 +7,8 @@ import { Card, CardContent } from '../components/ui/Card';
 import { APIErrorAlert,ErrorAlert, NetworkErrorAlert } from '../components/ui/ErrorAlert';
 import { PageErrorBoundary } from '../components/ui/ErrorBoundary';
 import { PageLoader } from '../components/ui/LoadingState';
+import { SearchInput } from '../components/ui/SearchInput';
+import { Select } from '../components/ui/Select';
 import { FixedVirtualList } from '../components/ui/VirtualList';
 import { useRules } from '../hooks/useAPI';
 import { useAPIErrorHandler } from '../hooks/useErrorHandler';
@@ -241,32 +243,23 @@ const RulesContent: React.FC = () => {
                 <Card className="overflow-hidden border-0 shadow-lg card-hover">
                   <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row gap-3">
-                      <div className="flex-1 relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                          </svg>
-                        </div>
-                        <input
-                          type="text"
+                      <div className="flex-1">
+                        <SearchInput
                           placeholder="搜索规则内容或代理..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2 border border-theme rounded-lg bg-surface text-theme focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
                         />
                       </div>
-                      <div>
-                        <select
-                          value={typeFilter}
-                          onChange={(e) => setTypeFilter(e.target.value as RuleType)}
-                          className="px-3 py-2 border border-theme rounded-lg bg-surface text-theme focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
-                        >
-                          <option value="all">所有类型</option>
-                          {ruleTypes.map(type => (
-                            <option key={type} value={type}>{type}</option>
-                          ))}
-                        </select>
-                      </div>
+                      <Select
+                        value={typeFilter}
+                        onChange={(e) => setTypeFilter(e.target.value as RuleType)}
+                        options={[
+                          { value: 'all', label: '所有类型' },
+                          ...ruleTypes.map(type => ({ value: type, label: type }))
+                        ]}
+                        size="sm"
+                        className="min-w-[120px]"
+                      />
                     </div>
                   </CardContent>
                 </Card>

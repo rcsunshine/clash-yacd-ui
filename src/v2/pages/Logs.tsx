@@ -2,6 +2,7 @@ import React, {useState } from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
+import { SearchInput } from '../components/ui/SearchInput';
 import { FixedVirtualList } from '../components/ui/VirtualList';
 import { useLogs } from '../hooks/useAPI';
 import { LogLevel } from '../types/api';
@@ -18,6 +19,7 @@ export const Logs: React.FC = () => {
   const { logs: rawLogs, isConnected, clearLogs: clearApiLogs } = useLogs();
   const [filter, setFilter] = useState<LogLevel | 'all'>('all');
   const [autoScroll, setAutoScroll] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // 转换API日志格式为组件需要的格式
   const logs: LogEntry[] = rawLogs.map((log, index) => ({
@@ -28,7 +30,13 @@ export const Logs: React.FC = () => {
     source: undefined // API日志没有source字段
   }));
 
-  const filteredLogs = logs.filter(log => filter === 'all' || log.level === filter);
+  const filteredLogs = logs.filter(log => {
+    const matchesLevel = filter === 'all' || log.level === filter;
+    const matchesSearch = searchQuery === '' || 
+      log.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (log.source && log.source.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesLevel && matchesSearch;
+  });
 
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -249,10 +257,33 @@ export const Logs: React.FC = () => {
         </Card>
       </div>
 
-      {/* 过滤器和控制 */}
+      {/* 搜索和过滤 */}
       <Card className="overflow-hidden border-0 shadow-lg card-hover">
         <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+          <div className="space-y-4">
+            {/* 搜索框 */}
+            <div className="flex flex-col md:flex-row gap-3">
+              <div className="flex-1">
+                <SearchInput
+                  placeholder="搜索日志内容或来源..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center space-x-3">
+                <label className="flex items-center space-x-2 text-sm text-theme-secondary">
+                  <input
+                    type="checkbox"
+                    checked={autoScroll}
+                    onChange={(e) => setAutoScroll(e.target.checked)}
+                    className="w-4 h-4 text-slate-600 bg-gray-100 border-gray-300 rounded focus:ring-slate-500 dark:focus:ring-slate-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <span>自动滚动</span>
+                </label>
+              </div>
+            </div>
+            
+            {/* 级别过滤 */}
             <div className="flex items-center space-x-3">
               <span className="text-sm font-medium text-theme-secondary">过滤级别:</span>
               <div className="flex space-x-2">
@@ -270,17 +301,6 @@ export const Logs: React.FC = () => {
                   </button>
                 ))}
               </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <label className="flex items-center space-x-2 text-sm text-theme-secondary">
-                <input
-                  type="checkbox"
-                  checked={autoScroll}
-                  onChange={(e) => setAutoScroll(e.target.checked)}
-                  className="w-4 h-4 text-slate-600 bg-gray-100 border-gray-300 rounded focus:ring-slate-500 dark:focus:ring-slate-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                />
-                <span>自动滚动</span>
-              </label>
             </div>
           </div>
         </CardContent>

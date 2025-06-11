@@ -253,17 +253,17 @@ export const APIConfig: React.FC = () => {
     <div className="page-wrapper api-config-page">
       <div className="page-body">
         <div className="container-fluid px-4">
-          <div className="space-y-6">
+    <div className="space-y-6">
             {/* 页面标题 */}
-            <div>
+        <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 API 配置管理
               </h1>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
-                管理 Clash API 连接配置
-              </p>
-            </div>
-
+            管理 Clash API 连接配置
+          </p>
+        </div>
+        
             {/* 当前配置状态 */}
             <Card>
               <div className="p-4">
@@ -300,17 +300,17 @@ export const APIConfig: React.FC = () => {
                         }
                       </p>
                       {currentConfig.secret && (
-                        <Button
-                          variant="outline"
+          <Button
+            variant="outline"
                           size="sm"
                           onClick={() => setShowSecret(!showSecret)}
                           className="px-2 py-1 text-xs"
-                        >
+          >
                           {showSecret ? '隐藏' : '显示'}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+          </Button>
+          )}
+        </div>
+      </div>
                 </div>
               </div>
             </Card>
@@ -345,9 +345,9 @@ export const APIConfig: React.FC = () => {
                           {config.secret && (
                             <div className="text-xs text-gray-500 dark:text-gray-400">
                               Secret: ••••••••
-                            </div>
+              </div>
                           )}
-                        </div>
+            </div>
                         
                                                   <div className="flex items-center space-x-2">
                             {index === selectedIndex && (
@@ -391,11 +391,11 @@ export const APIConfig: React.FC = () => {
                                 className="text-red-600 hover:text-red-700"
                               >
                                 删除
-                              </Button>
-                            )}
+            </Button>
+          )}
                                                     </div>
-                        </div>
-                        
+        </div>
+
                         {/* 配置测试结果 */}
                         {configTestResults.has(index) && (
                           <div className={`mt-2 p-2 rounded text-sm ${
@@ -438,8 +438,8 @@ export const APIConfig: React.FC = () => {
                         value={formData.baseURL}
                         onChange={(e) => setFormData(prev => ({ ...prev, baseURL: e.target.value }))}
                       />
-                    </div>
-                    
+      </div>
+
                     <div>
                       <label htmlFor="secret" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Secret
@@ -506,7 +506,7 @@ export const APIConfig: React.FC = () => {
                     </div>
                   )}
                 </div>
-              </Card>
+      </Card>
             )}
           </div>
         </div>

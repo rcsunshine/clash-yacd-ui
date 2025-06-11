@@ -2,6 +2,8 @@ import React, { useMemo,useState } from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent,CardHeader } from '../components/ui/Card';
+import { SearchInput } from '../components/ui/SearchInput';
+import { Select } from '../components/ui/Select';
 import { useClashConfig,useProxies } from '../hooks/useAPI';
 
 interface ProxyGroup {
@@ -263,37 +265,24 @@ export const Proxies: React.FC = () => {
       <Card className="overflow-hidden border-0 shadow-lg card-hover">
         <CardContent className="p-4">
           <div className="flex items-center space-x-3">
-            <div className="flex-1 relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <input
-                type="text"
+            <div className="flex-1">
+              <SearchInput
                 placeholder="搜索代理组..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-theme rounded-xl bg-surface text-theme focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
               />
             </div>
-            <div className="relative">
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="appearance-none px-4 py-3 pr-10 border border-theme rounded-xl bg-surface text-theme focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
-              >
-                <option value="all">所有类型</option>
-                <option value="Selector">手动选择</option>
-                <option value="URLTest">自动选择</option>
-                <option value="Fallback">故障转移</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
+            <Select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              options={[
+                { value: 'all', label: '所有类型' },
+                { value: 'Selector', label: '手动选择' },
+                { value: 'URLTest', label: '自动选择' },
+                { value: 'Fallback', label: '故障转移' },
+              ]}
+              className="min-w-[140px]"
+            />
           </div>
         </CardContent>
       </Card>

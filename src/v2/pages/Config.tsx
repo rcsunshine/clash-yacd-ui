@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent,CardHeader } from '../components/ui/Card';
+import { Select } from '../components/ui/Select';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { useClashConfig, useSystemInfo } from '../hooks/useAPI';
 import { useAppState } from '../store';
@@ -202,34 +203,38 @@ export const Config: React.FC = () => {
             label="代理模式" 
             description="选择流量处理方式"
           >
-            <select
+            <Select
               value={config?.mode || 'rule'}
               onChange={(e) => handleModeChange(e.target.value)}
               disabled={saving}
-              className="px-3 py-2 border border-theme rounded-md bg-surface text-theme disabled:opacity-50"
-            >
-              <option value="rule">规则模式</option>
-              <option value="global">全局模式</option>
-              <option value="direct">直连模式</option>
-            </select>
+              options={[
+                { value: 'rule', label: '规则模式' },
+                { value: 'global', label: '全局模式' },
+                { value: 'direct', label: '直连模式' },
+              ]}
+              size="sm"
+              className="min-w-[120px]"
+            />
           </ConfigItem>
 
           <ConfigItem 
             label="日志级别" 
             description="控制日志输出的详细程度"
           >
-            <select
+            <Select
               value={config?.['log-level'] || 'info'}
               onChange={(e) => handleLogLevelChange(e.target.value)}
               disabled={saving}
-              className="px-3 py-2 border border-theme rounded-md bg-surface text-theme disabled:opacity-50"
-            >
-              <option value="silent">静默</option>
-              <option value="error">错误</option>
-              <option value="warning">警告</option>
-              <option value="info">信息</option>
-              <option value="debug">调试</option>
-            </select>
+              options={[
+                { value: 'silent', label: '静默' },
+                { value: 'error', label: '错误' },
+                { value: 'warning', label: '警告' },
+                { value: 'info', label: '信息' },
+                { value: 'debug', label: '调试' },
+              ]}
+              size="sm"
+              className="min-w-[100px]"
+            />
           </ConfigItem>
 
           <ConfigItem 
@@ -305,19 +310,21 @@ export const Config: React.FC = () => {
             label="刷新间隔" 
             description="数据自动刷新的时间间隔（毫秒）"
           >
-            <select
-              value={state.preferences.refreshInterval}
+            <Select
+              value={state.preferences.refreshInterval.toString()}
               onChange={(e) => dispatch({
                 type: 'UPDATE_PREFERENCES',
                 payload: { refreshInterval: parseInt(e.target.value) }
               })}
-              className="px-3 py-2 border border-theme rounded-md bg-surface text-theme"
-            >
-              <option value={1000}>1 秒</option>
-              <option value={3000}>3 秒</option>
-              <option value={5000}>5 秒</option>
-              <option value={10000}>10 秒</option>
-            </select>
+              options={[
+                { value: '1000', label: '1 秒' },
+                { value: '3000', label: '3 秒' },
+                { value: '5000', label: '5 秒' },
+                { value: '10000', label: '10 秒' },
+              ]}
+              size="sm"
+              className="min-w-[100px]"
+            />
           </ConfigItem>
 
           <ConfigItem 

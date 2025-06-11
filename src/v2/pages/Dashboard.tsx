@@ -3,6 +3,7 @@ import React from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent,CardHeader } from '../components/ui/Card';
+import { Select } from '../components/ui/Select';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { useClashConfig, useConnections, useConnectionStats,useSystemInfo, useTraffic } from '../hooks/useAPI';
 import { useAppState } from '../store';
@@ -76,48 +77,123 @@ const TrafficChart: React.FC = () => {
             </div>
           </div>
           
-          {trafficData.length > 0 && (
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                  流量趋势图
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-500">
-                  最近 {trafficData.length} 个数据点
-                </div>
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                流量趋势图
               </div>
-              <div className="h-24 flex items-end space-x-1 bg-white dark:bg-gray-800 rounded-lg p-2">
-                {trafficData.slice(-60).map((data, index) => {
-                  const maxValue = Math.max(...trafficData.map(d => Math.max(d.up, d.down)));
-                  const upHeight = maxValue > 0 ? (data.up / maxValue) * 100 : 0;
-                  const downHeight = maxValue > 0 ? (data.down / maxValue) * 100 : 0;
-                  
-                  return (
-                    <div key={index} className="flex flex-col justify-end h-full w-1 space-y-0.5">
-                      <div 
-                        className="bg-gradient-to-t from-slate-500 to-slate-600 w-full rounded-sm"
-                        style={{ height: `${upHeight}%`, minHeight: upHeight > 0 ? '2px' : '0' }}
-                      />
-                      <div 
-                        className="bg-gradient-to-t from-zinc-500 to-zinc-600 w-full rounded-sm"
-                        style={{ height: `${downHeight}%`, minHeight: downHeight > 0 ? '2px' : '0' }}
-                      />
+              <div className="text-xs text-gray-500 dark:text-gray-500">
+                {isConnected ? `最近 ${trafficData.length} 个数据点` : '等待连接...'}
+              </div>
+            </div>
+            
+            {/* 图表容器 - 带Y轴刻度和网格线 */}
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              {/* Y轴刻度标签 */}
+              <div className="absolute left-0 top-0 h-32 w-12 flex flex-col justify-between text-xs text-gray-500 dark:text-gray-400 py-2">
+                {(() => {
+                  const maxValue = trafficData.length > 0 ? Math.max(...trafficData.map(d => Math.max(d.up, d.down))) : 1024 * 1024; // 默认1MB
+                  const steps = [maxValue, maxValue * 0.75, maxValue * 0.5, maxValue * 0.25, 0];
+                  return steps.map((value, idx) => (
+                    <div key={idx} className="text-right pr-1 leading-none">
+                      {formatBytes(value)}/s
                     </div>
-                  );
-                })}
+                  ));
+                })()}
               </div>
-              <div className="flex items-center justify-center space-x-6 mt-3">
+              
+              {/* 网格线 */}
+              <div className="absolute left-12 top-0 right-0 h-32 flex flex-col justify-between">
+                {[0, 1, 2, 3, 4].map(idx => (
+                  <div key={idx} className="border-t border-gray-200 dark:border-gray-600 border-dashed opacity-30"></div>
+                ))}
+              </div>
+              
+              {/* 图表主体 */}
+              <div className="ml-12 h-32 flex items-end space-x-0.5 bg-transparent rounded-lg p-2 overflow-hidden">
+                {trafficData.length > 0 ? (
+                  // 有数据时显示真实图表
+                  trafficData.slice(-80).map((data, index) => {
+                    const maxValue = Math.max(...trafficData.map(d => Math.max(d.up, d.down)));
+                    // 确保数据不为负值，从底部开始绘制
+                    const upValue = Math.max(0, data.up);
+                    const downValue = Math.max(0, data.down);
+                    const upHeight = maxValue > 0 ? (upValue / maxValue) * 90 : 0; // 最大90%避免溢出
+                    const downHeight = maxValue > 0 ? (downValue / maxValue) * 90 : 0;
+                    
+                    return (
+                      <div key={index} className="flex flex-col justify-end h-full flex-1 min-w-0 group relative">
+                        {/* 工具提示 */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10">
+                          <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded px-2 py-1 whitespace-nowrap">
+                            <div>↑ {formatBytes(upValue)}/s</div>
+                            <div>↓ {formatBytes(downValue)}/s</div>
+                          </div>
+                        </div>
+                        
+                        {/* 上传条形图 - 使用更明显的颜色 */}
+                        <div 
+                          className="bg-gradient-to-t from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 w-full transition-all duration-300 hover:from-blue-600 hover:to-blue-700"
+                          style={{ 
+                            height: `${upHeight}%`, 
+                            minHeight: upValue > 0 ? '1px' : '0',
+                            borderRadius: '2px 2px 0 0'
+                          }}
+                        />
+                        
+                        {/* 下载条形图 - 使用更明显的颜色 */}
+                        <div 
+                          className="bg-gradient-to-t from-green-500 to-green-600 dark:from-green-400 dark:to-green-500 w-full transition-all duration-300 hover:from-green-600 hover:to-green-700"
+                          style={{ 
+                            height: `${downHeight}%`, 
+                            minHeight: downValue > 0 ? '1px' : '0',
+                            borderRadius: '0 0 2px 2px'
+                          }}
+                        />
+                      </div>
+                    );
+                  })
+                ) : (
+                  // 无数据时显示占位图表
+                  Array.from({ length: 40 }, (_, index) => (
+                    <div key={index} className="flex flex-col justify-end h-full flex-1 min-w-0">
+                      <div className="bg-gradient-to-t from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 w-full opacity-20" style={{ height: '8px', borderRadius: '1px' }} />
+                      <div className="bg-gradient-to-t from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 w-full opacity-20" style={{ height: '6px', borderRadius: '1px' }} />
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              {/* X轴基线 */}
+              <div className="ml-12 border-t-2 border-gray-300 dark:border-gray-600"></div>
+            </div>
+            
+            {/* 图例和统计信息 */}
+            <div className="mt-4 flex items-center justify-between">
+              <div className="flex items-center space-x-6">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-gradient-to-r from-slate-500 to-slate-600 rounded-full"></div>
+                  <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-sm"></div>
                   <span className="text-xs text-gray-600 dark:text-gray-400">上传</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-gradient-to-r from-zinc-500 to-zinc-600 rounded-full"></div>
+                  <div className="w-3 h-3 bg-gradient-to-r from-green-500 to-green-600 rounded-sm"></div>
                   <span className="text-xs text-gray-600 dark:text-gray-400">下载</span>
                 </div>
               </div>
+              
+              {/* 当前数值显示 */}
+              {latestData && (
+                <div className="flex items-center space-x-4 text-xs">
+                  <div className="text-blue-600 dark:text-blue-400">
+                    ↑ {formatBytes(latestData.up)}/s
+                  </div>
+                  <div className="text-green-600 dark:text-green-400">
+                    ↓ {formatBytes(latestData.down)}/s
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -314,15 +390,17 @@ const ConfigStatusCard: React.FC = () => {
             <div className="p-3 bg-gradient-to-r from-stone-50 to-stone-100 dark:from-stone-800/30 dark:to-stone-700/20 rounded-lg border border-stone-300 dark:border-stone-600/40">
               <div className="flex justify-between items-center">
                 <span className="text-stone-700 dark:text-stone-300 font-medium text-sm">代理模式</span>
-                <select 
+                <Select
                   value={config.mode}
                   onChange={(e) => handleModeChange(e.target.value)}
-                  className="bg-white dark:bg-gray-800 border border-stone-400 dark:border-stone-600 rounded px-2 py-1 text-xs font-medium text-stone-700 dark:text-stone-300"
-                >
-                  <option value="rule">规则</option>
-                  <option value="global">全局</option>
-                  <option value="direct">直连</option>
-                </select>
+                  options={[
+                    { value: 'rule', label: '规则' },
+                    { value: 'global', label: '全局' },
+                    { value: 'direct', label: '直连' },
+                  ]}
+                  size="sm"
+                  className="text-xs font-medium min-w-[80px]"
+                />
               </div>
             </div>
             
@@ -394,7 +472,7 @@ export const Dashboard: React.FC = () => {
 
   // 快速操作导航函数
   const navigateToPage = (page: string) => {
-    window.location.hash = page;
+    console.log('🎯 Navigating to page:', page);
     setCurrentPage(page);
   };
 
