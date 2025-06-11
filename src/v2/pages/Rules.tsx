@@ -361,48 +361,48 @@ const RulesContent: React.FC = () => {
                         <span>实时状态</span>
                       </div>
                       <div className="grid gap-4">
-                        <FixedVirtualList
+                        <FixedVirtualList<{ name: string } & RuleProvider>
                           items={providers}
-                          itemHeight={60}
-                          itemCount={providers.length}
-                          renderItem={(index) => (
+                          height={400}
+                          itemHeight={120}
+                          renderItem={(provider, index) => (
                             <div 
-                              key={providers[index].name}
+                              key={provider.name}
                               className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                             >
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-2 mb-2">
                                     <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                                      {providers[index].name}
+                                      {provider.name}
                                     </h3>
                                     <span className="text-xs px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full">
-                                      {providers[index].type}
+                                      {provider.type}
                                     </span>
                                   </div>
                                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                                     <div>
                                       <span className="text-gray-600 dark:text-gray-400">行为:</span>
                                       <div className="font-medium text-gray-900 dark:text-white">
-                                        {providers[index].behavior || 'domain'}
+                                        {provider.behavior || 'domain'}
                                       </div>
                                     </div>
                                     <div>
                                       <span className="text-gray-600 dark:text-gray-400">规则数:</span>
                                       <div className="font-medium text-gray-900 dark:text-white">
-                                        {providers[index].ruleCount || 0}
+                                        {provider.ruleCount || 0}
                                       </div>
                                     </div>
                                     <div>
                                       <span className="text-gray-600 dark:text-gray-400">载体:</span>
                                       <div className="font-medium text-gray-900 dark:text-white">
-                                        {providers[index].vehicleType || 'HTTP'}
+                                        {provider.vehicleType || 'HTTP'}
                                       </div>
                                     </div>
                                     <div>
                                       <span className="text-gray-600 dark:text-gray-400">更新时间:</span>
                                       <div className="font-medium text-gray-900 dark:text-white">
-                                        {providers[index].updatedAt ? new Date(providers[index].updatedAt).toLocaleString() : '未知'}
+                                        {provider.updatedAt ? new Date(provider.updatedAt).toLocaleString() : '未知'}
                                       </div>
                                     </div>
                                   </div>
