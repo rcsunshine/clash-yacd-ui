@@ -5,6 +5,10 @@ import { useAtom } from 'jotai';
 import React, { useEffect } from 'react';
 
 import { Sidebar } from './components/layout/Sidebar';
+import { useApiConfigEffect } from './hooks/useAPI';
+// 导入V1V2同步和API配置监听
+import { useV1V2Sync } from './hooks/useV1V2Sync';
+import { APIConfig } from './pages/APIConfig';
 import { Config } from './pages/Config';
 import { Connections } from './pages/Connections';
 import { Dashboard } from './pages/Dashboard';
@@ -13,7 +17,7 @@ import { Proxies } from './pages/Proxies';
 import { Rules } from './pages/Rules';
 import { TestPage } from './pages/TestPage';
 import { v2ThemeAtom } from './store/atoms';
-import { applyTheme, initializeTheme, setTheme,watchSystemTheme } from './utils/theme';
+import { applyTheme, initializeTheme, watchSystemTheme } from './utils/theme';
 
 // 创建 React Query 客户端
 const queryClient = new QueryClient({
@@ -41,6 +45,8 @@ const PageRenderer: React.FC<{ currentPage: string }> = ({ currentPage }) => {
       return <Logs />;
     case 'config':
       return <Config />;
+    case 'api-config':
+      return <APIConfig />;
     case 'test':
       return <TestPage />;
     default:
@@ -48,9 +54,16 @@ const PageRenderer: React.FC<{ currentPage: string }> = ({ currentPage }) => {
   }
 };
 
-export const App: React.FC = () => {
+// 内部应用组件 - 在QueryClientProvider内部
+const InnerApp: React.FC = () => {
   const [currentTheme, setCurrentTheme] = useAtom(v2ThemeAtom);
   const [currentPage, setCurrentPage] = React.useState('dashboard');
+
+  // 启用V1V2状态同步
+  useV1V2Sync();
+  
+  // 启用API配置变更监听（需要在QueryClientProvider内部）
+  useApiConfigEffect();
 
   // 初始化主题 - 只在组件挂载时执行一次
   useEffect(() => {
@@ -79,19 +92,25 @@ export const App: React.FC = () => {
   }, [currentTheme]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
-        <div className="flex h-screen">
-          <Sidebar 
-            currentPage={currentPage} 
-            onPageChange={setCurrentPage}
-          />
-          
-          <main className="flex-1 overflow-hidden">
-            <PageRenderer currentPage={currentPage} />
-          </main>
-        </div>
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+      <div className="flex h-screen">
+        <Sidebar 
+          currentPage={currentPage} 
+          onPageChange={setCurrentPage}
+        />
+        
+        <main className="flex-1 overflow-hidden">
+          <PageRenderer currentPage={currentPage} />
+        </main>
       </div>
+    </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <InnerApp />
     </QueryClientProvider>
   );
 }; 

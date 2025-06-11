@@ -1,15 +1,15 @@
 import { useAtom } from 'jotai';
-import React, { useEffect,useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { 
-  clashAPIConfigsAtom, 
-  selectedClashAPIConfigIndexAtom,
-  useApiConfig 
-} from '../../store/app';
-import { ClashAPIConfig } from '../../types';
 import { Button } from '../components/ui/Button';
-import { Card, CardContent,CardHeader } from '../components/ui/Card';
+import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
+import { useApiConfig } from '../hooks/useApiConfig';
+import {
+  v2ApiConfigsAtom,
+  v2SelectedApiConfigIndexAtom,
+} from '../store/atoms';
+import { ClashAPIConfig } from '../types/api';
 
 interface APITestResult {
   success: boolean;
@@ -24,8 +24,9 @@ const APIConfigItem: React.FC<{
   isSelected: boolean;
   onSelect: () => void;
   onDelete: () => void;
+  onEdit: () => void;
   onTest: () => Promise<APITestResult>;
-}> = ({ config, index, isSelected, onSelect, onDelete, onTest }) => {
+}> = ({ config, index, isSelected, onSelect, onDelete, onEdit, onTest }) => {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<APITestResult | null>(null);
 
@@ -69,6 +70,11 @@ const APIConfigItem: React.FC<{
               <div>
                 <div className="font-medium text-gray-900 dark:text-white">
                   {config.metaLabel || `API ${index + 1}`}
+                  {isSelected && (
+                    <span className="ml-2 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">
+                      当前使用
+                    </span>
+                  )}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400 font-mono">
                   {getDisplayUrl(config.baseURL)}
@@ -97,6 +103,15 @@ const APIConfigItem: React.FC<{
               disabled={testing}
             >
               {testing ? '测试中...' : '测试'}
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEdit}
+              className="text-blue-600 hover:text-blue-700"
+            >
+              编辑
             </Button>
             
             {index > 0 && (
@@ -303,11 +318,221 @@ const AddAPIForm: React.FC<{
   );
 };
 
+const EditAPIForm: React.FC<{
+  config: ClashAPIConfig;
+  onSave: (config: ClashAPIConfig) => void;
+  onCancel: () => void;
+}> = ({ config, onSave, onCancel }) => {
+  const [formData, setFormData] = useState({
+    baseURL: config.baseURL || 'http://10.8.87.121:9090',
+    secret: config.secret || '',
+    metaLabel: config.metaLabel || ''
+  });
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<APITestResult | null>(null);
+
+  // 当表单数据变化时，清除测试结果
+  const handleFormDataChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // 如果API地址或密钥变化，清除之前的测试结果
+    if (field === 'baseURL' || field === 'secret') {
+      setTestResult(null);
+    }
+  };
+
+  const handleTest = async () => {
+    if (!formData.baseURL.trim()) {
+      setTestResult({
+        success: false,
+        message: '请输入有效的API地址',
+      });
+      return;
+    }
+
+    setTesting(true);
+    setTestResult(null);
+    
+    try {
+      const response = await fetch(`${formData.baseURL}/version`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(formData.secret && { 'Authorization': `Bearer ${formData.secret}` }),
+        },
+        // 添加超时和错误处理
+        signal: AbortSignal.timeout(10000), // 10秒超时
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTestResult({
+          success: true,
+          message: '连接成功',
+          version: data.version || 'Unknown'
+        });
+      } else {
+        setTestResult({
+          success: false,
+          message: `HTTP ${response.status}: ${response.statusText}`,
+        });
+      }
+    } catch (error) {
+      setTestResult({
+        success: false,
+        message: '连接失败',
+        error: error instanceof Error ? error.message : '网络错误'
+      });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.baseURL.trim()) return;
+    
+    const updatedConfig: ClashAPIConfig = {
+      ...config,
+      baseURL: formData.baseURL.trim(),
+      secret: formData.secret.trim() || undefined,
+      metaLabel: formData.metaLabel.trim() || undefined,
+    };
+    
+    onSave(updatedConfig);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <h3 className="text-lg font-semibold">编辑 API 配置</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          修改当前 API 连接设置
+        </p>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="editMetaLabel" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              显示名称 (可选)
+            </label>
+            <input
+              id="editMetaLabel"
+              type="text"
+              value={formData.metaLabel}
+              onChange={(e) => handleFormDataChange('metaLabel', e.target.value)}
+              placeholder="例如: 本地 Clash"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                       focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="editBaseURL" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              API 地址 *
+            </label>
+            <input
+              id="editBaseURL"
+              type="url"
+              required
+              value={formData.baseURL}
+              onChange={(e) => handleFormDataChange('baseURL', e.target.value)}
+              placeholder="http://10.8.87.121:9090"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                       focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Clash API 的完整地址，包括协议和端口
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="editSecret" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              密钥 (可选)
+            </label>
+            <input
+              id="editSecret"
+              type="password"
+              value={formData.secret}
+              onChange={(e) => handleFormDataChange('secret', e.target.value)}
+              placeholder="API 访问密钥"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                       focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* 测试结果显示 */}
+          {testResult && (
+            <div className={`p-3 rounded-md ${
+              testResult.success 
+                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+            }`}>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="font-medium">{testResult.message}</p>
+                  {testResult.version && (
+                    <p className="text-sm mt-1">Clash 版本: {testResult.version}</p>
+                  )}
+                  {testResult.error && (
+                    <p className="text-sm mt-1 opacity-75">{testResult.error}</p>
+                  )}
+                </div>
+                {!testResult.success && (
+                  <button
+                    type="button"
+                    onClick={() => setTestResult(null)}
+                    className="ml-2 text-red-500 hover:text-red-700 p-1"
+                    title="清除测试结果"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="flex space-x-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleTest}
+              disabled={testing || !formData.baseURL.trim()}
+            >
+              {testing ? '测试中...' : testResult ? '重新测试' : '测试连接'}
+            </Button>
+            
+            <Button
+              type="submit"
+              disabled={!formData.baseURL.trim()}
+            >
+              保存修改
+            </Button>
+            
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+            >
+              取消
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+};
+
 export const APIConfig: React.FC = () => {
-  const [apiConfigs, setApiConfigs] = useAtom(clashAPIConfigsAtom);
-  const [selectedIndex, setSelectedIndex] = useAtom(selectedClashAPIConfigIndexAtom);
+  const [apiConfigs, setApiConfigs] = useAtom(v2ApiConfigsAtom);
+  const [selectedIndex, setSelectedIndex] = useAtom(v2SelectedApiConfigIndexAtom);
   const currentApiConfig = useApiConfig();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [currentApiStatus, setCurrentApiStatus] = useState<APITestResult | null>(null);
   const [checkingCurrentAPI, setCheckingCurrentAPI] = useState(false);
 
@@ -408,6 +633,20 @@ export const APIConfig: React.FC = () => {
     }
   };
 
+  const handleEditConfig = (index: number) => {
+    // 关闭添加表单
+    setShowAddForm(false);
+    // 打开编辑表单
+    setEditingIndex(index);
+  };
+
+  const handleShowAddForm = () => {
+    // 关闭编辑表单
+    setEditingIndex(null);
+    // 打开添加表单
+    setShowAddForm(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -456,13 +695,24 @@ export const APIConfig: React.FC = () => {
                     {currentApiStatus.error}
                   </p>
                 )}
-                <div className="mt-3">
+                <div className="mt-3 flex space-x-2">
                   <Button
                     size="sm"
-                    onClick={() => setShowAddForm(true)}
+                    onClick={handleShowAddForm}
+                    disabled={showAddForm || editingIndex !== null}
                   >
                     添加新的 API 配置
                   </Button>
+                  {selectedIndex >= 0 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEditConfig(selectedIndex)}
+                      disabled={editingIndex !== null || showAddForm}
+                    >
+                      编辑当前配置
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -477,8 +727,8 @@ export const APIConfig: React.FC = () => {
             已配置的 API ({apiConfigs.length})
           </h2>
           
-          {!showAddForm && (
-            <Button onClick={() => setShowAddForm(true)}>
+          {!showAddForm && editingIndex === null && (
+            <Button onClick={handleShowAddForm}>
               添加新配置
             </Button>
           )}
@@ -492,6 +742,7 @@ export const APIConfig: React.FC = () => {
             isSelected={index === selectedIndex}
             onSelect={() => setSelectedIndex(index)}
             onDelete={() => handleDeleteConfig(index)}
+            onEdit={() => handleEditConfig(index)}
             onTest={() => testAPIConfig(config)}
           />
         ))}
@@ -502,6 +753,21 @@ export const APIConfig: React.FC = () => {
         <AddAPIForm
           onAdd={handleAddConfig}
           onCancel={() => setShowAddForm(false)}
+        />
+      )}
+
+      {/* 编辑配置表单 */}
+      {editingIndex !== null && (
+        <EditAPIForm
+          config={apiConfigs[editingIndex]}
+          onSave={(updatedConfig) => {
+            const newConfigs = apiConfigs.map((config, index) =>
+              index === editingIndex ? updatedConfig : config
+            );
+            setApiConfigs(newConfigs);
+            setEditingIndex(null);
+          }}
+          onCancel={() => setEditingIndex(null)}
         />
       )}
 

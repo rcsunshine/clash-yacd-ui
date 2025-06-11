@@ -171,6 +171,10 @@ export interface SystemInfo {
 export interface ClashAPIConfig {
   baseURL: string;
   secret?: string;
+  
+  // metadata - 用于标识和管理多个API配置
+  metaLabel?: string;
+  addedAt?: number;
 }
 
 // Hook 返回类型

@@ -16,23 +16,59 @@ import {
 // 导入 V2 独立的 API 和状态管理
 import { useApiConfig } from './useApiConfig';
 
+// 全局配置变更锁
+let isConfigChanging = false;
+let configChangePromise: Promise<void> | null = null;
+
 // 改进的基础查询Hook - 自动处理API配置变化
 export function useQuery2<T>(
   queryKey: string,
   queryFn: () => Promise<T>,
   options: QueryOptions = {}
 ) {
-  const { enabled = true, refetchInterval, staleTime = 0 } = options;
+  const queryClient = useQueryClient();
   const apiConfig = useApiConfig();
+  const prevApiConfigRef = useRef<typeof apiConfig>();
   
-  return useQuery({
-    queryKey: [queryKey, apiConfig?.baseURL, apiConfig?.secret],
-    queryFn,
-    enabled: enabled && !!apiConfig?.baseURL,
-    refetchInterval,
-    staleTime,
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  // 检查配置是否变化，如果变化则立即重新初始化查询
+  useEffect(() => {
+    const configChanged = prevApiConfigRef.current && 
+      (prevApiConfigRef.current.baseURL !== apiConfig?.baseURL || 
+       prevApiConfigRef.current.secret !== apiConfig?.secret);
+    
+    if (configChanged) {
+      console.log(`🔄 Query ${queryKey} detected config change, restarting...`);
+      // 立即停止当前查询
+      queryClient.cancelQueries({ queryKey: [queryKey] });
+      // 清除该查询的缓存
+      queryClient.removeQueries({ queryKey: [queryKey] });
+      // 重新启动查询
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: [queryKey] });
+      }, 100);
+    }
+    
+    prevApiConfigRef.current = apiConfig;
+  }, [apiConfig, queryClient, queryKey]);
+  
+  return useQuery<T>({
+    queryKey: [queryKey, apiConfig?.baseURL, apiConfig?.secret], // 包含配置作为查询键
+    queryFn: async () => {
+      // 如果正在进行配置变更，等待完成
+      if (isConfigChanging) {
+        console.log(`⏳ Query ${queryKey} waiting for config change to complete...`);
+        await waitForConfigChange();
+      }
+      
+      // 再次检查配置变更状态
+      if (isConfigChanging) {
+        throw new Error('API configuration is changing, query cancelled');
+      }
+      
+      return queryFn();
+    },
+    enabled: !!apiConfig?.baseURL && !isConfigChanging, // 配置变更时禁用查询
+    ...options,
   });
 }
 
@@ -56,27 +92,75 @@ export function useApiConfigEffect() {
         (prevApiConfigRef.current.baseURL !== apiConfig.baseURL || 
          prevApiConfigRef.current.secret !== apiConfig.secret)) {
       
-      console.log('🔄 API config changed from', prevApiConfigRef.current.baseURL, 'to', apiConfig.baseURL);
+      console.log('🔄 API config changing from', prevApiConfigRef.current.baseURL, 'to', apiConfig.baseURL);
       
-      // 只清理特定的查询，避免清除所有缓存
-      const apiRelatedKeys = [
-        'system-info',
-        'clash-config', 
-        'proxies',
-        'connections',
-        'rules'
-      ];
+      // 设置配置变更锁定
+      isConfigChanging = true;
       
-      apiRelatedKeys.forEach(key => {
-        queryClient.invalidateQueries({ queryKey: [key] });
+      // 创建配置变更Promise
+      configChangePromise = new Promise(async (resolve) => {
+        try {
+          // 立即停止所有正在进行的查询
+          queryClient.cancelQueries();
+          
+          // 完全清理查询缓存
+          queryClient.clear();
+          
+          console.log('🧹 Cleared all query cache due to API config change');
+          
+          // 等待一段时间确保所有请求都停止
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          // 重新初始化关键查询
+          const apiRelatedKeys = [
+            'system-info',
+            'clash-config', 
+            'proxies',
+            'connections',
+            'rules'
+          ];
+          
+          console.log('🚀 Restarting queries with new API config:', apiConfig.baseURL);
+          
+          // 依次重新启动查询，避免并发冲突
+          for (const key of apiRelatedKeys) {
+            queryClient.invalidateQueries({ queryKey: [key] });
+            await new Promise(resolve => setTimeout(resolve, 50)); // 小延迟避免冲突
+          }
+          
+          // 强制重新获取关键数据
+          setTimeout(() => {
+            queryClient.refetchQueries({ queryKey: ['system-info'] });
+            queryClient.refetchQueries({ queryKey: ['proxies'] });
+          }, 100);
+          
+        } finally {
+          // 延迟释放配置变更锁定
+          setTimeout(() => {
+            isConfigChanging = false;
+            configChangePromise = null;
+            console.log('✅ API config change completed, lock released');
+          }, 1000);
+          
+          resolve();
+        }
       });
-      
-      // 强制重新获取关键数据
-      queryClient.refetchQueries({ queryKey: ['system-info'] });
     }
     
     prevApiConfigRef.current = apiConfig;
   }, [apiConfig, queryClient]);
+}
+
+// 获取配置变更状态的辅助函数
+export function isApiConfigChanging(): boolean {
+  return isConfigChanging;
+}
+
+// 等待配置变更完成的辅助函数
+export async function waitForConfigChange(): Promise<void> {
+  if (configChangePromise) {
+    await configChangePromise;
+  }
 }
 
 // 系统信息Hook - 使用V2独立API
@@ -268,7 +352,7 @@ export function useRules(): UseQueryResult<RulesResponse> {
   );
 }
 
-// 连接统计Hook - 优化API配置检查和WebSocket管理
+// 连接统计Hook - 优化API配置检查和定时器管理
 export function useConnectionStats() {
   const apiConfig = useApiConfig();
   const [stats, setStats] = useState({
@@ -277,68 +361,77 @@ export function useConnectionStats() {
     downloadTotal: 0,
     isConnected: false,
   });
-  const unsubscribeRef = useRef<(() => void) | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mountedRef = useRef(true);
+  const lastApiConfigRef = useRef<typeof apiConfig>();
 
   useEffect(() => {
     mountedRef.current = true;
+    
+    // 检查API配置是否变化
+    const configChanged = lastApiConfigRef.current && 
+      (lastApiConfigRef.current.baseURL !== apiConfig?.baseURL || 
+       lastApiConfigRef.current.secret !== apiConfig?.secret);
+    
+    if (configChanged || !lastApiConfigRef.current) {
+      console.log('🔄 ConnectionStats: API config changed, restarting timers...');
+      // 清理旧的定时器
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setStats(prev => ({ ...prev, isConnected: false }));
+    }
+    
+    lastApiConfigRef.current = apiConfig;
+    
+    // 如果正在配置变更，等待完成
+    if (isConfigChanging) {
+      console.log('⏳ ConnectionStats: Waiting for config change to complete...');
+      setStats(prev => ({ ...prev, isConnected: false }));
+      return;
+    }
     
     if (!apiConfig?.baseURL) {
       setStats(prev => ({ ...prev, isConnected: false }));
       return;
     }
 
-    // 清理之前的连接
-    if (unsubscribeRef.current) {
-      unsubscribeRef.current();
-      unsubscribeRef.current = null;
-    }
-
-    const connectAPI = () => {
+    const fetchStats = async () => {
+      if (!mountedRef.current || isConfigChanging) return;
+      
       try {
-        // 使用V2独立的API客户端
+        // 使用当前的API配置
         const client = createAPIClient(apiConfig);
-        
-        const fetchStats = async () => {
-          if (!mountedRef.current) return;
-          
-          try {
-            const response = await client.get('/connections');
-            if (response.data && mountedRef.current) {
-              setStats({
-                activeConnections: Array.isArray(response.data.connections) ? response.data.connections.length : 0,
-                uploadTotal: response.data.uploadTotal || 0,
-                downloadTotal: response.data.downloadTotal || 0,
-                isConnected: true,
-              });
-            }
-          } catch (error) {
-            if (mountedRef.current) {
-              setStats(prev => ({ ...prev, isConnected: false }));
-            }
-          }
-        };
-        
-        // 立即获取一次数据
-        fetchStats();
-        
-        // 设置定时更新
-        const interval = setInterval(fetchStats, 3000);
-        unsubscribeRef.current = () => clearInterval(interval);
-        
+        const response = await client.get('/connections');
+        if (response.data && mountedRef.current && !isConfigChanging) {
+          setStats({
+            activeConnections: Array.isArray(response.data.connections) ? response.data.connections.length : 0,
+            uploadTotal: response.data.uploadTotal || 0,
+            downloadTotal: response.data.downloadTotal || 0,
+            isConnected: true,
+          });
+        }
       } catch (error) {
-        console.error('Failed to connect connection stats API:', error);
-        setStats(prev => ({ ...prev, isConnected: false }));
+        if (mountedRef.current && !isConfigChanging) {
+          setStats(prev => ({ ...prev, isConnected: false }));
+        }
       }
     };
-
-    connectAPI();
+    
+    // 立即获取一次数据
+    fetchStats();
+    
+    // 设置定时更新，确保没有重复的定时器
+    if (!intervalRef.current) {
+      intervalRef.current = setInterval(fetchStats, 3000);
+    }
 
     return () => {
       mountedRef.current = false;
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-        unsubscribeRef.current = null;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
   }, [apiConfig]);
@@ -366,14 +459,41 @@ export function useTraffic() {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  const lastApiConfigRef = useRef<typeof apiConfig>();
   const maxDataPoints = 150;
 
   useEffect(() => {
     mountedRef.current = true;
     
-    // 确保 API 配置已正确设置且不是默认值
-    if (!apiConfig?.baseURL || apiConfig.baseURL === 'http://127.0.0.1:9090') {
-      console.log('⏳ Traffic WebSocket: Waiting for API config, current:', apiConfig?.baseURL);
+    // 检查API配置是否变化
+    const configChanged = lastApiConfigRef.current && 
+      (lastApiConfigRef.current.baseURL !== apiConfig?.baseURL || 
+       lastApiConfigRef.current.secret !== apiConfig?.secret);
+    
+    if (configChanged) {
+      console.log('🔄 Traffic WebSocket: API config changed, reconnecting...');
+      // 立即关闭现有连接
+      if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      setIsConnected(false);
+      setTrafficData([]);
+    }
+    
+    lastApiConfigRef.current = apiConfig;
+    
+    // 如果正在配置变更，等待完成
+    if (isConfigChanging) {
+      console.log('⏳ Traffic WebSocket: Waiting for config change to complete...');
+      setIsConnected(false);
+      setTrafficData([]);
+      return;
+    }
+    
+    // 确保 API 配置已正确设置
+    if (!apiConfig?.baseURL) {
+      console.log('⏳ Traffic WebSocket: Waiting for API config...');
       setIsConnected(false);
       setTrafficData([]);
       return;

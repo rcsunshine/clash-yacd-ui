@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
 import * as React from 'react';
+import { useEffect,useRef } from 'react';
 import {
   fetchRuleProviders,
   refreshRuleProviderByName,
@@ -73,6 +74,21 @@ export function useRuleProviders() {
 }
 
 export function useRuleAndProvider(apiConfig: ClashAPIConfig) {
+  const prevApiConfigRef = useRef<typeof apiConfig>();
+  
+  // 监听API配置变化
+  useEffect(() => {
+    const configChanged = prevApiConfigRef.current && 
+      (prevApiConfigRef.current.baseURL !== apiConfig?.baseURL || 
+       prevApiConfigRef.current.secret !== apiConfig?.secret);
+    
+    if (configChanged) {
+      console.log('🔄 V1 RuleAndProvider: API config changed, cache will be refreshed');
+    }
+    
+    prevApiConfigRef.current = apiConfig;
+  }, [apiConfig]);
+  
   const { data: rules, isFetching } = useQuery({
     queryKey: ['/rules', apiConfig?.baseURL, apiConfig?.secret],
     queryFn: () => fetchRules({ queryKey: ['/rules', apiConfig] as const }),
@@ -88,11 +104,11 @@ export function useRuleAndProvider(apiConfig: ClashAPIConfig) {
   } else {
     const f = filterText.toLowerCase();
     return {
-      rules: rules.filter((r) => r.payload.toLowerCase().indexOf(f) >= 0),
+      rules: rules?.filter((r) => r.payload.toLowerCase().indexOf(f) >= 0) || [],
       isFetching,
       provider: {
-        byName: provider.byName,
-        names: provider.names.filter((t) => t.toLowerCase().indexOf(f) >= 0),
+        byName: provider?.byName || {},
+        names: provider?.names?.filter((t) => t.toLowerCase().indexOf(f) >= 0) || [],
       },
     };
   }
