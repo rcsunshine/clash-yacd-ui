@@ -30,9 +30,20 @@ const queryClient = new QueryClient({
 });
 
 const useThemeManager = () => {
-  const [theme] = useAtom(v2ThemeAtom);
+  const [theme, setTheme] = useAtom(v2ThemeAtom);
   
+  // 初始化主题
   React.useEffect(() => {
+    const savedTheme = localStorage.getItem('v2-theme') as 'light' | 'dark' | 'auto' | null;
+    if (savedTheme && savedTheme !== theme) {
+      setTheme(savedTheme);
+    }
+  }, [theme, setTheme]);
+  
+  // 应用主题到DOM
+  React.useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    
     if (theme === 'auto') {
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       document.documentElement.classList.toggle('dark', isDark);

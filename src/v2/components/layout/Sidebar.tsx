@@ -4,6 +4,7 @@ import { createAPIClient } from '../../api/client';
 import { useApiConfig } from '../../hooks/useApiConfig';
 import { cn } from '../../utils/cn';
 import { StatusIndicator } from '../ui/StatusIndicator';
+import { ThemeDropdown } from '../ui/ThemeDropdown';
 
 export interface SidebarProps {
   className?: string;
@@ -279,36 +280,7 @@ export function Sidebar(props: SidebarProps = {}) {
               V2 运行中
             </span>
           </div>
-          <button 
-            className={cn(
-              'p-2 rounded-lg transition-all duration-200',
-              'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300',
-              'hover:bg-gray-100 dark:hover:bg-gray-700',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500',
-              'min-h-[40px] min-w-[40px] active:scale-95'
-            )}
-            onClick={() => {
-              const currentTheme = document.documentElement.getAttribute('data-theme') || 'auto';
-              const themes = ['light', 'dark', 'auto'];
-              const currentIndex = themes.indexOf(currentTheme);
-              const nextTheme = themes[(currentIndex + 1) % themes.length];
-              
-              document.documentElement.setAttribute('data-theme', nextTheme);
-              localStorage.setItem('theme', nextTheme);
-              
-              if (nextTheme === 'auto') {
-                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                document.documentElement.classList.toggle('dark', isDark);
-              } else {
-                document.documentElement.classList.toggle('dark', nextTheme === 'dark');
-              }
-            }}
-            aria-label="切换主题"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          </button>
+          <ThemeDropdown />
         </div>
       </div>
 
