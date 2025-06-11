@@ -1,0 +1,202 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* ========================================
+   V2 全局样式 - SCSS 架构规范
+   ======================================== */
+
+/* 导入所有SCSS模块 */
+@import './components.scss';
+@import './utilities.scss';
+@import './pages.scss';
+
+/* SCSS 颜色变量系统 */
+$color-text-light: #2d3748;
+$color-text-secondary-light: #718096;
+$color-background-light: #ffffff;
+$color-bg-card-light: #f7fafc;
+
+$color-text-dark: #f7fafc;
+$color-text-secondary-dark: #cbd5e0;
+$color-background-dark: #1a202c;
+$color-bg-card-dark: #2d3748;
+
+/* CSS 变量定义 */
+:root {
+  --color-text-primary: #{$color-text-light};
+  --color-text-secondary: #{$color-text-secondary-light};
+  --color-text-tertiary: #a0aec0;
+  --color-text-disabled: #e2e8f0;
+  
+  --color-background: #{$color-background-light};
+  --color-background-secondary: #f8fafc;
+  --color-background-tertiary: #edf2f7;
+  
+  --color-surface: #{$color-bg-card-light};
+  --color-surface-hover: #edf2f7;
+  --color-surface-active: #e2e8f0;
+  
+  --color-border: #e2e8f0;
+  --color-border-hover: #cbd5e0;
+  --color-border-focus: #3182ce;
+  
+  --color-primary: #3182ce;
+  --color-primary-hover: #2c5aa0;
+  --color-success: #38a169;
+  --color-warning: #ed8936;
+  --color-error: #e53e3e;
+  
+  /* 侧边栏专用变量 */
+  --color-sidebar-bg: #{$color-background-light};
+  --color-sidebar-border: #e2e8f0;
+  --color-sidebar-item-hover: #edf2f7;
+  
+  /* 字体 */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', Consolas, monospace;
+  
+  /* 间距 */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 3rem;
+  
+  /* 圆角 */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  
+  /* 动画 */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+  
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme='dark'] {
+  --color-text-primary: #{$color-text-dark};
+  --color-text-secondary: #{$color-text-secondary-dark};
+  --color-text-tertiary: #718096;
+  --color-text-disabled: #4a5568;
+  
+  --color-background: #{$color-background-dark};
+  --color-background-secondary: #2d3748;
+  --color-background-tertiary: #4a5568;
+  
+  --color-surface: #{$color-bg-card-dark};
+  --color-surface-hover: #4a5568;
+  --color-surface-active: #718096;
+  
+  --color-border: #4a5568;
+  --color-border-hover: #718096;
+  --color-border-focus: #63b3ed;
+  
+  --color-primary: #63b3ed;
+  --color-primary-hover: #90cdf4;
+  --color-success: #68d391;
+  --color-warning: #fbb360;
+  --color-error: #fc8181;
+  
+  /* 侧边栏深色主题 */
+  --color-sidebar-bg: #{$color-bg-card-dark};
+  --color-sidebar-border: #4a5568;
+  --color-sidebar-item-hover: #4a5568;
+  
+  /* 深色主题阴影 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* 全局重置和基础样式 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+  
+  &:hover {
+    background: var(--color-border-hover);
+  }
+}
+
+/* 焦点样式 */
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* 动画关键帧 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* 响应式断点 mixin */
+@mixin mobile {
+  @media (max-width: 767px) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: 768px) and (max-width: 1023px) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: 1024px) {
+    @content;
+  }
+} 

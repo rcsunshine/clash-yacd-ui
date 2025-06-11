@@ -1,0 +1,262 @@
+/* ========================================
+   V2 工具类样式 - SCSS 架构规范
+   ======================================== */
+
+/* 间距工具类 */
+.spacing {
+  &--xs { @apply p-2; }
+  &--sm { @apply p-3; }
+  &--md { @apply p-4; }
+  &--lg { @apply p-6; }
+  &--xl { @apply p-8; }
+}
+
+.m {
+  &--xs { @apply m-2; }
+  &--sm { @apply m-3; }
+  &--md { @apply m-4; }
+  &--lg { @apply m-6; }
+  &--xl { @apply m-8; }
+}
+
+/* 文本工具类 */
+.text {
+  &--primary { color: var(--color-text-primary); }
+  &--secondary { color: var(--color-text-secondary); }
+  &--tertiary { color: var(--color-text-tertiary); }
+  &--disabled { color: var(--color-text-disabled); }
+  
+  &--xs { @apply text-xs; }
+  &--sm { @apply text-sm; }
+  &--base { @apply text-base; }
+  &--lg { @apply text-lg; }
+  &--xl { @apply text-xl; }
+  &--2xl { @apply text-2xl; }
+  
+  &--center { @apply text-center; }
+  &--left { @apply text-left; }
+  &--right { @apply text-right; }
+  
+  &--bold { @apply font-bold; }
+  &--semibold { @apply font-semibold; }
+  &--medium { @apply font-medium; }
+  &--normal { @apply font-normal; }
+}
+
+/* 背景工具类 */
+.bg {
+  &--primary { background-color: var(--color-background); }
+  &--secondary { background-color: var(--color-background-secondary); }
+  &--surface { background-color: var(--color-surface); }
+  &--surface-hover { background-color: var(--color-surface-hover); }
+  &--surface-active { background-color: var(--color-surface-active); }
+}
+
+/* 边框工具类 */
+.border {
+  &--primary { border-color: var(--color-border); }
+  &--hover { border-color: var(--color-border-hover); }
+  &--focus { border-color: var(--color-border-focus); }
+  
+  &--xs { @apply border; }
+  &--sm { @apply border-2; }
+  &--md { @apply border-4; }
+  
+  &--rounded { @apply rounded; }
+  &--rounded-md { @apply rounded-md; }
+  &--rounded-lg { @apply rounded-lg; }
+  &--rounded-xl { @apply rounded-xl; }
+  &--rounded-full { @apply rounded-full; }
+}
+
+/* 阴影工具类 */
+.shadow {
+  &--xs { @apply shadow-sm; }
+  &--sm { @apply shadow; }
+  &--md { @apply shadow-md; }
+  &--lg { @apply shadow-lg; }
+  &--xl { @apply shadow-xl; }
+  &--none { @apply shadow-none; }
+}
+
+/* 动画工具类 */
+.animate {
+  &--pulse { @apply animate-pulse; }
+  &--bounce { @apply animate-bounce; }
+  &--spin { @apply animate-spin; }
+  &--ping { @apply animate-ping; }
+  
+  &--fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  &--fade-out {
+    animation: fadeOut 0.3s ease-in-out;
+  }
+  
+  &--slide-up {
+    animation: slideUp 0.3s ease-in-out;
+  }
+  
+  &--slide-down {
+    animation: slideDown 0.3s ease-in-out;
+  }
+}
+
+/* 动画关键帧 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from { 
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 布局工具类 */
+.layout {
+  &--container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  &--grid {
+    @apply grid gap-4;
+    
+    &-2 { @apply grid-cols-1 md:grid-cols-2; }
+    &-3 { @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-3; }
+    &-4 { @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-4; }
+  }
+  
+  &--flex {
+    @apply flex;
+    
+    &-center { @apply items-center justify-center; }
+    &-between { @apply items-center justify-between; }
+    &-start { @apply items-start justify-start; }
+    &-end { @apply items-end justify-end; }
+    
+    &-col { @apply flex-col; }
+    &-row { @apply flex-row; }
+  }
+  
+  &--absolute { @apply absolute; }
+  &--relative { @apply relative; }
+  &--fixed { @apply fixed; }
+  &--sticky { @apply sticky; }
+}
+
+/* 响应式工具类 */
+.responsive {
+  &--hide-mobile {
+    @apply hidden md:block;
+  }
+  
+  &--hide-desktop {
+    @apply block md:hidden;
+  }
+  
+  &--show-mobile {
+    @apply block md:hidden;
+  }
+  
+  &--show-desktop {
+    @apply hidden md:block;
+  }
+}
+
+/* 状态工具类 */
+.state {
+  &--loading {
+    @apply opacity-50 pointer-events-none;
+    
+    &::after {
+      content: '';
+      @apply absolute inset-0 bg-white bg-opacity-50;
+      @apply flex items-center justify-center;
+    }
+  }
+  
+  &--disabled {
+    @apply opacity-50 cursor-not-allowed pointer-events-none;
+  }
+  
+  &--error {
+    @apply border-red-500 text-red-600 bg-red-50;
+    @apply dark:border-red-400 dark:text-red-400 dark:bg-red-900/20;
+  }
+  
+  &--success {
+    @apply border-green-500 text-green-600 bg-green-50;
+    @apply dark:border-green-400 dark:text-green-400 dark:bg-green-900/20;
+  }
+  
+  &--warning {
+    @apply border-yellow-500 text-yellow-600 bg-yellow-50;
+    @apply dark:border-yellow-400 dark:text-yellow-400 dark:bg-yellow-900/20;
+  }
+}
+
+/* 滚动工具类 */
+.scroll {
+  &--auto { @apply overflow-auto; }
+  &--hidden { @apply overflow-hidden; }
+  &--x { @apply overflow-x-auto; }
+  &--y { @apply overflow-y-auto; }
+  
+  &--smooth {
+    scroll-behavior: smooth;
+  }
+  
+  &--custom {
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: var(--color-surface);
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: var(--color-border);
+      border-radius: 3px;
+      
+      &:hover {
+        background: var(--color-border-hover);
+      }
+    }
+  }
+}
+
+/* Z-index 工具类 */
+.z {
+  &--dropdown { @apply z-10; }
+  &--sticky { @apply z-20; }
+  &--fixed { @apply z-30; }
+  &--modal { @apply z-40; }
+  &--popover { @apply z-50; }
+  &--tooltip { @apply z-60; }
+} 

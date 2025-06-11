@@ -18,7 +18,11 @@
     "build:all": "npm run build && npm run build:v2",
     "serve": "vite preview",
     "pretty": "prettier --log-level warn --write 'src/**/*.{js,scss,ts,tsx,md}'",
-    "fmt": "pnpm lint && pnpm pretty"
+    "fmt": "pnpm lint && pnpm pretty",
+    "check:v2": "node scripts/check-v2-architecture.cjs",
+    "check:v2:ci": "npm run check:v2 && npm run type-check",
+    "type-check": "tsc --noEmit",
+    "pre-commit": "npm run check:v2 && npm run lint && npm run pretty"
   },
   "browserslist": [
     ">0.25%",

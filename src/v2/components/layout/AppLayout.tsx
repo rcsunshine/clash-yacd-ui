@@ -3,6 +3,8 @@ import { cn } from '../../utils/cn';
 import { Sidebar } from './Sidebar';
 import { MobileHeader } from './MobileHeader';
 import { MobileMenu } from './MobileMenu';
+import { useMenuItems } from '../../hooks/useMenuItems';
+import { MenuItem } from '../ui/MenuItem';
 
 export interface AppLayoutProps {
   children: React.ReactNode;
@@ -11,34 +13,22 @@ export interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children, className }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  const [currentPageTitle, setCurrentPageTitle] = React.useState('仪表板');
+  const { menuItems, getItemStatus } = useMenuItems();
 
-  // 根据当前页面更新标题
-  React.useEffect(() => {
-    const updateTitle = () => {
-      const hash = window.location.hash.slice(1) || 'dashboard';
-      const titleMap: Record<string, string> = {
-        dashboard: '仪表板',
-        proxies: '代理',
-        connections: '连接',
-        rules: '规则',
-        logs: '日志',
-        configs: '配置',
-        'api-config': 'API配置',
-      };
-      setCurrentPageTitle(titleMap[hash] || '仪表板');
+  // 获取当前页面标题
+  const getCurrentTitle = () => {
+    const hash = window.location.hash.slice(1) || 'dashboard';
+    const titleMap: Record<string, string> = {
+      dashboard: '仪表板',
+      proxies: '代理',
+      connections: '连接',
+      rules: '规则',
+      logs: '日志',
+      configs: '配置',
+      'api-config': 'API配置',
     };
-
-    updateTitle();
-    window.addEventListener('hashchange', updateTitle);
-    return () => window.removeEventListener('hashchange', updateTitle);
-  }, []);
-
-  // 获取连接状态（简化版）
-  const connectionStatus = React.useMemo(() => ({
-    type: 'success' as const,
-    message: '已连接'
-  }), []);
+    return titleMap[hash] || '仪表板';
+  };
 
   const handleMobileMenuToggle = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -51,21 +41,31 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, className }) => 
   return (
     <div className={cn('flex min-h-screen bg-gray-50 dark:bg-gray-900', className)}>
       {/* 桌面端侧边栏 */}
-      <Sidebar />
+      <div className="hidden lg:flex">
+        <Sidebar />
+      </div>
       
       {/* 移动端Header */}
-      <MobileHeader
-        title={currentPageTitle}
-        onMenuToggle={handleMobileMenuToggle}
-        connectionStatus={connectionStatus}
-      />
+      <div className="lg:hidden sticky top-0 z-50">
+        <MobileHeader 
+          title={getCurrentTitle()}
+          onMenuToggle={handleMobileMenuToggle}
+        />
+      </div>
 
       {/* 移动端菜单 */}
       <MobileMenu isOpen={isMobileMenuOpen} onClose={handleMobileMenuClose}>
         <div className="p-4">
-          <nav className="space-y-1">
-            {/* 这里复用Sidebar的菜单项，移动端优化版本 */}
-            <Sidebar className="!flex !relative !w-full !h-auto !border-none !bg-transparent" />
+          <nav className="space-y-2">
+            {menuItems.map((item, index) => (
+              <MenuItem
+                key={index}
+                {...item}
+                active={getItemStatus(item.href)}
+                variant="mobile"
+                onClick={handleMobileMenuClose}
+              />
+            ))}
           </nav>
         </div>
       </MobileMenu>
