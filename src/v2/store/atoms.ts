@@ -64,5 +64,24 @@ export const v2ThemeAtom = atom<Theme>(getInitialTheme());
 // V2侧边栏状态
 export const v2SidebarCollapsedAtom = atom<boolean>(false);
 
-// V2页面状态
-export const v2CurrentPageAtom = atom<string>('dashboard'); 
+// V2当前页面状态 - 支持持久化
+function getInitialPage(): string {
+  if (typeof window === 'undefined') return 'dashboard';
+  
+  try {
+    const saved = localStorage.getItem('v2-current-page');
+    if (saved && typeof saved === 'string') {
+      // 验证页面名称有效性
+      const validPages = ['dashboard', 'proxies', 'connections', 'rules', 'logs', 'config', 'api-config'];
+      if (validPages.includes(saved)) {
+        return saved;
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to load V2 current page from localStorage:', error);
+  }
+  
+  return 'dashboard';
+}
+
+export const v2CurrentPageAtom = atom<string>(getInitialPage()); 

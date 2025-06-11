@@ -162,6 +162,13 @@ export function Sidebar(props: SidebarProps = {}) {
   const connectionState = useConnectionStatus();
   const [currentPageState, setCurrentPageState] = React.useState(currentPage || 'dashboard');
   
+  // 响应外部页面变化
+  React.useEffect(() => {
+    if (currentPage && currentPage !== currentPageState) {
+      setCurrentPageState(currentPage);
+    }
+  }, [currentPage, currentPageState]);
+  
   React.useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1) || 'dashboard';

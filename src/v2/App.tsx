@@ -7,7 +7,7 @@ import React, { Suspense, useEffect } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { LoadingState } from './components/ui/LoadingState';
 import { useApiConfigEffect } from './hooks/useAPI';
-import { v2ThemeAtom } from './store/atoms';
+import { v2CurrentPageAtom,v2ThemeAtom } from './store/atoms';
 import { applyTheme, initializeTheme, watchSystemTheme } from './utils/theme';
 
 // 页面级代码分割 - 懒加载页面组件
@@ -66,7 +66,7 @@ const PageRenderer: React.FC<{ currentPage: string }> = ({ currentPage }) => {
 // 内部应用组件 - 在QueryClientProvider内部
 const InnerApp: React.FC = () => {
   const [currentTheme, setCurrentTheme] = useAtom(v2ThemeAtom);
-  const [currentPage, setCurrentPage] = React.useState('dashboard');
+  const [currentPage, setCurrentPage] = useAtom(v2CurrentPageAtom);
 
   // 启用API配置变更监听（需要在QueryClientProvider内部）
   useApiConfigEffect();
@@ -95,6 +95,15 @@ const InnerApp: React.FC = () => {
   useEffect(() => {
     applyTheme(currentTheme);
   }, [currentTheme]);
+
+  // 页面变化时保存到localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('v2-current-page', currentPage);
+    } catch (error) {
+      console.warn('Failed to save current page to localStorage:', error);
+    }
+  }, [currentPage]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
