@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback,useState } from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -6,6 +6,13 @@ import { Input } from '../components/ui/Input';
 import { LoadingState } from '../components/ui/LoadingState';
 import { useV2ApiConfig } from '../hooks/useApiConfig';
 import type { ClashAPIConfig } from '../types/api';
+
+interface APITestResult {
+  success: boolean;
+  message: string;
+  version?: string;
+  error?: string;
+}
 
 interface ConfigFormData {
   baseURL: string;
@@ -31,12 +38,141 @@ export const APIConfig: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [showSecret, setShowSecret] = useState(false);
+  const [testingCurrent, setTestingCurrent] = useState(false);
+  const [currentTestResult, setCurrentTestResult] = useState<APITestResult | null>(null);
+  const [testingConfigs, setTestingConfigs] = useState<Set<number>>(new Set());
+  const [configTestResults, setConfigTestResults] = useState<Map<number, APITestResult>>(new Map());
+  const [testingForm, setTestingForm] = useState(false);
+  const [formTestResult, setFormTestResult] = useState<APITestResult | null>(null);
+
+  // 测试API连接
+  const testAPIConnection = useCallback(async (config: ClashAPIConfig): Promise<APITestResult> => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+
+      const response = await fetch(`${config.baseURL}/version`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(config.secret && { 'Authorization': `Bearer ${config.secret}` }),
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          success: true,
+          message: '连接成功',
+          version: data.version || 'Unknown'
+        };
+      } else {
+        return {
+          success: false,
+          message: `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return {
+          success: false,
+          message: '连接超时',
+          error: '请求超时（10秒）'
+        };
+      }
+      return {
+        success: false,
+        message: '连接失败',
+        error: error instanceof Error ? error.message : '网络错误'
+      };
+    }
+  }, []);
+
+  // 测试当前API配置
+  const handleTestCurrent = useCallback(async () => {
+    setTestingCurrent(true);
+    setCurrentTestResult(null);
+    
+    try {
+      const result = await testAPIConnection(currentConfig);
+      setCurrentTestResult(result);
+    } catch (error) {
+      setCurrentTestResult({
+        success: false,
+        message: '测试失败',
+        error: error instanceof Error ? error.message : '未知错误'
+      });
+    } finally {
+      setTestingCurrent(false);
+    }
+  }, [currentConfig, testAPIConnection]);
+
+  // 测试指定配置
+  const handleTestConfig = useCallback(async (index: number) => {
+    const config = configs[index];
+    if (!config) return;
+
+    setTestingConfigs(prev => new Set([...prev, index]));
+    
+    try {
+      const result = await testAPIConnection(config);
+      setConfigTestResults(prev => new Map([...prev, [index, result]]));
+    } catch (error) {
+      setConfigTestResults(prev => new Map([...prev, [index, {
+        success: false,
+        message: '测试失败',
+        error: error instanceof Error ? error.message : '未知错误'
+      }]]));
+    } finally {
+      setTestingConfigs(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(index);
+        return newSet;
+      });
+    }
+  }, [configs, testAPIConnection]);
+
+  // 测试表单配置
+  const handleTestForm = useCallback(async () => {
+    if (!formData.baseURL.trim()) {
+      setFormTestResult({
+        success: false,
+        message: '请输入API地址',
+      });
+      return;
+    }
+
+    setTestingForm(true);
+    setFormTestResult(null);
+
+    const testConfig: ClashAPIConfig = {
+      baseURL: formData.baseURL.trim(),
+      secret: formData.secret.trim(),
+    };
+
+    try {
+      const result = await testAPIConnection(testConfig);
+      setFormTestResult(result);
+    } catch (error) {
+      setFormTestResult({
+        success: false,
+        message: '测试失败',
+        error: error instanceof Error ? error.message : '未知错误'
+      });
+    } finally {
+      setTestingForm(false);
+    }
+  }, [formData, testAPIConnection]);
 
   // 开始添加新配置
   const handleStartAdd = useCallback(() => {
     setFormData({ baseURL: '', secret: '' });
     setIsAdding(true);
     setEditingIndex(null);
+    setFormTestResult(null);
   }, []);
 
   // 开始编辑配置
@@ -48,6 +184,7 @@ export const APIConfig: React.FC = () => {
     });
     setIsAdding(false);
     setEditingIndex(index);
+    setFormTestResult(null);
   }, [configs]);
 
   // 取消编辑
@@ -55,6 +192,7 @@ export const APIConfig: React.FC = () => {
     setIsAdding(false);
     setEditingIndex(null);
     setFormData({ baseURL: '', secret: '' });
+    setFormTestResult(null);
   }, []);
 
   // 保存配置
@@ -129,9 +267,18 @@ export const APIConfig: React.FC = () => {
             {/* 当前配置状态 */}
             <Card>
               <div className="p-4">
-                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
-                  当前配置
-                </h2>
+                <div className="flex justify-between items-center mb-3">
+                  <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+                    当前配置
+                  </h2>
+                  <Button
+                    variant="outline"
+                    onClick={handleTestCurrent}
+                    disabled={testingCurrent}
+                  >
+                    {testingCurrent ? '测试中...' : '测试连接'}
+                  </Button>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -202,46 +349,72 @@ export const APIConfig: React.FC = () => {
                           )}
                         </div>
                         
-                        <div className="flex items-center space-x-2">
-                          {index === selectedIndex && (
-                            <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded">
-                              当前
-                            </span>
-                          )}
-                          
-                          {index !== selectedIndex && (
+                                                  <div className="flex items-center space-x-2">
+                            {index === selectedIndex && (
+                              <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded">
+                                当前
+                              </span>
+                            )}
+                            
+                            {index !== selectedIndex && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleSwitch(index)}
+                              >
+                                切换
+                              </Button>
+                            )}
+                            
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleSwitch(index)}
+                              onClick={() => handleTestConfig(index)}
+                              disabled={testingConfigs.has(index)}
                             >
-                              切换
+                              {testingConfigs.has(index) ? '测试中...' : '测试'}
                             </Button>
-                          )}
-                          
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleStartEdit(index)}
-                          >
-                            编辑
-                          </Button>
-                          
-                          {index !== 0 && (
+                            
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleDelete(index)}
-                              className="text-red-600 hover:text-red-700"
+                              onClick={() => handleStartEdit(index)}
                             >
-                              删除
+                              编辑
                             </Button>
-                          )}
+                            
+                            {index !== 0 && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDelete(index)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                删除
+                              </Button>
+                            )}
+                                                    </div>
                         </div>
+                        
+                        {/* 配置测试结果 */}
+                        {configTestResults.has(index) && (
+                          <div className={`mt-2 p-2 rounded text-sm ${
+                            configTestResults.get(index)?.success 
+                              ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                              : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                          }`}>
+                            <div className="font-medium">{configTestResults.get(index)?.message}</div>
+                            {configTestResults.get(index)?.version && (
+                              <div className="text-xs mt-1">版本: {configTestResults.get(index)?.version}</div>
+                            )}
+                            {configTestResults.get(index)?.error && (
+                              <div className="text-xs mt-1 opacity-75">{configTestResults.get(index)?.error}</div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
               </div>
             </Card>
 
@@ -280,15 +453,58 @@ export const APIConfig: React.FC = () => {
                       />
                     </div>
                     
+                    {/* 测试结果显示 */}
+                    {formTestResult && (
+                      <div className={`p-3 rounded-md ${
+                        formTestResult.success 
+                          ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                          : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                      }`}>
+                        <div className="font-medium">{formTestResult.message}</div>
+                        {formTestResult.version && (
+                          <div className="text-sm mt-1">Clash 版本: {formTestResult.version}</div>
+                        )}
+                        {formTestResult.error && (
+                          <div className="text-sm mt-1 opacity-75">{formTestResult.error}</div>
+                        )}
+                      </div>
+                    )}
+                    
                     <div className="flex space-x-3">
+                      <Button
+                        variant="outline"
+                        onClick={handleTestForm}
+                        disabled={testingForm || !formData.baseURL.trim()}
+                      >
+                        {testingForm ? '测试中...' : '测试连接'}
+                      </Button>
+                      
                       <Button variant="primary" onClick={handleSave}>
                         保存
                       </Button>
+                      
                       <Button variant="outline" onClick={handleCancel}>
                         取消
                       </Button>
                     </div>
                   </div>
+                  
+                  {/* 测试结果显示 */}
+                  {currentTestResult && (
+                    <div className={`mt-4 p-3 rounded-md ${
+                      currentTestResult.success 
+                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                        : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                    }`}>
+                      <div className="font-medium">{currentTestResult.message}</div>
+                      {currentTestResult.version && (
+                        <div className="text-sm mt-1">Clash 版本: {currentTestResult.version}</div>
+                      )}
+                      {currentTestResult.error && (
+                        <div className="text-sm mt-1 opacity-75">{currentTestResult.error}</div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </Card>
             )}
