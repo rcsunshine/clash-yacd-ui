@@ -73,7 +73,7 @@ export const Connections: React.FC = () => {
   };
 
   // 处理选中的连接
-  const toggleConnectionSelection = (connectionId: string) => {
+  const _toggleConnectionSelection = (connectionId: string) => {
     const newSelected = new Set(selectedConnections);
     if (newSelected.has(connectionId)) {
       newSelected.delete(connectionId);
@@ -84,7 +84,7 @@ export const Connections: React.FC = () => {
   };
 
   // 全选/取消全选
-  const toggleAllConnections = () => {
+  const _toggleAllConnections = () => {
     if (selectedConnections.size === connections.length) {
       setSelectedConnections(new Set());
     } else {

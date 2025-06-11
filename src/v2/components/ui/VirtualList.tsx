@@ -61,7 +61,7 @@ export function VirtualList<T>({
       start: Math.max(0, start - overscan),
       end: Math.min(items.length - 1, end + overscan)
     };
-  }, [items.length, scrollTop, height, itemHeight, overscan]);
+  }, [items, scrollTop, height, itemHeight, overscan]);
 
   // 计算总高度
   const totalHeight = useMemo(() => {

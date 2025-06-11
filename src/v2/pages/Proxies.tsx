@@ -23,7 +23,7 @@ const ProxyGroupCard: React.FC<{
     return proxy?.history?.[0]?.delay || 0;
   };
 
-  const getDelayColor = (delay: number) => {
+  const _getDelayColor = (delay: number) => {
     if (delay === 0) return 'text-gray-400';
     if (delay < 100) return 'text-green-500';
     if (delay < 300) return 'text-yellow-500';
@@ -83,7 +83,7 @@ const ProxyGroupCard: React.FC<{
         <CardContent className="p-0">
           <div className="max-h-96 overflow-y-auto custom-scrollbar">
             <div className="grid gap-1 p-4">
-              {group.all.map((proxyName, index) => {
+              {group.all.map((proxyName, _index) => {
                 const delay = getProxyDelay(proxyName);
                 const isSelected = group.now === proxyName;
                 

@@ -281,19 +281,19 @@ export const APIConfig: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label htmlFor="currentBaseURL" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       API 地址
                     </label>
-                    <p className="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded border">
+                    <p id="currentBaseURL" className="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded border">
                       {currentConfig.baseURL}
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label htmlFor="currentSecret" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Secret
                     </label>
                     <div className="flex items-center space-x-2">
-                      <p className="flex-1 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded border">
+                      <p id="currentSecret" className="flex-1 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded border">
                         {currentConfig.secret 
                           ? (showSecret ? currentConfig.secret : '••••••••••••')
                           : '(未设置)'

@@ -9,7 +9,7 @@ import { Card, CardContent,CardHeader } from './ui/Card';
 
 export function APIConfig() {
   const [apiConfigs, setApiConfigs] = useAtom(v2ApiConfigsAtom);
-  const [selectedIndex, setSelectedIndex] = useAtom(v2SelectedApiConfigIndexAtom);
+  const [selectedIndex] = useAtom(v2SelectedApiConfigIndexAtom);
   
   const currentConfig = apiConfigs[selectedIndex] || {
     baseURL: 'http://127.0.0.1:9090',

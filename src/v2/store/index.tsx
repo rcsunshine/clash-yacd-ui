@@ -90,7 +90,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [state, dispatch] = useReducer(v2Reducer, defaultState);
   
   // 集成 V1 的状态管理
-  const [v1Theme, setV1Theme] = useAtom(themeAtom);
+  const [v1Theme] = useAtom(themeAtom);
   const [v1ApiConfigs] = useAtom(clashAPIConfigsAtom);
   const [v1SelectedIndex] = useAtom(selectedClashAPIConfigIndexAtom);
   const v1ApiConfig = v1ApiConfigs[v1SelectedIndex];

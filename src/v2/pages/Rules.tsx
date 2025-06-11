@@ -366,7 +366,7 @@ const RulesContent: React.FC = () => {
                           items={providers}
                           height={400}
                           itemHeight={120}
-                          renderItem={(provider, index) => (
+                          renderItem={(provider, _index) => (
                             <div 
                               key={provider.name}
                               className="border border-theme rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
