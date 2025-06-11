@@ -30,6 +30,7 @@ export const APIConfig: React.FC = () => {
   
   const [isAdding, setIsAdding] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [showSecret, setShowSecret] = useState(false);
 
   // 开始添加新配置
   const handleStartAdd = useCallback(() => {
@@ -144,9 +145,24 @@ export const APIConfig: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Secret
                     </label>
-                    <p className="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded border">
-                      {currentConfig.secret || '(未设置)'}
-                    </p>
+                    <div className="flex items-center space-x-2">
+                      <p className="flex-1 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded border">
+                        {currentConfig.secret 
+                          ? (showSecret ? currentConfig.secret : '••••••••••••')
+                          : '(未设置)'
+                        }
+                      </p>
+                      {currentConfig.secret && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowSecret(!showSecret)}
+                          className="px-2 py-1 text-xs"
+                        >
+                          {showSecret ? '隐藏' : '显示'}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -181,7 +197,7 @@ export const APIConfig: React.FC = () => {
                           </div>
                           {config.secret && (
                             <div className="text-xs text-gray-500 dark:text-gray-400">
-                              Secret: {config.secret.substring(0, 8)}...
+                              Secret: ••••••••
                             </div>
                           )}
                         </div>
