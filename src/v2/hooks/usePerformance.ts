@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef,useState } from 'react';
 
 interface PerformanceMetrics {
   renderTime: number;
@@ -20,6 +20,14 @@ export function usePerformance(enabled: boolean = false) {
   const frameCountRef = useRef(0);
   const lastTimeRef = useRef(performance.now());
   const startTimeRef = useRef(0);
+
+  const getMemoryUsage = (): number => {
+    if ('memory' in performance) {
+      const memory = (performance as any).memory;
+      return Math.round(memory.usedJSHeapSize / 1024 / 1024); // MB
+    }
+    return 0;
+  };
 
   useEffect(() => {
     if (!enabled) return;
@@ -55,14 +63,6 @@ export function usePerformance(enabled: boolean = false) {
       }
     };
   }, [enabled]);
-
-  const getMemoryUsage = (): number => {
-    if ('memory' in performance) {
-      const memory = (performance as any).memory;
-      return Math.round(memory.usedJSHeapSize / 1024 / 1024); // MB
-    }
-    return 0;
-  };
 
   const startRenderTimer = () => {
     startTimeRef.current = performance.now();

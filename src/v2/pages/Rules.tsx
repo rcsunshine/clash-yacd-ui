@@ -1,15 +1,16 @@
-import React, { useState, useMemo } from 'react';
-import { Card, CardHeader, CardContent } from '../components/ui/Card';
+import '../styles/pages.scss';
+
+import React, { useMemo,useState } from 'react';
+
 import { Button } from '../components/ui/Button';
-import { StatusIndicator } from '../components/ui/StatusIndicator';
-import { FixedVirtualList } from '../components/ui/VirtualList';
+import { Card, CardContent } from '../components/ui/Card';
+import { APIErrorAlert,ErrorAlert, NetworkErrorAlert } from '../components/ui/ErrorAlert';
 import { PageErrorBoundary } from '../components/ui/ErrorBoundary';
-import { ErrorAlert, NetworkErrorAlert, APIErrorAlert } from '../components/ui/ErrorAlert';
 import { PageLoader } from '../components/ui/LoadingState';
+import { FixedVirtualList } from '../components/ui/VirtualList';
 import { useRules } from '../hooks/useAPI';
 import { useAPIErrorHandler } from '../hooks/useErrorHandler';
 import { Rule, RuleProvider, RuleType } from '../types/api';
-import '../styles/pages.scss';
 
 const RulesContent: React.FC = () => {
   const { data: rulesData, isLoading, error, refetch } = useRules();
@@ -21,7 +22,7 @@ const RulesContent: React.FC = () => {
   const rules = useMemo(() => {
     if (!rulesData?.rules) return [];
     
-    let filtered = rulesData.rules.filter((rule: Rule) => {
+    const filtered = rulesData.rules.filter((rule: Rule) => {
       const searchMatch = searchQuery === '' || 
         rule.payload.toLowerCase().includes(searchQuery.toLowerCase()) ||
         rule.proxy.toLowerCase().includes(searchQuery.toLowerCase());
@@ -80,7 +81,7 @@ const RulesContent: React.FC = () => {
         <div className="page-body">
           <div className="container-fluid px-4">
             <div className="space-y-4">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">规则</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white hidden lg:block">规则</h1>
               
               {isNetworkError ? (
                 <NetworkErrorAlert
@@ -129,7 +130,7 @@ const RulesContent: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">规则</h1>
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white hidden lg:block">规则</h1>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     流量分流规则管理 • 共 {totalRules} 条规则
                   </p>

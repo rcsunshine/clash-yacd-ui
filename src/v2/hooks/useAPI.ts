@@ -1,28 +1,20 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { useAtom } from 'jotai';
+import { useMutation,useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useRef,useState } from 'react';
 
-// 导入 V2 独立的 API 和状态管理
-import { useApiConfig } from './useApiConfig';
 import { createAPIClient } from '../api/client';
-
 // 导入 V2 类型定义
 import { 
-  ClashAPIConfig, 
-  APIResponse, 
-  QueryOptions,
-  TrafficData,
-  ProxyItem,
+  ClashConfig,
   ConnectionItem,
   LogItem,
-  ClashConfig,
-  SystemInfo,
+  ProxyItem,
+  QueryOptions,
   RulesResponse,
-  ProxiesResponse,
-  ConnectionsResponse,
-  UseQueryResult,
-  LogLevel
-} from '../types/api';
+  SystemInfo,
+  TrafficData,
+  UseQueryResult} from '../types/api';
+// 导入 V2 独立的 API 和状态管理
+import { useApiConfig } from './useApiConfig';
 
 // 改进的基础查询Hook - 自动处理API配置变化
 export function useQuery2<T>(

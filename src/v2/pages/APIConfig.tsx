@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
 import { useAtom } from 'jotai';
-import { Card, CardHeader, CardContent } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
-import { StatusIndicator } from '../components/ui/StatusIndicator';
+import React, { useEffect,useState } from 'react';
+
 import { 
   clashAPIConfigsAtom, 
   selectedClashAPIConfigIndexAtom,
   useApiConfig 
 } from '../../store/app';
 import { ClashAPIConfig } from '../../types';
+import { Button } from '../components/ui/Button';
+import { Card, CardContent,CardHeader } from '../components/ui/Card';
+import { StatusIndicator } from '../components/ui/StatusIndicator';
 
 interface APITestResult {
   success: boolean;
@@ -204,10 +205,11 @@ const AddAPIForm: React.FC<{
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="metaLabel" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               显示名称 (可选)
             </label>
             <input
+              id="metaLabel"
               type="text"
               value={formData.metaLabel}
               onChange={(e) => setFormData({ ...formData, metaLabel: e.target.value })}
@@ -219,10 +221,11 @@ const AddAPIForm: React.FC<{
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="baseURL" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               API 地址 *
             </label>
             <input
+              id="baseURL"
               type="url"
               value={formData.baseURL}
               onChange={(e) => setFormData({ ...formData, baseURL: e.target.value })}
@@ -233,15 +236,16 @@ const AddAPIForm: React.FC<{
                        focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              完整的 Clash API 地址，包括协议和端口
+              Clash API 的完整地址，包括协议和端口
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="secret" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               密钥 (可选)
             </label>
             <input
+              id="secret"
               type="password"
               value={formData.secret}
               onChange={(e) => setFormData({ ...formData, secret: e.target.value })}

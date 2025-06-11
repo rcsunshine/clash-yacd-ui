@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { cn } from '../../utils/cn';
 
 export interface MobileMenuProps {
@@ -44,7 +45,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       {/* 遮罩层 */}
       <div
         className={cn(
-          'lg:hidden fixed inset-0 z-40 transition-opacity duration-300',
+          'lg:!hidden max-lg:fixed hidden fixed inset-0 z-40 transition-opacity duration-300',
           isOpen
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
@@ -58,7 +59,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       {/* 侧边菜单 */}
       <div
         className={cn(
-          'lg:hidden fixed inset-y-0 left-0 z-50',
+          'lg:!hidden max-lg:fixed hidden fixed inset-y-0 left-0 z-50',
           'w-80 max-w-[85vw] bg-white dark:bg-gray-800',
           'transform transition-transform duration-300 ease-in-out',
           'shadow-xl border-r border-gray-200 dark:border-gray-700',

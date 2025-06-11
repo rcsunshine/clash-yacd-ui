@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
-import { Card, CardHeader, CardContent } from '../components/ui/Card';
+import React, { useMemo,useState } from 'react';
+
 import { Button } from '../components/ui/Button';
-import { StatusIndicator } from '../components/ui/StatusIndicator';
+import { Card, CardContent } from '../components/ui/Card';
 import { FixedVirtualList } from '../components/ui/VirtualList';
-import { useConnections, useCloseConnection, useCloseAllConnections } from '../hooks/useAPI';
+import { useCloseAllConnections,useCloseConnection, useConnections } from '../hooks/useAPI';
 
 interface Connection {
   id: string;
@@ -33,6 +33,25 @@ export const Connections: React.FC = () => {
   
   const closeConnection = useCloseConnection();
   const closeAllConnections = useCloseAllConnections();
+
+  // 处理连接数据 - 移到Hook后面但在使用前
+  const connections = useMemo(() => {
+    if (!connectionsData?.connections) return [];
+    
+    const filtered = connectionsData.connections.filter((conn: Connection) => {
+      const searchMatch = searchQuery === '' || 
+        (conn.metadata.host && conn.metadata.host.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        conn.metadata.destinationIP.includes(searchQuery) ||
+        conn.chains.some(chain => chain.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      const networkMatch = networkFilter === 'all' || 
+        conn.metadata.network.toLowerCase() === networkFilter.toLowerCase();
+      
+      return searchMatch && networkMatch;
+    });
+
+    return filtered;
+  }, [connectionsData?.connections, searchQuery, networkFilter]);
 
   // 处理单个连接关闭
   const handleCloseConnection = async (connectionId: string) => {
@@ -76,7 +95,7 @@ export const Connections: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">连接</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white hidden lg:block">连接</h1>
         <Card>
           <CardContent>
             <div className="animate-pulse space-y-4">
@@ -92,7 +111,7 @@ export const Connections: React.FC = () => {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">连接</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white hidden lg:block">连接</h1>
         <Card>
           <CardContent>
             <div className="text-center py-8">
@@ -107,24 +126,6 @@ export const Connections: React.FC = () => {
       </div>
     );
   }
-
-  const connections = useMemo(() => {
-    if (!connectionsData?.connections) return [];
-    
-    let filtered = connectionsData.connections.filter((conn: Connection) => {
-      const searchMatch = searchQuery === '' || 
-        (conn.metadata.host && conn.metadata.host.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        conn.metadata.destinationIP.includes(searchQuery) ||
-        conn.chains.some(chain => chain.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-      const networkMatch = networkFilter === 'all' || 
-        conn.metadata.network.toLowerCase() === networkFilter.toLowerCase();
-      
-      return searchMatch && networkMatch;
-    });
-
-    return filtered;
-  }, [connectionsData?.connections, searchQuery, networkFilter]);
 
   const totalConnections = connectionsData?.connections?.length || 0;
   const tcpConnections = connectionsData?.connections?.filter((c: Connection) => c.metadata.network === 'tcp')?.length || 0;
@@ -161,7 +162,7 @@ export const Connections: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">连接</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white hidden lg:block">连接</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               实时网络连接监控 • 共 {totalConnections} 个连接
             </p>

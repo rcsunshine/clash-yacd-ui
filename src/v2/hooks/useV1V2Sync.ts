@@ -1,13 +1,14 @@
-import { useEffect, useRef } from 'react';
 import { useAtom } from 'jotai';
-import { 
-  v2ApiConfigsAtom, 
-  v2SelectedApiConfigIndexAtom 
-} from '../store/atoms';
+import { useEffect, useRef } from 'react';
+
 import { 
   clashAPIConfigsAtom,
   selectedClashAPIConfigIndexAtom 
 } from '../../store/app';
+import { 
+  v2ApiConfigsAtom, 
+  v2SelectedApiConfigIndexAtom 
+} from '../store/atoms';
 
 // 深度比较配置对象
 function deepEqual(a: any, b: any): boolean {

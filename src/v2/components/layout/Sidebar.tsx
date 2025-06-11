@@ -1,8 +1,9 @@
 import React from 'react';
+
+import { createAPIClient } from '../../api/client';
+import { useApiConfig } from '../../hooks/useApiConfig';
 import { cn } from '../../utils/cn';
 import { StatusIndicator } from '../ui/StatusIndicator';
-import { useApiConfig } from '../../hooks/useApiConfig';
-import { createAPIClient } from '../../api/client';
 
 export interface SidebarProps {
   className?: string;

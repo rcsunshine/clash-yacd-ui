@@ -1,4 +1,4 @@
-import { ClashAPIConfig, APIResponse } from '../types/api';
+import { APIResponse,ClashAPIConfig } from '../types/api';
 
 // 默认API配置 - 仅用作类型参考，实际配置从V1 store获取
 export const DEFAULT_API_CONFIG: ClashAPIConfig = {

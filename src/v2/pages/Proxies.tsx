@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
-import { Card, CardHeader, CardContent } from '../components/ui/Card';
+import React, { useMemo,useState } from 'react';
+
 import { Button } from '../components/ui/Button';
-import { StatusIndicator } from '../components/ui/StatusIndicator';
-import { useProxies, useClashConfig } from '../hooks/useAPI';
+import { Card, CardContent,CardHeader } from '../components/ui/Card';
+import { useClashConfig,useProxies } from '../hooks/useAPI';
 
 interface ProxyGroup {
   name: string;
@@ -96,6 +96,14 @@ const ProxyGroupCard: React.FC<{
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                     }`}
                     onClick={() => onSwitchProxy(group.name, proxyName)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onSwitchProxy(group.name, proxyName);
+                      }
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
@@ -192,7 +200,7 @@ export const Proxies: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">代理</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white hidden lg:block">代理</h1>
         <Card>
           <CardContent>
             <div className="animate-pulse space-y-4">
@@ -208,7 +216,7 @@ export const Proxies: React.FC = () => {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">代理</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white hidden lg:block">代理</h1>
         <Card>
           <CardContent>
             <div className="text-center py-8">
@@ -237,7 +245,7 @@ export const Proxies: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">代理</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white hidden lg:block">代理</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               管理代理组和节点 • 模式: <span className="font-medium text-gray-700 dark:text-gray-300">{config?.mode || 'Unknown'}</span>
             </p>

@@ -1,6 +1,7 @@
 import { useAtom } from 'jotai';
-import { ClashAPIConfig } from '../types/api';
+
 import { v2CurrentApiConfigAtom } from '../store/atoms';
+import { ClashAPIConfig } from '../types/api';
 
 // V2独立的API配置Hook
 export function useApiConfig(): ClashAPIConfig {

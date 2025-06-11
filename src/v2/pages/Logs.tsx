@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '../components/ui/Card';
+import React, {useState } from 'react';
+
 import { Button } from '../components/ui/Button';
+import { Card, CardContent } from '../components/ui/Card';
 import { FixedVirtualList } from '../components/ui/VirtualList';
 import { useLogs } from '../hooks/useAPI';
-import { LogItem, LogLevel } from '../types/api';
+import { LogLevel } from '../types/api';
 
 interface LogEntry {
   id: string;
@@ -121,7 +122,7 @@ export const Logs: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">日志</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white hidden lg:block">日志</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               系统运行日志 • 共 {logs.length} 条记录 • {isConnected ? '✅ 已连接' : '❌ 未连接'}
             </p>

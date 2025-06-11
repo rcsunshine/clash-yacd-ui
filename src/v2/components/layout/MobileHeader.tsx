@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { cn } from '../../utils/cn';
 import { StatusIndicator } from '../ui/StatusIndicator';
 
@@ -20,7 +21,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
 }) => {
   return (
     <header className={cn(
-      'lg:hidden flex items-center justify-between',
+      'lg:!hidden max-lg:flex hidden flex items-center justify-between',
       'px-4 py-3 bg-white dark:bg-gray-800',
       'border-b border-gray-200 dark:border-gray-700',
       'sticky top-0 z-50',

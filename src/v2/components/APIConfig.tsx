@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
 import { useAtom } from 'jotai';
-import { Button } from './ui/Button';
-import { Card, CardHeader, CardContent } from './ui/Card';
-import { ClashAPIConfig } from '../types/api';
+import React, { useState } from 'react';
+
 import { createAPIClient } from '../api/client';
 import { v2ApiConfigsAtom, v2SelectedApiConfigIndexAtom } from '../store/atoms';
+import { ClashAPIConfig } from '../types/api';
+import { Button } from './ui/Button';
+import { Card, CardContent,CardHeader } from './ui/Card';
 
 export function APIConfig() {
   const [apiConfigs, setApiConfigs] = useAtom(v2ApiConfigsAtom);
@@ -84,18 +85,18 @@ export function APIConfig() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            API 地址
+          <label htmlFor="apiConfigBaseURL" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            API 地址 *
           </label>
           <input
-            type="text"
+            id="apiConfigBaseURL"
+            type="url"
             value={tempConfig.baseURL}
             onChange={(e) => setTempConfig({ ...tempConfig, baseURL: e.target.value })}
             placeholder="http://127.0.0.1:9090"
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
                      bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                     focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                     placeholder-gray-500 dark:placeholder-gray-400"
+                     focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Clash API 的完整地址，包括协议和端口
@@ -103,18 +104,18 @@ export function APIConfig() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Secret (可选)
+          <label htmlFor="apiConfigSecret" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            密钥 (可选)
           </label>
           <input
+            id="apiConfigSecret"
             type="password"
             value={tempConfig.secret}
             onChange={(e) => setTempConfig({ ...tempConfig, secret: e.target.value })}
-            placeholder="API Secret"
+            placeholder="API 访问密钥"
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
                      bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                     focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                     placeholder-gray-500 dark:placeholder-gray-400"
+                     focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             如果 Clash 配置了 secret，请在此输入

@@ -1,20 +1,21 @@
-import React from 'react';
+import './styles/globals.css';
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
+import React from 'react';
 
-// 导入V2独立的状态管理
-import { v2ThemeAtom, v2CurrentPageAtom } from './store/atoms';
 import { AppLayout } from './components/layout/AppLayout';
-import { Dashboard } from './pages/Dashboard';
-import { TestPage } from './pages/TestPage';
-import { Proxies } from './pages/Proxies';
-import { Connections } from './pages/Connections';
-import { Rules } from './pages/Rules';
-import { Logs } from './pages/Logs';
-import { Config } from './pages/Config';
-import { APIConfig } from './pages/APIConfig';
 import { useV1V2Sync } from './hooks/useV1V2Sync';
-import './styles/globals.css';
+import { APIConfig } from './pages/APIConfig';
+import { Config } from './pages/Config';
+import { Connections } from './pages/Connections';
+import { Dashboard } from './pages/Dashboard';
+import { Logs } from './pages/Logs';
+import { Proxies } from './pages/Proxies';
+import { Rules } from './pages/Rules';
+import { TestPage } from './pages/TestPage';
+// 导入V2独立的状态管理
+import { v2CurrentPageAtom,v2ThemeAtom } from './store/atoms';
 
 // 创建 React Query 客户端
 const queryClient = new QueryClient({

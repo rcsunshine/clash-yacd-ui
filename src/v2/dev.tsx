@@ -1,12 +1,12 @@
+import { Provider as JotaiProvider } from 'jotai';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Provider as JotaiProvider } from 'jotai';
 
 // 导入 V1 的状态管理初始化
 import { initialState } from '../store/app';
-import { AppStateProvider } from './store';
 import { AppV2 } from './App';
 import { initGlobalErrorHandling } from './hooks/useErrorHandler';
+import { AppStateProvider } from './store';
 
 // 初始化 V1 状态
 initialState();

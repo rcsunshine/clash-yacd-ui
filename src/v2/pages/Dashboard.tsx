@@ -1,10 +1,11 @@
-import React from 'react';
-import { Card, CardHeader, CardContent } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
-import { StatusIndicator } from '../components/ui/StatusIndicator';
-import { useSystemInfo, useClashConfig, useTraffic, useConnections, useConnectionStats } from '../hooks/useAPI';
-import { useAppState } from '../store';
 import { useAtom } from 'jotai';
+import React from 'react';
+
+import { Button } from '../components/ui/Button';
+import { Card, CardContent,CardHeader } from '../components/ui/Card';
+import { StatusIndicator } from '../components/ui/StatusIndicator';
+import { useClashConfig, useConnections, useConnectionStats,useSystemInfo, useTraffic } from '../hooks/useAPI';
+import { useAppState } from '../store';
 import { v2CurrentPageAtom } from '../store/atoms';
 
 const TrafficChart: React.FC = () => {
@@ -408,7 +409,6 @@ export const Dashboard: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">仪表板</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">Clash 代理服务状态总览</p>
           </div>
         </div>
