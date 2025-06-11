@@ -9,6 +9,7 @@ import {
 import { fetchRules } from 'src/api/rules';
 import { ruleFilterTextAtom } from 'src/store/rules';
 import type { ClashAPIConfig } from 'src/types';
+import { useApiConfig } from 'src/store/app';
 
 const { useCallback } = React;
 

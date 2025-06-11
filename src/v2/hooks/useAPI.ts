@@ -372,7 +372,7 @@ export function useTraffic() {
   const [trafficData, setTrafficData] = useState<TrafficData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<number | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
   const maxDataPoints = 150;
 
@@ -517,7 +517,7 @@ export function useLogs() {
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<number | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
   const maxLogs = 500;
 
