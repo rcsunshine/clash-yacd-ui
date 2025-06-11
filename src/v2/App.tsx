@@ -2,20 +2,13 @@ import './styles/globals.css';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
-import React, { Suspense,useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 
 import { Sidebar } from './components/layout/Sidebar';
 import { LoadingState } from './components/ui/LoadingState';
 import { useApiConfigEffect } from './hooks/useAPI';
 import { useV1V2Sync } from './hooks/useV1V2Sync';
-import { APIConfig } from './pages/APIConfig';
-import { Config } from './pages/Config';
-import { Connections } from './pages/Connections';
-import { Dashboard } from './pages/Dashboard';
-import { Logs } from './pages/Logs';
-import { Proxies } from './pages/Proxies';
-import { Rules } from './pages/Rules';
-import {v2ThemeAtom } from './store/atoms';
+import { v2ThemeAtom } from './store/atoms';
 import { applyTheme, initializeTheme, watchSystemTheme } from './utils/theme';
 
 // 页面级代码分割 - 懒加载页面组件
@@ -41,7 +34,7 @@ const queryClient = new QueryClient({
 // 页面加载占位符
 const PageLoadingFallback: React.FC<{ pageName: string }> = ({ pageName }) => (
   <div className="flex items-center justify-center min-h-[400px]">
-    <LoadingState message={`正在加载${pageName}...`} />
+    <LoadingState text={`正在加载${pageName}...`} />
   </div>
 );
 
