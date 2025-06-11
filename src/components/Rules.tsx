@@ -117,7 +117,7 @@ export default function Rules() {
   const [isScrollLoading, setIsScrollLoading] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [nearLoadTrigger, setNearLoadTrigger] = useState(false);
-  const loadingTimeoutRef = useRef<number>();
+  const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const virtualListRef = useRef<any>(null);
   
   // 计算总项目数
@@ -214,7 +214,7 @@ export default function Rules() {
   }, [isScrollLoading, visibleItemCount, totalItems]);
   
   // 防抖引用
-  const scrollTimeoutRef = useRef<number | null>(null);
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // 防抖的加载更多函数
   const debouncedLoadMore = useCallback(() => {

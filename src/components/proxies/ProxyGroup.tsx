@@ -48,7 +48,7 @@ const StreamingProxyList = React.memo(({
   const [visibleCount, setVisibleCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<number>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 流式加载配置
   const BATCH_SIZE = 12; // 每批加载的数量

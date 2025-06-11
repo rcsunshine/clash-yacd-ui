@@ -73,23 +73,19 @@ export function useV1V2Sync() {
   
   // 页面加载时的初始化延迟同步
   useEffect(() => {
-    if (initTimeoutRef.current) {
-      clearTimeout(initTimeoutRef.current);
-    }
-    
-    // 延迟执行强制同步，确保所有状态都已加载
     initTimeoutRef.current = setTimeout(() => {
       if (!isInitializedRef.current && v1ApiConfig) {
         forceInitSync();
       }
     }, 500); // 500ms后执行强制同步
-    
+
     return () => {
       if (initTimeoutRef.current) {
         clearTimeout(initTimeoutRef.current);
+        initTimeoutRef.current = null;
       }
     };
-  }, []); // 只在组件挂载时执行一次
+  }, [forceInitSync, v1ApiConfig]); // 添加缺失的依赖项
   
   // 主同步逻辑
   useEffect(() => {

@@ -572,10 +572,10 @@ export const APIConfig: React.FC = () => {
     }
   };
 
-  // 页面加载时检测当前 API
+  // 页面加载时检查当前API配置状态
   useEffect(() => {
     checkCurrentAPI();
-  }, [currentApiConfig]);
+  }, [checkCurrentAPI]);
 
   const testAPIConfig = async (config: ClashAPIConfig): Promise<APITestResult> => {
     try {
