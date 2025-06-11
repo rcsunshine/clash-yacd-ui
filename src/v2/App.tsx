@@ -74,9 +74,8 @@ export const App: React.FC = () => {
 
   // 主题变化时应用到DOM
   useEffect(() => {
-    console.log('🎨 应用主题:', currentTheme);
+    console.log('🎨 App: 应用主题到DOM:', currentTheme);
     applyTheme(currentTheme);
-    setTheme(currentTheme);
   }, [currentTheme]);
 
   return (

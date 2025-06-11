@@ -90,10 +90,18 @@ export const ThemeDropdown: React.FC = () => {
   };
 
   const handleThemeChange = (theme: Theme) => {
-    // 使用官方推荐的主题切换逻辑
-    setTheme(theme);
+    console.log('🎨 ThemeDropdown: 开始切换主题:', theme);
+    
+    // 首先更新Jotai状态
     setCurrentTheme(theme);
+    
+    // 然后应用主题到DOM和localStorage
+    setTheme(theme);
+    
+    // 关闭下拉菜单
     setIsOpen(false);
+    
+    console.log('🎨 ThemeDropdown: 主题切换完成');
   };
 
   return (
