@@ -7,7 +7,6 @@ import React, { Suspense, useEffect } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { LoadingState } from './components/ui/LoadingState';
 import { useApiConfigEffect } from './hooks/useAPI';
-import { useV1V2Sync } from './hooks/useV1V2Sync';
 import { v2ThemeAtom } from './store/atoms';
 import { applyTheme, initializeTheme, watchSystemTheme } from './utils/theme';
 
@@ -69,9 +68,6 @@ const InnerApp: React.FC = () => {
   const [currentTheme, setCurrentTheme] = useAtom(v2ThemeAtom);
   const [currentPage, setCurrentPage] = React.useState('dashboard');
 
-  // 启用V1V2状态同步
-  useV1V2Sync();
-  
   // 启用API配置变更监听（需要在QueryClientProvider内部）
   useApiConfigEffect();
 
@@ -97,7 +93,6 @@ const InnerApp: React.FC = () => {
 
   // 主题变化时应用到DOM
   useEffect(() => {
-    console.log('🎨 App: 应用主题到DOM:', currentTheme);
     applyTheme(currentTheme);
   }, [currentTheme]);
 

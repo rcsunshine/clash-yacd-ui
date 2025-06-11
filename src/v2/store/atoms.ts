@@ -3,15 +3,40 @@ import { atom } from 'jotai';
 import { ClashAPIConfig } from '../types/api';
 import { getStoredTheme, type Theme } from '../utils/theme';
 
-// V2独立的API配置状态
-export const v2ApiConfigsAtom = atom<ClashAPIConfig[]>([
-  {
-    baseURL: 'http://10.8.87.121:9090',
-    secret: '4e431a56ead99c',
+// V2独立的API配置初始化
+function getInitialApiConfigs(): { configs: ClashAPIConfig[], selectedIndex: number } {
+  try {
+    const saved = localStorage.getItem('v2-api-config');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.apiConfigs && Array.isArray(parsed.apiConfigs) && parsed.apiConfigs.length > 0) {
+        return {
+          configs: parsed.apiConfigs,
+          selectedIndex: parsed.selectedIndex || 0
+        };
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to load V2 API config from localStorage:', error);
   }
-]);
 
-export const v2SelectedApiConfigIndexAtom = atom<number>(0);
+  // 默认配置
+  return {
+    configs: [{
+      baseURL: 'http://10.8.87.121:9090',
+      secret: '4e431a56ead99c',
+    }],
+    selectedIndex: 0
+  };
+}
+
+// 初始化API配置
+const initialApiData = getInitialApiConfigs();
+
+// V2独立的API配置状态
+export const v2ApiConfigsAtom = atom<ClashAPIConfig[]>(initialApiData.configs);
+
+export const v2SelectedApiConfigIndexAtom = atom<number>(initialApiData.selectedIndex);
 
 // 当前选中的API配置（派生状态）
 export const v2CurrentApiConfigAtom = atom<ClashAPIConfig>(

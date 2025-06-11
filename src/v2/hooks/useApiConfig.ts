@@ -1,20 +1,16 @@
 import { useAtom } from 'jotai';
 import { useCallback, useEffect } from 'react';
 
-import { useApiConfig as useV1ApiConfig } from '../../store/app';
 import { v2ApiConfigsAtom, v2CurrentApiConfigAtom, v2SelectedApiConfigIndexAtom } from '../store/atoms';
 import type { ClashAPIConfig } from '../types/api';
 
-// V2 API配置管理Hook
+// V2 独立的API配置管理Hook
 export function useApiConfig() {
-  const v1ApiConfig = useV1ApiConfig();
   const [currentApiConfig] = useAtom(v2CurrentApiConfigAtom);
-  
-  // 优先返回V2配置，如果V2没有则使用V1配置
-  return currentApiConfig || v1ApiConfig;
+  return currentApiConfig;
 }
 
-// V2 API配置管理Hook (完整版)
+// V2 完整的API配置管理Hook
 export function useV2ApiConfig() {
   const [apiConfigs, setApiConfigs] = useAtom(v2ApiConfigsAtom);
   const [selectedIndex, setSelectedIndex] = useAtom(v2SelectedApiConfigIndexAtom);
@@ -65,11 +61,14 @@ export function useV2ApiConfig() {
     return true;
   }, [apiConfigs, setSelectedIndex]);
   
-  // 配置持久化监听
+  // V2独立的配置持久化
   useEffect(() => {
-    // 这里的持久化通过V1V2同步机制自动处理
-    // V2的配置变更会同步到V1，V1负责持久化到localStorage
-    // 移除日志输出避免频繁渲染
+    // 保存V2配置到localStorage
+    const v2State = {
+      apiConfigs,
+      selectedIndex,
+    };
+    localStorage.setItem('v2-api-config', JSON.stringify(v2State));
   }, [apiConfigs, selectedIndex]);
   
   return {
