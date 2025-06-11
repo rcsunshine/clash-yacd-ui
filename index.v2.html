@@ -16,7 +16,7 @@
     <script>
       // 防止主题闪烁
       (function() {
-        const theme = localStorage.getItem('theme') || 'auto';
+        const theme = localStorage.getItem('v2-theme') || 'auto';
         document.documentElement.setAttribute('data-theme', theme);
         
         if (theme === 'auto') {

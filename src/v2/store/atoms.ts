@@ -1,6 +1,7 @@
 import { atom } from 'jotai';
 
 import { ClashAPIConfig } from '../types/api';
+import { getStoredTheme, type Theme } from '../utils/theme';
 
 // V2独立的API配置状态
 export const v2ApiConfigsAtom = atom<ClashAPIConfig[]>([
@@ -24,14 +25,16 @@ export const v2CurrentApiConfigAtom = atom<ClashAPIConfig>(
   }
 );
 
-// V2主题状态 - 从localStorage读取初始值
-const getInitialTheme = (): 'light' | 'dark' | 'auto' => {
+// V2主题状态 - 使用官方推荐的初始化逻辑
+const getInitialTheme = (): Theme => {
   if (typeof window === 'undefined') return 'auto';
-  const saved = localStorage.getItem('v2-theme') as 'light' | 'dark' | 'auto' | null;
-  return saved || 'auto';
+  
+  // 按照官方推荐的优先级：localStorage -> 默认auto
+  const storedTheme = getStoredTheme();
+  return storedTheme || 'auto';
 };
 
-export const v2ThemeAtom = atom<'light' | 'dark' | 'auto'>(getInitialTheme());
+export const v2ThemeAtom = atom<Theme>(getInitialTheme());
 
 // V2侧边栏状态
 export const v2SidebarCollapsedAtom = atom<boolean>(false);

@@ -16,7 +16,7 @@ const ConfigSection: React.FC<{
     <CardHeader>
       <h3 className="text-lg font-semibold">{title}</h3>
       {description && (
-        <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+        <p className="text-sm text-theme-secondary">{description}</p>
       )}
     </CardHeader>
     <CardContent>
@@ -30,11 +30,11 @@ const ConfigItem: React.FC<{
   description?: string;
   children: React.ReactNode;
 }> = ({ label, description, children }) => (
-  <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+  <div className="flex items-center justify-between py-3 border-b border-theme last:border-b-0">
     <div className="flex-1">
-      <div className="font-medium text-gray-900 dark:text-white">{label}</div>
+      <div className="font-medium text-theme">{label}</div>
       {description && (
-        <div className="text-sm text-gray-600 dark:text-gray-400">{description}</div>
+        <div className="text-sm text-theme-secondary">{description}</div>
       )}
     </div>
     <div className="ml-4">
@@ -85,7 +85,7 @@ export const Config: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">配置</h1>
+        <h1 className="text-2xl font-bold text-theme">配置</h1>
         <Card>
           <CardContent>
             <div className="animate-pulse space-y-4">
@@ -101,14 +101,14 @@ export const Config: React.FC = () => {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">配置</h1>
+        <h1 className="text-2xl font-bold text-theme">配置</h1>
         <Card>
           <CardContent>
             <div className="text-center py-8">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-theme mb-2">
                 加载失败
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">{String(error)}</p>
+              <p className="text-theme-secondary mb-4">{String(error)}</p>
               <Button onClick={() => window.location.reload()}>重试</Button>
             </div>
           </CardContent>
@@ -121,8 +121,8 @@ export const Config: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">配置</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-theme">配置</h1>
+          <p className="text-theme-secondary">
             管理 Clash 核心配置和应用设置
           </p>
         </div>
@@ -145,7 +145,7 @@ export const Config: React.FC = () => {
             {systemLoading ? (
               <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
             ) : (
-              <span className="text-gray-900 dark:text-white font-mono">
+              <span className="text-theme font-mono">
                 {systemInfo?.version || 'N/A'}
               </span>
             )}
@@ -173,7 +173,7 @@ export const Config: React.FC = () => {
               label="平台" 
               description="系统平台信息"
             >
-              <span className="text-gray-900 dark:text-white font-mono">
+              <span className="text-theme font-mono">
                 {systemInfo.platform} {systemInfo.arch && `(${systemInfo.arch})`}
               </span>
             </ConfigItem>
@@ -184,7 +184,7 @@ export const Config: React.FC = () => {
               label="网络栈" 
               description="TCP/IP 栈类型"
             >
-              <span className="text-gray-900 dark:text-white font-mono">
+              <span className="text-theme font-mono">
                 {systemInfo.stack}
               </span>
             </ConfigItem>
@@ -206,7 +206,7 @@ export const Config: React.FC = () => {
               value={config?.mode || 'rule'}
               onChange={(e) => handleModeChange(e.target.value)}
               disabled={saving}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white disabled:opacity-50"
+              className="px-3 py-2 border border-theme rounded-md bg-surface text-theme disabled:opacity-50"
             >
               <option value="rule">规则模式</option>
               <option value="global">全局模式</option>
@@ -222,7 +222,7 @@ export const Config: React.FC = () => {
               value={config?.['log-level'] || 'info'}
               onChange={(e) => handleLogLevelChange(e.target.value)}
               disabled={saving}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white disabled:opacity-50"
+              className="px-3 py-2 border border-theme rounded-md bg-surface text-theme disabled:opacity-50"
             >
               <option value="silent">静默</option>
               <option value="error">错误</option>
@@ -252,7 +252,7 @@ export const Config: React.FC = () => {
             label="HTTP 端口" 
             description="HTTP 代理服务端口"
           >
-            <span className="text-gray-900 dark:text-white font-mono">
+            <span className="text-theme font-mono">
               {config?.port || 'N/A'}
             </span>
           </ConfigItem>
@@ -261,7 +261,7 @@ export const Config: React.FC = () => {
             label="SOCKS 端口" 
             description="SOCKS5 代理服务端口"
           >
-            <span className="text-gray-900 dark:text-white font-mono">
+            <span className="text-theme font-mono">
               {config?.['socks-port'] || 'N/A'}
             </span>
           </ConfigItem>
@@ -270,7 +270,7 @@ export const Config: React.FC = () => {
             label="混合端口" 
             description="HTTP 和 SOCKS5 混合端口"
           >
-            <span className="text-gray-900 dark:text-white font-mono">
+            <span className="text-theme font-mono">
               {config?.['mixed-port'] || 'N/A'}
             </span>
           </ConfigItem>
@@ -311,7 +311,7 @@ export const Config: React.FC = () => {
                 type: 'UPDATE_PREFERENCES',
                 payload: { refreshInterval: parseInt(e.target.value) }
               })}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-theme rounded-md bg-surface text-theme"
             >
               <option value={1000}>1 秒</option>
               <option value={3000}>3 秒</option>
@@ -368,7 +368,7 @@ export const Config: React.FC = () => {
             label="API 地址" 
             description="Clash API 服务地址"
           >
-            <span className="text-gray-900 dark:text-white font-mono">
+            <span className="text-theme font-mono">
               {state.apiConfig.baseURL}
             </span>
           </ConfigItem>
@@ -377,7 +377,7 @@ export const Config: React.FC = () => {
             label="认证密钥" 
             description="API 访问密钥"
           >
-            <span className="text-gray-900 dark:text-white font-mono">
+            <span className="text-theme font-mono">
               {state.apiConfig.secret ? '••••••••' : '未设置'}
             </span>
           </ConfigItem>
@@ -404,7 +404,7 @@ export const Config: React.FC = () => {
             label="Clash 版本" 
             description="当前运行的 Clash 核心版本"
           >
-            <span className="text-gray-900 dark:text-white font-mono">
+            <span className="text-theme font-mono">
               {systemInfo.version}
             </span>
           </ConfigItem>
@@ -413,7 +413,7 @@ export const Config: React.FC = () => {
             label="YACD 版本" 
             description="当前 YACD V2 版本"
           >
-            <span className="text-gray-900 dark:text-white font-mono">
+            <span className="text-theme font-mono">
               2.0.0-dev
             </span>
           </ConfigItem>
@@ -435,8 +435,8 @@ export const Config: React.FC = () => {
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium text-gray-900 dark:text-white">危险操作</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h3 className="font-medium text-theme">危险操作</h3>
+              <p className="text-sm text-theme-secondary">
                 这些操作可能会影响系统运行，请谨慎使用
               </p>
             </div>

@@ -95,7 +95,7 @@ export const Connections: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white hidden lg:block">连接</h1>
+        <h1 className="text-2xl font-bold text-theme hidden lg:block">连接</h1>
         <Card>
           <CardContent>
             <div className="animate-pulse space-y-4">
@@ -111,14 +111,14 @@ export const Connections: React.FC = () => {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white hidden lg:block">连接</h1>
+        <h1 className="text-2xl font-bold text-theme hidden lg:block">连接</h1>
         <Card>
           <CardContent>
             <div className="text-center py-8">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-theme mb-2">
                 加载失败
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">{String(error)}</p>
+              <p className="text-theme-secondary mb-4">{String(error)}</p>
               <Button onClick={() => refetch()}>重试</Button>
             </div>
           </CardContent>
@@ -162,8 +162,8 @@ export const Connections: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white hidden lg:block">连接</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <h1 className="text-xl font-bold text-theme hidden lg:block">连接</h1>
+            <p className="text-sm text-theme-secondary">
               实时网络连接监控 • 共 {totalConnections} 个连接
             </p>
           </div>
@@ -206,7 +206,7 @@ export const Connections: React.FC = () => {
                 <div className="text-2xl font-bold text-slate-700 dark:text-slate-300">
                   {totalConnections}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">总连接数</div>
+                <div className="text-xs text-theme-secondary font-medium">总连接数</div>
               </div>
             </div>
           </CardContent>
@@ -224,7 +224,7 @@ export const Connections: React.FC = () => {
                 <div className="text-2xl font-bold text-zinc-700 dark:text-zinc-300">
                   {tcpConnections}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">TCP 连接</div>
+                <div className="text-xs text-theme-secondary font-medium">TCP 连接</div>
               </div>
             </div>
           </CardContent>
@@ -242,7 +242,7 @@ export const Connections: React.FC = () => {
                 <div className="text-2xl font-bold text-stone-700 dark:text-stone-300">
                   {udpConnections}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">UDP 连接</div>
+                <div className="text-xs text-theme-secondary font-medium">UDP 连接</div>
               </div>
             </div>
           </CardContent>
@@ -260,7 +260,7 @@ export const Connections: React.FC = () => {
                 <div className="text-lg font-bold text-neutral-700 dark:text-neutral-300">
                   {formatBytes(totalTraffic)}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">总流量</div>
+                <div className="text-xs text-theme-secondary font-medium">总流量</div>
               </div>
             </div>
           </CardContent>
@@ -282,14 +282,14 @@ export const Connections: React.FC = () => {
                 placeholder="搜索主机名、IP地址或代理链..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
+                className="w-full pl-10 pr-4 py-2 border border-theme rounded-lg bg-surface text-theme focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
               />
             </div>
             <div>
               <select
                 value={networkFilter}
                 onChange={(e) => setNetworkFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
+                className="px-3 py-2 border border-theme rounded-lg bg-surface text-theme focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
               >
                 <option value="all">所有协议</option>
                 <option value="tcp">TCP</option>
@@ -310,10 +310,10 @@ export const Connections: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              <h3 className="text-xl font-semibold text-theme mb-3">
                 {searchQuery || networkFilter !== 'all' ? '没有找到匹配的连接' : '暂无活跃连接'}
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+              <p className="text-theme-secondary max-w-md mx-auto">
                 {searchQuery || networkFilter !== 'all' 
                   ? '尝试调整搜索条件或筛选器'
                   : '当前没有活跃的网络连接'
@@ -322,7 +322,7 @@ export const Connections: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 pb-2 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 border-b border-theme">
                 <span>显示 {connections.length} 个连接</span>
                 <span>实时更新</span>
               </div>
@@ -338,7 +338,7 @@ export const Connections: React.FC = () => {
                     return (
                       <div 
                         key={connection.id || index}
-                        className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 m-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                        className="border border-theme rounded-lg p-3 m-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
@@ -347,7 +347,7 @@ export const Connections: React.FC = () => {
                                 connection.metadata.network === 'tcp' ? 'bg-blue-500' : 
                                 connection.metadata.network === 'udp' ? 'bg-green-500' : 'bg-gray-500'
                               }`}></div>
-                              <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                              <span className="text-sm font-medium text-theme truncate">
                                 {destination}
                               </span>
                               <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full">
@@ -355,28 +355,28 @@ export const Connections: React.FC = () => {
                               </span>
                             </div>
                             
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-600 dark:text-gray-400">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-theme-secondary">
                               <div>
                                 <span className="font-medium">代理链:</span>
-                                <div className="truncate text-gray-700 dark:text-gray-300">
+                                <div className="truncate text-theme-secondary">
                                   {connection.chains?.join(' → ') || 'Direct'}
                                 </div>
                               </div>
                               <div>
                                 <span className="font-medium">规则:</span>
-                                <div className="truncate text-gray-700 dark:text-gray-300">
+                                <div className="truncate text-theme-secondary">
                                   {connection.rule || 'Unknown'}
                                 </div>
                               </div>
                               <div>
                                 <span className="font-medium">流量:</span>
-                                <div className="text-gray-700 dark:text-gray-300">
+                                <div className="text-theme-secondary">
                                   ↑{formatBytes(connection.upload)} ↓{formatBytes(connection.download)}
                                 </div>
                               </div>
                               <div>
                                 <span className="font-medium">持续时间:</span>
-                                <div className="text-gray-700 dark:text-gray-300">
+                                <div className="text-theme-secondary">
                                   {formatDuration(connection.start)}
                                 </div>
                               </div>

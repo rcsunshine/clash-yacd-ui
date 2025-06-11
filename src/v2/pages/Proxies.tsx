@@ -32,7 +32,7 @@ const ProxyGroupCard: React.FC<{
 
   return (
     <Card className="overflow-hidden border-0 shadow-lg card-hover">
-      <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700">
+      <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-theme">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-stone-700 rounded-lg flex items-center justify-center">
@@ -41,14 +41,14 @@ const ProxyGroupCard: React.FC<{
               </svg>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{group.name}</h3>
+              <h3 className="text-lg font-semibold text-theme">{group.name}</h3>
               <div className="flex items-center space-x-2 text-sm">
                 <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 rounded-full text-xs font-medium">
                   {group.type}
                 </span>
-                <span className="text-gray-500 dark:text-gray-400">•</span>
-                <span className="text-gray-600 dark:text-gray-400">
-                  当前: <span className="font-medium text-gray-700 dark:text-gray-300">{group.now}</span>
+                <span className="text-theme-tertiary">•</span>
+                <span className="text-theme-secondary">
+                  当前: <span className="font-medium text-theme-secondary">{group.now}</span>
                 </span>
               </div>
             </div>
@@ -64,7 +64,7 @@ const ProxyGroupCard: React.FC<{
               variant="outline"
               size="sm"
               onClick={() => setExpanded(!expanded)}
-              className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="border-theme hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               <svg 
                 className={`w-4 h-4 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} 
@@ -93,7 +93,7 @@ const ProxyGroupCard: React.FC<{
                     className={`group relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                       isSelected
                         ? 'border-gray-500 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800/30 dark:to-slate-800/30 shadow-md'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                        : 'border-theme hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                     }`}
                     onClick={() => onSwitchProxy(group.name, proxyName)}
                     role="button"
@@ -110,7 +110,7 @@ const ProxyGroupCard: React.FC<{
                         {isSelected && (
                           <div className="w-2 h-2 bg-gray-600 rounded-full animate-pulse"></div>
                         )}
-                        <div className="font-medium text-gray-900 dark:text-white">
+                        <div className="font-medium text-theme">
                           {proxyName}
                         </div>
                         {isSelected && (
@@ -122,7 +122,7 @@ const ProxyGroupCard: React.FC<{
                       <div className="flex items-center space-x-2">
                         <div className={`text-sm font-mono px-2 py-1 rounded-lg ${
                           delay === 0 
-                            ? 'text-gray-400 bg-gray-100 dark:bg-gray-800' 
+                            ? 'text-gray-400 bg-theme-tertiary' 
                             : delay < 100 
                               ? 'text-green-600 bg-green-100 dark:bg-green-900/30' 
                               : delay < 300 
@@ -200,7 +200,7 @@ export const Proxies: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white hidden lg:block">代理</h1>
+        <h1 className="text-2xl font-bold text-theme hidden lg:block">代理</h1>
         <Card>
           <CardContent>
             <div className="animate-pulse space-y-4">
@@ -216,14 +216,14 @@ export const Proxies: React.FC = () => {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white hidden lg:block">代理</h1>
+        <h1 className="text-2xl font-bold text-theme hidden lg:block">代理</h1>
         <Card>
           <CardContent>
             <div className="text-center py-8">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-theme mb-2">
                 加载失败
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">{String(error)}</p>
+              <p className="text-theme-secondary mb-4">{String(error)}</p>
               <Button onClick={() => refetch()}>重试</Button>
             </div>
           </CardContent>
@@ -245,9 +245,9 @@ export const Proxies: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white hidden lg:block">代理</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              管理代理组和节点 • 模式: <span className="font-medium text-gray-700 dark:text-gray-300">{config?.mode || 'Unknown'}</span>
+            <h1 className="text-xl font-bold text-theme hidden lg:block">代理</h1>
+            <p className="text-sm text-theme-secondary">
+              管理代理组和节点 • 模式: <span className="font-medium text-theme-secondary">{config?.mode || 'Unknown'}</span>
             </p>
           </div>
         </div>
@@ -274,14 +274,14 @@ export const Proxies: React.FC = () => {
                 placeholder="搜索代理组..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
+                className="w-full pl-10 pr-4 py-3 border border-theme rounded-xl bg-surface text-theme focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
               />
             </div>
             <div className="relative">
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="appearance-none px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
+                className="appearance-none px-4 py-3 pr-10 border border-theme rounded-xl bg-surface text-theme focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
               >
                 <option value="all">所有类型</option>
                 <option value="Selector">手动选择</option>
@@ -312,7 +312,7 @@ export const Proxies: React.FC = () => {
                 <div className="text-2xl font-bold text-slate-700 dark:text-slate-300">
                   {proxyCount}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">总代理数</div>
+                <div className="text-xs text-theme-secondary font-medium">总代理数</div>
               </div>
             </div>
           </CardContent>
@@ -330,7 +330,7 @@ export const Proxies: React.FC = () => {
                 <div className="text-2xl font-bold text-zinc-700 dark:text-zinc-300">
                   {proxyGroups.length}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">代理组</div>
+                <div className="text-xs text-theme-secondary font-medium">代理组</div>
               </div>
             </div>
           </CardContent>
@@ -349,7 +349,7 @@ export const Proxies: React.FC = () => {
                 <div className="text-xl font-bold text-stone-700 dark:text-stone-300 capitalize">
                   {config?.mode || 'N/A'}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">当前模式</div>
+                <div className="text-xs text-theme-secondary font-medium">当前模式</div>
               </div>
             </div>
           </CardContent>
@@ -367,10 +367,10 @@ export const Proxies: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9m0 9c-5 0-9-4-9-9s4-9 9-9" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                <h3 className="text-xl font-semibold text-theme mb-3">
                   没有找到代理组
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                <p className="text-theme-secondary max-w-md mx-auto">
                   {searchQuery ? '尝试调整搜索条件或清空搜索框' : '当前没有可用的代理组，请检查 Clash 配置'}
                 </p>
                 {searchQuery && (

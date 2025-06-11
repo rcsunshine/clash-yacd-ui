@@ -8,6 +8,8 @@ import { ThemeDropdown } from '../ui/ThemeDropdown';
 
 export interface SidebarProps {
   className?: string;
+  currentPage?: string;
+  onPageChange?: (page: string) => void;
 }
 
 export interface SidebarItemProps {
@@ -30,9 +32,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const handleClick = (e: React.MouseEvent) => {
     if (href) {
       e.preventDefault();
-      window.location.hash = href.replace('#', '');
-    }
-    if (onClick) {
+      window.location.hash = href;
+      // 如果有回调函数，调用它
+      if (onClick) {
+        onClick();
+      }
+    } else if (onClick) {
       onClick();
     }
   };
@@ -127,14 +132,14 @@ function useConnectionStatus() {
 }
 
 export function Sidebar(props: SidebarProps = {}) {
-  const { className } = props;
+  const { className, currentPage, onPageChange } = props;
   const connectionState = useConnectionStatus();
-  const [currentPage, setCurrentPage] = React.useState('dashboard');
+  const [currentPageState, setCurrentPageState] = React.useState(currentPage || 'dashboard');
   
   React.useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1) || 'dashboard';
-      setCurrentPage(hash);
+      setCurrentPageState(hash);
     };
     
     handleHashChange();
@@ -142,6 +147,14 @@ export function Sidebar(props: SidebarProps = {}) {
     
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  // 定义页面变化处理函数 - 移动到 menuItems 定义之前
+  const handlePageChange = (page: string) => {
+    setCurrentPageState(page);
+    if (onPageChange) {
+      onPageChange(page);
+    }
+  };
 
   const menuItems: SidebarItemProps[] = [
     {
@@ -153,9 +166,9 @@ export function Sidebar(props: SidebarProps = {}) {
       ),
       label: '仪表板',
       href: '#dashboard',
-      active: currentPage === 'dashboard',
+      active: currentPageState === 'dashboard',
+      onClick: () => handlePageChange('dashboard'),
     },
-
     {
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,7 +177,8 @@ export function Sidebar(props: SidebarProps = {}) {
       ),
       label: '代理',
       href: '#proxies',
-      active: currentPage === 'proxies',
+      active: currentPageState === 'proxies',
+      onClick: () => handlePageChange('proxies'),
     },
     {
       icon: (
@@ -174,8 +188,9 @@ export function Sidebar(props: SidebarProps = {}) {
       ),
       label: '连接',
       href: '#connections',
-      active: currentPage === 'connections',
+      active: currentPageState === 'connections',
       badge: '12',
+      onClick: () => handlePageChange('connections'),
     },
     {
       icon: (
@@ -185,7 +200,8 @@ export function Sidebar(props: SidebarProps = {}) {
       ),
       label: '规则',
       href: '#rules',
-      active: currentPage === 'rules',
+      active: currentPageState === 'rules',
+      onClick: () => handlePageChange('rules'),
     },
     {
       icon: (
@@ -195,7 +211,8 @@ export function Sidebar(props: SidebarProps = {}) {
       ),
       label: '日志',
       href: '#logs',
-      active: currentPage === 'logs',
+      active: currentPageState === 'logs',
+      onClick: () => handlePageChange('logs'),
     },
     {
       icon: (
@@ -206,7 +223,8 @@ export function Sidebar(props: SidebarProps = {}) {
       ),
       label: '配置',
       href: '#configs',
-      active: currentPage === 'configs',
+      active: currentPageState === 'configs',
+      onClick: () => handlePageChange('configs'),
     },
     {
       icon: (
@@ -216,8 +234,9 @@ export function Sidebar(props: SidebarProps = {}) {
       ),
       label: 'API',
       href: '#api-config',
-      active: currentPage === 'api-config',
+      active: currentPageState === 'api-config',
       badge: connectionState.status === 'connected' ? undefined : '!',
+      onClick: () => handlePageChange('api-config'),
     },
   ];
 
@@ -282,14 +301,14 @@ export function Sidebar(props: SidebarProps = {}) {
           </div>
           <ThemeDropdown />
         </div>
-      </div>
 
-      {/* Connection Status */}
-      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-        <StatusIndicator 
-          status={getStatusType()} 
-          label={getDisplayMessage()}
-        />
+        {/* Connection Status */}
+        <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+          <StatusIndicator 
+            status={getStatusType()} 
+            label={getDisplayMessage()}
+          />
+        </div>
       </div>
     </aside>
   );

@@ -81,7 +81,7 @@ const RulesContent: React.FC = () => {
         <div className="page-body">
           <div className="container-fluid px-4">
             <div className="space-y-4">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white hidden lg:block">规则</h1>
+              <h1 className="text-xl font-bold text-theme hidden lg:block">规则</h1>
               
               {isNetworkError ? (
                 <NetworkErrorAlert
@@ -130,8 +130,8 @@ const RulesContent: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900 dark:text-white hidden lg:block">规则</h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <h1 className="text-xl font-bold text-theme hidden lg:block">规则</h1>
+                  <p className="text-sm text-theme-secondary">
                     流量分流规则管理 • 共 {totalRules} 条规则
                   </p>
                 </div>
@@ -158,7 +158,7 @@ const RulesContent: React.FC = () => {
                       <div className="text-2xl font-bold text-slate-700 dark:text-slate-300">
                         {totalRules}
                       </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">总规则数</div>
+                      <div className="text-xs text-theme-secondary font-medium">总规则数</div>
                     </div>
                   </div>
                 </CardContent>
@@ -176,7 +176,7 @@ const RulesContent: React.FC = () => {
                       <div className="text-2xl font-bold text-zinc-700 dark:text-zinc-300">
                         {totalProviders}
                       </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">规则提供者</div>
+                      <div className="text-xs text-theme-secondary font-medium">规则提供者</div>
                     </div>
                   </div>
                 </CardContent>
@@ -194,7 +194,7 @@ const RulesContent: React.FC = () => {
                       <div className="text-2xl font-bold text-stone-700 dark:text-stone-300">
                         {ruleTypes.length}
                       </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">规则类型</div>
+                      <div className="text-xs text-theme-secondary font-medium">规则类型</div>
                     </div>
                   </div>
                 </CardContent>
@@ -204,13 +204,13 @@ const RulesContent: React.FC = () => {
             {/* 标签页切换 */}
             <Card className="overflow-hidden border-0 shadow-lg">
               <CardContent className="p-0">
-                <div className="flex border-b border-gray-200 dark:border-gray-700">
+                <div className="flex border-b border-theme">
                   <button
                     onClick={() => setActiveTab('rules')}
                     className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
                       activeTab === 'rules'
                         ? 'text-slate-700 dark:text-slate-300 border-b-2 border-slate-500 bg-slate-50 dark:bg-slate-800/50'
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                        : 'text-theme-secondary hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
                     <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,7 +223,7 @@ const RulesContent: React.FC = () => {
                     className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
                       activeTab === 'providers'
                         ? 'text-slate-700 dark:text-slate-300 border-b-2 border-slate-500 bg-slate-50 dark:bg-slate-800/50'
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                        : 'text-theme-secondary hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
                     <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -252,14 +252,14 @@ const RulesContent: React.FC = () => {
                           placeholder="搜索规则内容或代理..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
+                          className="w-full pl-10 pr-4 py-2 border border-theme rounded-lg bg-surface text-theme focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
                         />
                       </div>
                       <div>
                         <select
                           value={typeFilter}
                           onChange={(e) => setTypeFilter(e.target.value as RuleType)}
-                          className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
+                          className="px-3 py-2 border border-theme rounded-lg bg-surface text-theme focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors"
                         >
                           <option value="all">所有类型</option>
                           {ruleTypes.map(type => (
@@ -281,10 +281,10 @@ const RulesContent: React.FC = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                           </svg>
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                        <h3 className="text-xl font-semibold text-theme mb-3">
                           {searchQuery || typeFilter !== 'all' ? '没有找到匹配的规则' : '暂无规则'}
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                        <p className="text-theme-secondary max-w-md mx-auto">
                           {searchQuery || typeFilter !== 'all' 
                             ? '尝试调整搜索条件或筛选器'
                             : '当前没有配置任何规则'
@@ -293,7 +293,7 @@ const RulesContent: React.FC = () => {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 pb-2 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 border-b border-theme">
                           <span>显示 {rules.length} 条规则</span>
                           <span>按优先级排序</span>
                         </div>
@@ -305,7 +305,7 @@ const RulesContent: React.FC = () => {
                             renderItem={(rule: Rule, index: number) => (
                               <div 
                                 key={index}
-                                className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 m-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                                className="border border-theme rounded-lg p-3 m-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                               >
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1 min-w-0">
@@ -313,16 +313,16 @@ const RulesContent: React.FC = () => {
                                       <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full font-medium">
                                         {rule.type}
                                       </span>
-                                      <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                      <span className="text-sm font-medium text-theme truncate">
                                         {rule.payload}
                                       </span>
                                     </div>
-                                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                                    <div className="text-xs text-theme-secondary">
                                       <span className="font-medium">代理: </span>
-                                      <span className="text-gray-700 dark:text-gray-300">{rule.proxy}</span>
+                                      <span className="text-theme-secondary">{rule.proxy}</span>
                                     </div>
                                   </div>
-                                  <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
+                                  <div className="text-xs text-theme-tertiary text-right">
                                     #{index + 1}
                                   </div>
                                 </div>
@@ -348,16 +348,16 @@ const RulesContent: React.FC = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                      <h3 className="text-xl font-semibold text-theme mb-3">
                         暂无规则提供者
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                      <p className="text-theme-secondary max-w-md mx-auto">
                         当前没有配置任何规则提供者
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 pb-2 border-b border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 border-b border-theme">
                         <span>共 {providers.length} 个规则提供者</span>
                         <span>实时状态</span>
                       </div>
@@ -369,12 +369,12 @@ const RulesContent: React.FC = () => {
                           renderItem={(provider, index) => (
                             <div 
                               key={provider.name}
-                              className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                              className="border border-theme rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                             >
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-2 mb-2">
-                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                    <h3 className="text-lg font-medium text-theme">
                                       {provider.name}
                                     </h3>
                                     <span className="text-xs px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full">
@@ -383,26 +383,26 @@ const RulesContent: React.FC = () => {
                                   </div>
                                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                                     <div>
-                                      <span className="text-gray-600 dark:text-gray-400">行为:</span>
-                                      <div className="font-medium text-gray-900 dark:text-white">
+                                      <span className="text-theme-secondary">行为:</span>
+                                      <div className="font-medium text-theme">
                                         {provider.behavior || 'domain'}
                                       </div>
                                     </div>
                                     <div>
-                                      <span className="text-gray-600 dark:text-gray-400">规则数:</span>
-                                      <div className="font-medium text-gray-900 dark:text-white">
+                                      <span className="text-theme-secondary">规则数:</span>
+                                      <div className="font-medium text-theme">
                                         {provider.ruleCount || 0}
                                       </div>
                                     </div>
                                     <div>
-                                      <span className="text-gray-600 dark:text-gray-400">载体:</span>
-                                      <div className="font-medium text-gray-900 dark:text-white">
+                                      <span className="text-theme-secondary">载体:</span>
+                                      <div className="font-medium text-theme">
                                         {provider.vehicleType || 'HTTP'}
                                       </div>
                                     </div>
                                     <div>
-                                      <span className="text-gray-600 dark:text-gray-400">更新时间:</span>
-                                      <div className="font-medium text-gray-900 dark:text-white">
+                                      <span className="text-theme-secondary">更新时间:</span>
+                                      <div className="font-medium text-theme">
                                         {provider.updatedAt ? new Date(provider.updatedAt).toLocaleString() : '未知'}
                                       </div>
                                     </div>

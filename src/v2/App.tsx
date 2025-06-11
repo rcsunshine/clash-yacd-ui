@@ -2,11 +2,9 @@ import './styles/globals.css';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
-import React from 'react';
+import React, { useEffect } from 'react';
 
-import { AppLayout } from './components/layout/AppLayout';
-import { useV1V2Sync } from './hooks/useV1V2Sync';
-import { APIConfig } from './pages/APIConfig';
+import { Sidebar } from './components/layout/Sidebar';
 import { Config } from './pages/Config';
 import { Connections } from './pages/Connections';
 import { Dashboard } from './pages/Dashboard';
@@ -14,75 +12,25 @@ import { Logs } from './pages/Logs';
 import { Proxies } from './pages/Proxies';
 import { Rules } from './pages/Rules';
 import { TestPage } from './pages/TestPage';
-// 导入V2独立的状态管理
-import { v2CurrentPageAtom,v2ThemeAtom } from './store/atoms';
+import { v2ThemeAtom } from './store/atoms';
+import { applyTheme, initializeTheme, setTheme,watchSystemTheme } from './utils/theme';
 
 // 创建 React Query 客户端
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 3,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      staleTime: 5000,
       refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 30000,
     },
   },
 });
 
-const useThemeManager = () => {
-  const [theme, setTheme] = useAtom(v2ThemeAtom);
-  
-  // 初始化主题
-  React.useEffect(() => {
-    const savedTheme = localStorage.getItem('v2-theme') as 'light' | 'dark' | 'auto' | null;
-    if (savedTheme && savedTheme !== theme) {
-      setTheme(savedTheme);
-    }
-  }, [theme, setTheme]);
-  
-  // 应用主题到DOM
-  React.useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    
-    if (theme === 'auto') {
-      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.classList.toggle('dark', isDark);
-      
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = (e: MediaQueryListEvent) => {
-        document.documentElement.classList.toggle('dark', e.matches);
-      };
-      
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    } else {
-      document.documentElement.classList.toggle('dark', theme === 'dark');
-    }
-  }, [theme]);
-};
-
-const useRouter = () => {
-  const [currentPage, setCurrentPage] = useAtom(v2CurrentPageAtom);
-  
-  React.useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.slice(1) || 'dashboard';
-      setCurrentPage(hash);
-    };
-    
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-    
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [setCurrentPage]);
-  
-  return currentPage;
-};
-
+// 页面渲染组件
 const PageRenderer: React.FC<{ currentPage: string }> = ({ currentPage }) => {
   switch (currentPage) {
-    case 'test':
-      return <TestPage />;
+    case 'dashboard':
+      return <Dashboard />;
     case 'proxies':
       return <Proxies />;
     case 'connections':
@@ -91,47 +39,60 @@ const PageRenderer: React.FC<{ currentPage: string }> = ({ currentPage }) => {
       return <Rules />;
     case 'logs':
       return <Logs />;
-    case 'configs':
+    case 'config':
       return <Config />;
-    case 'api-config':
-      return <APIConfig />;
-    case 'dashboard':
+    case 'test':
+      return <TestPage />;
     default:
       return <Dashboard />;
   }
 };
 
-const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // V1和V2状态同步
-  useV1V2Sync();
-  
-  React.useEffect(() => {
-    // V2 特有的初始化逻辑
-    const savedPreferences = localStorage.getItem('v2-preferences');
-    if (savedPreferences) {
-      try {
-        const preferences = JSON.parse(savedPreferences);
-        console.log('V2 preferences loaded:', preferences);
-      } catch (error) {
-        console.warn('Failed to parse saved V2 preferences:', error);
-      }
-    }
-  }, []);
-  
-  return <>{children}</>;
-};
+export const App: React.FC = () => {
+  const [currentTheme, setCurrentTheme] = useAtom(v2ThemeAtom);
+  const [currentPage, setCurrentPage] = React.useState('dashboard');
 
-export const AppV2: React.FC = () => {
-  const currentPage = useRouter();
-  useThemeManager();
-  
+  // 初始化主题 - 只在组件挂载时执行一次
+  useEffect(() => {
+    const initialTheme = initializeTheme();
+    if (initialTheme !== currentTheme) {
+      setCurrentTheme(initialTheme);
+    }
+  }, [currentTheme, setCurrentTheme]); // 添加依赖项避免警告
+
+  // 监听系统主题变化
+  useEffect(() => {
+    const cleanup = watchSystemTheme(() => {
+      if (currentTheme === 'auto') {
+        // 系统主题变化时，重新应用auto主题
+        applyTheme('auto');
+      }
+    });
+
+    return cleanup;
+  }, [currentTheme]); // 当主题变化时重新设置监听器
+
+  // 主题变化时应用到DOM
+  useEffect(() => {
+    console.log('🎨 应用主题:', currentTheme);
+    applyTheme(currentTheme);
+    setTheme(currentTheme);
+  }, [currentTheme]);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <AppInitializer>
-        <AppLayout>
-          <PageRenderer currentPage={currentPage} />
-        </AppLayout>
-      </AppInitializer>
+      <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+        <div className="flex h-screen">
+          <Sidebar 
+            currentPage={currentPage} 
+            onPageChange={setCurrentPage}
+          />
+          
+          <main className="flex-1 overflow-hidden">
+            <PageRenderer currentPage={currentPage} />
+          </main>
+        </div>
+      </div>
     </QueryClientProvider>
   );
 }; 

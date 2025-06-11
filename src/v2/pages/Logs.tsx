@@ -39,9 +39,9 @@ export const Logs: React.FC = () => {
       case 'info':
         return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20';
       case 'debug':
-        return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20';
+        return 'text-theme-secondary bg-theme-secondary';
       default:
-        return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20';
+        return 'text-theme-secondary bg-theme-secondary';
     }
   };
 
@@ -122,8 +122,8 @@ export const Logs: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white hidden lg:block">日志</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <h1 className="text-xl font-bold text-theme hidden lg:block">日志</h1>
+            <p className="text-sm text-theme-secondary">
               系统运行日志 • 共 {logs.length} 条记录 • {isConnected ? '✅ 已连接' : '❌ 未连接'}
             </p>
           </div>
@@ -187,7 +187,7 @@ export const Logs: React.FC = () => {
                 <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
                   {logs.filter(log => log.level === 'info').length}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">信息</div>
+                <div className="text-xs text-theme-secondary font-medium">信息</div>
               </div>
             </div>
           </CardContent>
@@ -205,7 +205,7 @@ export const Logs: React.FC = () => {
                 <div className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">
                   {logs.filter(log => log.level === 'warning').length}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">警告</div>
+                <div className="text-xs text-theme-secondary font-medium">警告</div>
               </div>
             </div>
           </CardContent>
@@ -223,7 +223,7 @@ export const Logs: React.FC = () => {
                 <div className="text-2xl font-bold text-red-700 dark:text-red-300">
                   {logs.filter(log => log.level === 'error').length}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">错误</div>
+                <div className="text-xs text-theme-secondary font-medium">错误</div>
               </div>
             </div>
           </CardContent>
@@ -239,10 +239,10 @@ export const Logs: React.FC = () => {
                 </svg>
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-700 dark:text-gray-300">
+                <div className="text-2xl font-bold text-theme-secondary">
                   {logs.filter(log => log.level === 'debug').length}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">调试</div>
+                <div className="text-xs text-theme-secondary font-medium">调试</div>
               </div>
             </div>
           </CardContent>
@@ -254,7 +254,7 @@ export const Logs: React.FC = () => {
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
             <div className="flex items-center space-x-3">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">过滤级别:</span>
+              <span className="text-sm font-medium text-theme-secondary">过滤级别:</span>
               <div className="flex space-x-2">
                 {(['all', 'info', 'warning', 'error', 'debug'] as const).map((level) => (
                   <button
@@ -263,7 +263,7 @@ export const Logs: React.FC = () => {
                     className={`px-3 py-1 text-xs rounded-full transition-colors ${
                       filter === level
                         ? 'bg-slate-600 text-white'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                        : 'bg-theme-tertiary text-theme-secondary hover:bg-gray-200 dark:hover:bg-gray-700'
                     }`}
                   >
                     {level === 'all' ? '全部' : level}
@@ -272,7 +272,7 @@ export const Logs: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <label className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
+              <label className="flex items-center space-x-2 text-sm text-theme-secondary">
                 <input
                   type="checkbox"
                   checked={autoScroll}
@@ -297,10 +297,10 @@ export const Logs: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                <h3 className="text-xl font-semibold text-theme mb-3">
                   暂无日志记录
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                <p className="text-theme-secondary max-w-md mx-auto">
                   当前没有符合过滤条件的日志记录
                 </p>
               </div>
@@ -312,7 +312,7 @@ export const Logs: React.FC = () => {
                 renderItem={(log: LogEntry, index: number) => (
                   <div 
                     key={log.id}
-                    className={`p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${
+                    className={`p-4 border-b border-theme hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${
                       index === filteredLogs.length - 1 ? 'border-b-0' : ''
                     }`}
                   >
@@ -327,16 +327,16 @@ export const Logs: React.FC = () => {
                               {log.level.toUpperCase()}
                             </span>
                             {log.source && (
-                              <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full">
+                              <span className="text-xs px-2 py-1 bg-theme-tertiary text-theme-secondary rounded-full">
                                 {log.source}
                               </span>
                             )}
                           </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-theme-tertiary">
                             {log.time}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-900 dark:text-white break-words">
+                        <p className="text-sm text-theme break-words">
                           {log.message}
                         </p>
                       </div>

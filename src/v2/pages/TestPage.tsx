@@ -1,30 +1,37 @@
+import { useAtom } from 'jotai';
 import React from 'react';
 
 import { APIConfig } from '../components/APIConfig';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardFooter,CardHeader } from '../components/ui/Card';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
+import { v2ThemeAtom } from '../store/atoms';
+import { getCurrentAppliedTheme } from '../utils/theme';
 
 export const TestPage: React.FC = () => {
   const [count, setCount] = React.useState(0);
-  const [theme, setTheme] = React.useState('auto');
+  const [currentTheme] = useAtom(v2ThemeAtom);
+  const [isDarkMode, setIsDarkMode] = React.useState(false);
 
-  const toggleTheme = () => {
-    const themes = ['light', 'dark', 'auto'];
-    const currentIndex = themes.indexOf(theme);
-    const nextTheme = themes[(currentIndex + 1) % themes.length];
-    setTheme(nextTheme);
+  // 检测DOM中的实际主题状态
+  React.useEffect(() => {
+    const checkTheme = () => {
+      const htmlElement = document.documentElement;
+      const hasDarkClass = htmlElement.classList.contains('dark');
+      setIsDarkMode(hasDarkClass);
+    };
+
+    checkTheme();
     
-    document.documentElement.setAttribute('data-theme', nextTheme);
-    localStorage.setItem('theme', nextTheme);
-    
-    if (nextTheme === 'auto') {
-      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.classList.toggle('dark', isDark);
-    } else {
-      document.documentElement.classList.toggle('dark', nextTheme === 'dark');
-    }
-  };
+    // 监听DOM变化
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="p-6 space-y-6">
@@ -33,9 +40,49 @@ export const TestPage: React.FC = () => {
           V2 测试页面
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          验证所有组件是否正常工作
+          验证所有组件是否正常工作，主题切换功能请使用侧边栏底部的主题下拉菜单
         </p>
       </div>
+
+      {/* 主题调试信息 */}
+      <Card>
+        <CardHeader>
+          <h3 className="text-lg font-semibold">🎨 主题调试信息</h3>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <strong>Jotai 状态:</strong> {currentTheme}
+            </div>
+            <div>
+              <strong>DOM 类名:</strong> {isDarkMode ? 'dark' : 'light'}
+            </div>
+            <div>
+              <strong>getCurrentAppliedTheme():</strong> {getCurrentAppliedTheme()}
+            </div>
+            <div>
+              <strong>系统偏好:</strong> {window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'}
+            </div>
+            <div>
+              <strong>localStorage:</strong> {localStorage.getItem('v2-theme') || '未设置'}
+            </div>
+            <div>
+              <strong>HTML data-theme:</strong> {document.documentElement.getAttribute('data-theme') || '未设置'}
+            </div>
+          </div>
+          <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              如果主题切换不工作，请检查：
+              <br />
+              1. Jotai状态和DOM类名是否一致
+              <br />
+              2. localStorage中的v2-theme值是否正确
+              <br />
+              3. 控制台是否有错误信息
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* API Configuration Section */}
       <div className="mb-8">
@@ -171,9 +218,6 @@ export const TestPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <strong>版本:</strong> V2.0.0
-            </div>
-            <div>
-              <strong>当前主题:</strong> {theme}
             </div>
             <div>
               <strong>浏览器:</strong> {navigator.userAgent.split(' ')[0]}

@@ -2,20 +2,8 @@ import { Provider as JotaiProvider } from 'jotai';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-// 导入 V1 的状态管理初始化
-import { initialState } from '../store/app';
-import { AppV2 } from './App';
-import { initGlobalErrorHandling } from './hooks/useErrorHandler';
+import { App } from './App';
 import { AppStateProvider } from './store';
-
-// 初始化 V1 状态
-initialState();
-
-// 初始化全局错误处理
-const cleanupErrorHandling = initGlobalErrorHandling();
-
-// 页面卸载时清理
-window.addEventListener('beforeunload', cleanupErrorHandling);
 
 // 简单的错误边界
 class ErrorBoundary extends React.Component<
@@ -77,7 +65,7 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-// 开发模式下的 V2 预览
+// V2应用启动
 const rootEl = document.getElementById('app');
 if (rootEl) {
   const root = createRoot(rootEl);
@@ -86,7 +74,7 @@ if (rootEl) {
       <ErrorBoundary>
         <JotaiProvider>
           <AppStateProvider>
-            <AppV2 />
+            <App />
           </AppStateProvider>
         </JotaiProvider>
       </ErrorBoundary>
