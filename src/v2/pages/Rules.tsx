@@ -1,4 +1,4 @@
-import '../styles/pages.scss';
+import '../styles/pages.css';
 
 import React, { useMemo,useState } from 'react';
 
