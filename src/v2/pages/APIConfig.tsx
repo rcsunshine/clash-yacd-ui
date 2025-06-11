@@ -1,15 +1,10 @@
-import { useAtom } from 'jotai';
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
-import { useApiConfig } from '../hooks/useApiConfig';
-import {
-  v2ApiConfigsAtom,
-  v2SelectedApiConfigIndexAtom,
-} from '../store/atoms';
-import { ClashAPIConfig } from '../types/api';
+import { useApiConfig, useV2ApiConfig } from '../hooks/useApiConfig';
+import type { ClashAPIConfig } from '../types/api';
 
 interface APITestResult {
   success: boolean;
@@ -528,9 +523,8 @@ const EditAPIForm: React.FC<{
 };
 
 export const APIConfig: React.FC = () => {
-  const [apiConfigs, setApiConfigs] = useAtom(v2ApiConfigsAtom);
-  const [selectedIndex, setSelectedIndex] = useAtom(v2SelectedApiConfigIndexAtom);
   const currentApiConfig = useApiConfig();
+  const v2Config = useV2ApiConfig();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [currentApiStatus, setCurrentApiStatus] = useState<APITestResult | null>(null);
@@ -572,10 +566,10 @@ export const APIConfig: React.FC = () => {
     }
   };
 
-  // 页面加载时检查当前API配置状态
+  // 页面加载时和API配置变化时检查状态
   useEffect(() => {
     checkCurrentAPI();
-  }, [checkCurrentAPI]);
+  }, [currentApiConfig.baseURL, currentApiConfig.secret]); // 只在API配置变化时重新检查
 
   const testAPIConfig = async (config: ClashAPIConfig): Promise<APITestResult> => {
     try {
@@ -610,27 +604,17 @@ export const APIConfig: React.FC = () => {
   };
 
   const handleAddConfig = (newConfig: ClashAPIConfig) => {
-    setApiConfigs([...apiConfigs, newConfig]);
+    const newIndex = v2Config.addConfig(newConfig);
     setShowAddForm(false);
     
     // 如果当前 API 不可用，自动切换到新添加的配置
     if (currentApiStatus && !currentApiStatus.success) {
-      setSelectedIndex(apiConfigs.length);
+      v2Config.switchConfig(newIndex);
     }
   };
 
   const handleDeleteConfig = (index: number) => {
-    if (index === 0) return; // 不能删除第一个配置
-    
-    const newConfigs = apiConfigs.filter((_, i) => i !== index);
-    setApiConfigs(newConfigs);
-    
-    // 如果删除的是当前选中的配置，切换到第一个
-    if (index === selectedIndex) {
-      setSelectedIndex(0);
-    } else if (index < selectedIndex) {
-      setSelectedIndex(selectedIndex - 1);
-    }
+    v2Config.removeConfig(index);
   };
 
   const handleEditConfig = (index: number) => {
@@ -703,11 +687,11 @@ export const APIConfig: React.FC = () => {
                   >
                     添加新的 API 配置
                   </Button>
-                  {selectedIndex >= 0 && (
+                  {v2Config.selectedIndex >= 0 && (
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleEditConfig(selectedIndex)}
+                      onClick={() => handleEditConfig(v2Config.selectedIndex)}
                       disabled={editingIndex !== null || showAddForm}
                     >
                       编辑当前配置
@@ -724,7 +708,7 @@ export const APIConfig: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            已配置的 API ({apiConfigs.length})
+            已配置的 API ({v2Config.configs.length})
           </h2>
           
           {!showAddForm && editingIndex === null && (
@@ -734,13 +718,13 @@ export const APIConfig: React.FC = () => {
           )}
         </div>
 
-        {apiConfigs.map((config, index) => (
+        {v2Config.configs.map((config, index) => (
           <APIConfigItem
             key={`${config.baseURL}-${config.addedAt || index}`}
             config={config}
             index={index}
-            isSelected={index === selectedIndex}
-            onSelect={() => setSelectedIndex(index)}
+            isSelected={index === v2Config.selectedIndex}
+            onSelect={() => v2Config.switchConfig(index)}
             onDelete={() => handleDeleteConfig(index)}
             onEdit={() => handleEditConfig(index)}
             onTest={() => testAPIConfig(config)}
@@ -759,12 +743,9 @@ export const APIConfig: React.FC = () => {
       {/* 编辑配置表单 */}
       {editingIndex !== null && (
         <EditAPIForm
-          config={apiConfigs[editingIndex]}
+          config={v2Config.configs[editingIndex]}
           onSave={(updatedConfig) => {
-            const newConfigs = apiConfigs.map((config, index) =>
-              index === editingIndex ? updatedConfig : config
-            );
-            setApiConfigs(newConfigs);
+            v2Config.updateConfig(editingIndex, updatedConfig);
             setEditingIndex(null);
           }}
           onCancel={() => setEditingIndex(null)}
