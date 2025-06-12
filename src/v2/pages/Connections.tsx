@@ -317,7 +317,7 @@ export const Connections: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 border-b border-theme">
+              <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 border-b border-gray-200 dark:border-gray-600/50">
                 <span>显示 {connections.length} 个连接</span>
                 <span>实时更新</span>
               </div>
@@ -333,7 +333,7 @@ export const Connections: React.FC = () => {
                     return (
                       <div 
                         key={connection.id || index}
-                        className="border border-theme rounded-lg p-3 m-2 hover:bg-white dark:hover:bg-gray-800/50 transition-colors"
+                        className="border border-gray-200 dark:border-gray-600/50 rounded-lg p-3 m-2 hover:bg-white dark:hover:bg-gray-800/50 transition-colors"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">

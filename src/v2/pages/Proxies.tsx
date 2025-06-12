@@ -177,7 +177,7 @@ const ProxyGroupCard: React.FC<{
 
   return (
     <Card className="overflow-hidden border-0 shadow-lg card-hover">
-      <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-theme">
+      <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-600/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-stone-700 rounded-lg flex items-center justify-center">
@@ -227,7 +227,7 @@ const ProxyGroupCard: React.FC<{
               variant="outline"
               size="sm"
               onClick={() => onTestGroupDelay(group)}
-              className={`border-theme ${
+              className={`border border-gray-200 dark:border-gray-600/50 ${
                 testingProxies.has(group.name) 
                   ? 'hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600' 
                   : 'hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400'
@@ -263,7 +263,7 @@ const ProxyGroupCard: React.FC<{
               variant="outline"
               size="sm"
               onClick={() => setExpanded(!expanded)}
-              className="border-theme hover:bg-white dark:hover:bg-gray-800"
+              className="border border-gray-200 dark:border-gray-600/50 hover:bg-white dark:hover:bg-gray-800"
             >
               <svg 
                 className={`w-4 h-4 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} 

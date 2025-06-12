@@ -199,7 +199,7 @@ const RulesContent: React.FC = () => {
       {/* 标签页切换 */}
       <Card className="overflow-hidden border-0 shadow-lg">
         <CardContent className="p-0">
-          <div className="flex border-b border-theme">
+          <div className="flex border-b border-gray-200 dark:border-gray-600/50">
             <button
               onClick={() => setActiveTab('rules')}
               className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
@@ -279,7 +279,7 @@ const RulesContent: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 border-b border-theme">
+                  <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 border-b border-gray-200 dark:border-gray-600/50">
                     <span>显示 {rules.length} 条规则</span>
                     <span>按优先级排序</span>
                   </div>
@@ -291,7 +291,7 @@ const RulesContent: React.FC = () => {
                       renderItem={(rule: Rule, index: number) => (
                         <div 
                           key={index}
-                          className="border border-theme rounded-lg p-3 m-2 hover:bg-white dark:hover:bg-gray-800/50 transition-colors"
+                          className="border border-gray-200 dark:border-gray-600/50 rounded-lg p-3 m-2 hover:bg-white dark:hover:bg-gray-800/50 transition-colors"
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
@@ -343,7 +343,7 @@ const RulesContent: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 border-b border-theme">
+                <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 border-b border-gray-200 dark:border-gray-600/50">
                   <span>共 {providers.length} 个规则提供者</span>
                   <span>实时状态</span>
                 </div>
@@ -355,7 +355,7 @@ const RulesContent: React.FC = () => {
                     renderItem={(provider, _index) => (
                       <div 
                         key={provider.name}
-                        className="border border-theme rounded-lg p-4 hover:bg-white dark:hover:bg-gray-800/50 transition-colors"
+                        className="border border-gray-200 dark:border-gray-600/50 rounded-lg p-4 hover:bg-white dark:hover:bg-gray-800/50 transition-colors"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">

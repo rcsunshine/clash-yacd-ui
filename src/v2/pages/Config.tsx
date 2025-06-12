@@ -31,7 +31,7 @@ const ConfigItem: React.FC<{
   description?: string;
   children: React.ReactNode;
 }> = ({ label, description, children }) => (
-  <div className="flex items-center justify-between py-3 border-b border-theme last:border-b-0">
+      <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-600/50 last:border-b-0">
     <div className="flex-1">
       <div className="font-medium text-theme">{label}</div>
       {description && (
