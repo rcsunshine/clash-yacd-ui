@@ -181,9 +181,9 @@ const ProxyGroupCard: React.FC<{
               </svg>
             </div>
             <div className="flex-1">
-              <h3>{group.name}</h3>
+              <h3 className="text-lg font-semibold text-theme">{group.name}</h3>
               <div className="flex items-center space-x-2 text-sm mb-2">
-                <span className={`type-badge ${
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   group.type === 'Selector' 
                     ? 'bg-blue-100 dark:bg-blue-800/50 text-blue-700 dark:text-blue-300' 
                     : 'bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300'
@@ -269,14 +269,14 @@ const ProxyGroupCard: React.FC<{
                 return (
                   <div
                     key={proxyName}
-                    className={`proxy-button group relative transition-all duration-300 transform ${
+                    className={`group relative p-3 rounded-lg border transition-all duration-300 transform ${
                       canSwitch ? 'cursor-pointer hover:scale-[1.02]' : 'cursor-default'
                     } ${
-                      isSelected ? 'selected' : ''
-                    } ${
-                      testingSingleProxies.has(proxyName) ? 'testing' : ''
-                    } ${
-                      !canSwitch ? 'opacity-75' : ''
+                      isSelected
+                        ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 shadow-md ring-1 ring-blue-200 dark:ring-blue-800'
+                        : canSwitch 
+                          ? 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:shadow-sm'
+                          : 'border-gray-200 dark:border-gray-700 opacity-75'
                     }`}
                     style={{
                       animationDelay: `${index * 50}ms`
@@ -292,7 +292,7 @@ const ProxyGroupCard: React.FC<{
                     } : undefined}
                   >
                     {/* 选中状态指示器 - 紧凑版 */}
-                    {isSelected && !testingSingleProxies.has(proxyName) && (
+                    {isSelected && (
                       <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
                         <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -300,23 +300,22 @@ const ProxyGroupCard: React.FC<{
                       </div>
                     )}
 
-                    {/* 测速状态指示器 */}
-                    {testingSingleProxies.has(proxyName) && (
-                      <div className="testing-indicator"></div>
-                    )}
-
                     {/* 测试延迟按钮 */}
-                    {!isSelected && !testingSingleProxies.has(proxyName) && (
+                    {!isSelected && (
                       <div 
-                        className="absolute -top-1 -left-1 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 bg-yellow-500 hover:bg-yellow-600 opacity-0 group-hover:opacity-100"
+                        className={`absolute -top-1 -left-1 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
+                          testingSingleProxies.has(proxyName) 
+                            ? 'bg-blue-500 opacity-100 scale-110' 
+                            : 'bg-yellow-500 hover:bg-yellow-600 opacity-0 group-hover:opacity-100'
+                        }`}
                         onClick={(e) => {
                           e.stopPropagation();
                           onTestSingleProxy(proxyName);
                         }}
-                        title="测试延迟"
+                        title={testingSingleProxies.has(proxyName) ? '测试中...' : '测试延迟'}
                       >
                         <svg 
-                          className="w-3 h-3 text-white" 
+                          className={`w-3 h-3 text-white ${testingSingleProxies.has(proxyName) ? 'animate-spin' : ''}`} 
                           fill="none" 
                           stroke="currentColor" 
                           viewBox="0 0 24 24"
@@ -341,23 +340,18 @@ const ProxyGroupCard: React.FC<{
                       </div>
                       
                       {/* 延迟显示 */}
-                      <div className={`delay-text px-1.5 py-0.5 rounded ${getDelayBgColor(delay)} ${getDelayColor(delay)}`}>
+                      <div className={`px-1.5 py-0.5 rounded text-xs font-mono font-medium ${getDelayBgColor(delay)} ${getDelayColor(delay)}`}>
                         {delay === 0 ? 'N/A' : `${delay}ms`}
                       </div>
                     </div>
 
                     {/* 代理名称 - 紧凑版 */}
                     <div className="mb-1.5">
-                      <h4 className="proxy-node-name truncate" title={proxyName}>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate text-sm" title={proxyName}>
                         {proxyName}
                       </h4>
-                      {testingSingleProxies.has(proxyName) && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mt-0.5 animate-pulse">
-                          🔄 测试中...
-                        </p>
-                      )}
-                      {proxyExtra && !testingSingleProxies.has(proxyName) && (
-                        <p className="proxy-node-info truncate mt-0.5" title={proxyExtra}>
+                      {proxyExtra && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5" title={proxyExtra}>
                           {proxyExtra}
                         </p>
                       )}
@@ -686,14 +680,14 @@ export const Proxies: React.FC = () => {
           </div>
         </div>
         
-        {/* 紧凑的搜索和过滤控件 - 全面优化 */}
-        <div className="filter-container flex items-center space-x-3 flex-wrap gap-2 mt-2 py-3 px-4">
+        {/* 紧凑的搜索和过滤控件 - 优化深色主题协调性 */}
+        <div className="flex items-center space-x-3 flex-wrap gap-2 mt-2 py-3 px-4 bg-gray-50/90 dark:bg-gray-900/40 backdrop-blur-sm rounded-lg border border-gray-300/50 dark:border-gray-700/50 shadow-sm dark:shadow-none">
           <div className="flex-1 min-w-[180px]">
             <SearchInput
               placeholder="搜索代理组..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="!h-9"
+              className="!h-8 !text-sm !font-medium !text-gray-900 dark:!text-gray-100 !bg-white dark:!bg-gray-800/60 !border-gray-300 dark:!border-gray-600"
             />
           </div>
           <Select
@@ -706,7 +700,7 @@ export const Proxies: React.FC = () => {
               { value: 'Fallback', label: '故障转移' },
             ]}
             size="sm"
-            className="min-w-[120px] !h-9"
+            className="min-w-[120px] !h-9 !text-sm !font-bold !text-gray-900 dark:!text-gray-100 !bg-white dark:!bg-gray-800/60 !border !border-gray-300 dark:!border-gray-600 !leading-5"
           />
           <Select
             value={sortBy}
@@ -719,9 +713,9 @@ export const Proxies: React.FC = () => {
               { value: 'NameDesc', label: '名称 Z-A' },
             ]}
             size="sm"
-            className="min-w-[120px] !h-9"
+            className="min-w-[120px] !h-9 !text-sm !font-bold !text-gray-900 dark:!text-gray-100 !bg-white dark:!bg-gray-800/60 !border !border-gray-300 dark:!border-gray-600 !leading-5"
           />
-          <label className="flex items-center space-x-2 cursor-pointer whitespace-nowrap px-3 py-2 bg-white dark:bg-gray-800/60 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-gray-700/70 hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 shadow-sm">
+          <label className="flex items-center space-x-2 cursor-pointer whitespace-nowrap px-3 py-2 bg-white dark:bg-gray-800/60 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-gray-700/70 hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 shadow-sm">
             <input
               type="checkbox"
               className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-600 border-2 border-gray-500 dark:border-gray-400 rounded focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:ring-offset-0 checked:bg-blue-600 dark:checked:bg-blue-500 checked:border-blue-600 dark:checked:border-blue-500"
@@ -734,55 +728,58 @@ export const Proxies: React.FC = () => {
           </label>
         </div>
 
-        {/* 测速进度提示 - 紧凑样式 */}
+        {/* 测速进度提示 - 优化紧凑样式 */}
         {showTestingProgress && (
-          <div className="testing-progress mt-1">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center space-x-1.5">
-                <svg className="w-3 h-3 text-blue-600 dark:text-blue-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mt-1.5 p-2.5 bg-blue-50/90 dark:bg-blue-900/20 rounded-lg border border-blue-200/70 dark:border-blue-800/50 backdrop-blur-sm shadow-sm">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center space-x-2">
+                <svg className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                <span className="text-xs font-medium text-blue-800 dark:text-blue-200">
-                  {testingAllProxies ? '测试中...' : '完成'}
+                <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                  {testingAllProxies ? '延迟测试中...' : '测试完成'}
                 </span>
               </div>
-              <div className="text-xs text-blue-700 dark:text-blue-300 font-mono">
+              <div className="text-xs text-blue-700 dark:text-blue-300 font-mono bg-blue-100/50 dark:bg-blue-800/30 px-2 py-0.5 rounded">
                 {testingProgress.current}/{testingProgress.total}
                 {testingProgress.total > 0 && (
-                  <span className="ml-1 text-blue-600 dark:text-blue-400">
-                    ({Math.round((testingProgress.current / testingProgress.total) * 100)}%)
+                  <span className="ml-1 text-blue-600 dark:text-blue-400 font-semibold">
+                    {Math.round((testingProgress.current / testingProgress.total) * 100)}%
                   </span>
                 )}
               </div>
             </div>
             
-            {/* 进度条 - 更细更紧凑 */}
-            <div className="w-full bg-blue-200/70 dark:bg-blue-800/50 rounded-full h-1.5 mb-1">
+            {/* 进度条 - 增强视觉效果 */}
+            <div className="w-full bg-blue-200/80 dark:bg-blue-800/60 rounded-full h-2 mb-1.5 overflow-hidden">
               <div 
-                className="bg-blue-600 dark:bg-blue-400 h-1.5 rounded-full transition-all duration-300 ease-out"
+                className="bg-gradient-to-r from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-400 h-2 rounded-full transition-all duration-500 ease-out relative"
                 style={{ 
                   width: testingProgress.total > 0 
                     ? `${(testingProgress.current / testingProgress.total) * 100}%` 
                     : '0%' 
                 }}
-              ></div>
+              >
+                <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+              </div>
             </div>
             
-            {/* 统计信息 - 更紧凑 */}
+            {/* 统计信息 - 增强设计 */}
             <div className="flex items-center justify-between text-xs">
               <div className="flex space-x-3">
-                <span className="text-green-700 dark:text-green-400 font-mono">
+                <span className="text-green-700 dark:text-green-400 font-mono bg-green-100/50 dark:bg-green-900/30 px-1.5 py-0.5 rounded">
                   ✓ {testingStats.success}
                 </span>
                 {testingStats.failed > 0 && (
-                  <span className="text-red-700 dark:text-red-400 font-mono">
+                  <span className="text-red-700 dark:text-red-400 font-mono bg-red-100/50 dark:bg-red-900/30 px-1.5 py-0.5 rounded">
                     ✗ {testingStats.failed}
                   </span>
                 )}
               </div>
               {!testingAllProxies && testingProgress.current === testingProgress.total && (
-                <span className="text-blue-700 dark:text-blue-300 animate-pulse text-xs">
-                  ✨
+                <span className="text-blue-700 dark:text-blue-300 animate-pulse text-sm flex items-center space-x-1">
+                  <span>✨</span>
+                  <span className="font-medium">完成!</span>
                 </span>
               )}
             </div>
