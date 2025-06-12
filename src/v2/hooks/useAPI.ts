@@ -623,9 +623,10 @@ export function useTraffic() {
   };
 }
 
-// 日志Hook - 优化WebSocket连接管理
+// 日志Hook - 优化WebSocket连接管理并添加日志级别支持
 export function useLogs() {
   const apiConfig = useApiConfig();
+  const { data: clashConfig } = useClashConfig(); // 获取Clash配置以获得日志级别
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
@@ -644,6 +645,13 @@ export function useLogs() {
       return;
     }
 
+    // 等待Clash配置加载完成，确保有日志级别
+    if (!clashConfig?.['log-level']) {
+      console.log('⏳ Logs WebSocket: Waiting for clash config with log level...');
+      setIsConnected(false);
+      return;
+    }
+
     // 清理之前的连接和定时器
     if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
       wsRef.current.close();
@@ -659,14 +667,24 @@ export function useLogs() {
       
       try {
         const baseWsUrl = apiConfig.baseURL.replace(/^http/, 'ws');
-        const wsUrl = baseWsUrl + '/logs' + (apiConfig.secret ? `?token=${encodeURIComponent(apiConfig.secret)}` : '');
+        // 构建WebSocket URL，包含日志级别参数
+        const params = new URLSearchParams();
+        if (apiConfig.secret) {
+          params.append('token', apiConfig.secret);
+        }
+        // 添加日志级别参数 - 这是关键修复！
+        params.append('level', clashConfig['log-level']);
+        
+        const wsUrl = `${baseWsUrl}/logs?${params.toString()}`;
+        console.log('📝 Logs WebSocket: Connecting with level:', clashConfig['log-level']);
+        
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
         ws.onopen = () => {
           if (!mountedRef.current) return;
           setIsConnected(true);
-          console.log('📝 Logs WebSocket connected to', apiConfig.baseURL);
+          console.log('📝 Logs WebSocket connected to', apiConfig.baseURL, 'with level:', clashConfig['log-level']);
         };
 
         ws.onmessage = (event) => {
@@ -738,7 +756,7 @@ export function useLogs() {
         reconnectTimeoutRef.current = null;
       }
     };
-  }, [apiConfig]);
+  }, [apiConfig, clashConfig]); // 依赖项包含clashConfig以便在日志级别变化时重连
 
   const clearLogs = useCallback(() => {
     setLogs([]);

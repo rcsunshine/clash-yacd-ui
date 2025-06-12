@@ -189,6 +189,27 @@ npm run type-check
 
 ### ✅ 已完成功能
 
+#### 日志级别参数修复 (2024-01-XX)
+- **问题**: V2日志页面WebSocket连接未传递日志级别参数，无法根据Clash配置的log-level过滤日志内容
+- **问题表现**: 日志连接URL缺少`&level=debug`等级别参数，导致接收到的日志不符合配置级别
+- **解决方案**:
+  - 修复 `useLogs` hook在WebSocket连接中添加日志级别参数支持
+  - 集成 `useClashConfig` 获取当前Clash配置的日志级别
+  - 在WebSocket URL中正确传递 `level` 参数：`ws://host/logs?token=xxx&level=debug`
+  - 添加配置依赖，确保日志级别变化时重新连接WebSocket
+- **技术实现**:
+  ```typescript
+  const { data: clashConfig } = useClashConfig(); // 获取日志级别
+  const params = new URLSearchParams();
+  if (apiConfig.secret) {
+    params.append('token', apiConfig.secret);
+  }
+  params.append('level', clashConfig['log-level']); // 添加级别参数
+  const wsUrl = `${baseWsUrl}/logs?${params.toString()}`;
+  ```
+- **影响**: 现在日志页面会根据Clash配置的日志级别(debug/info/warning/error/silent)正确过滤和显示日志内容
+- **状态**: ✅ 完成并测试通过
+
 #### 下拉选项深色主题优化 (2024-01-XX)
 - **问题**: 连接、规则、配置等页面的原生select在深色主题下显示异常，白色背景与深色主题不匹配
 - **解决方案**: 
