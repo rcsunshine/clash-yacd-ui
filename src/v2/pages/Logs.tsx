@@ -332,7 +332,7 @@ export const Logs: React.FC = () => {
                 renderItem={(log: LogEntry, index: number) => (
                   <div 
                     key={log.id}
-                    className={`p-4 border-b border-theme hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${
+                    className={`p-4 border-b border-theme hover:bg-white dark:hover:bg-gray-800/50 transition-colors ${
                       index === filteredLogs.length - 1 ? 'border-b-0' : ''
                     }`}
                   >

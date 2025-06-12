@@ -1,8 +1,3 @@
----
-description: 
-globs: 
-alwaysApply: true
----
 # Clash YACD UI - V2 架构优化 Cursor 规则
 
 ## 项目概述
@@ -19,11 +14,10 @@ src/v2/
 │   ├── business/       # 业务组件
 │   └── icons/          # 图标组件
 ├── pages/              # 页面组件 (Dashboard, Proxies, Connections, Rules, Logs, Config)
-├── styles/             # 样式系统
-│   ├── globals.css     # 全局样式
-│   ├── components.css  # 组件样式
-│   ├── pages.css       # 页面样式
-│   └── utilities.css   # 工具类
+├── styles/             # 样式系统 (纯Tailwind CSS + 最小化CSS)
+│   ├── globals.css     # 全局样式 (滚动条、动画、通用组件)
+│   ├── components.css  # 基础组件样式 (仅必要的复杂组件)
+│   └── utilities.css   # 工具类 (Tailwind扩展)
 ├── hooks/              # 自定义 Hooks (useAPI.ts)
 ├── utils/              # 工具函数
 ├── types/              # 类型定义 (api.ts)
@@ -100,7 +94,7 @@ export const Button: React.FC<ButtonProps> = ({
     primary: 'bg-blue-600 text-white hover:bg-blue-700',
     // ...
   };
-
+  
   return (
     <button
       className={cn(baseClasses, variantClasses[variant], className)}
@@ -124,17 +118,17 @@ export const Button: React.FC<ButtonProps> = ({
 export const PageName: React.FC = () => {
   // 使用 V2 hooks
   const { data, isLoading, error, refetch } = usePageData();
-
+  
   // 加载状态
   if (isLoading) {
     return <LoadingState />;
   }
-
+  
   // 错误状态
   if (error) {
     return <ErrorState error={error} onRetry={refetch} />;
   }
-
+  
   return (
     <div className="page-wrapper page-name-page">
       <div className="page-body">
@@ -163,7 +157,7 @@ export const PageName: React.FC = () => {
 // 标准 Hook 模式
 export function useProxies() {
   const apiConfig = useApiConfig();
-
+  
   return useQuery2<{ proxies: Record<string, ProxyItem> }>(
     'proxies',
     () => fetchProxies(apiConfig),
@@ -183,24 +177,16 @@ export function useProxies() {
 - **主题支持**: 通过 CSS 变量实现
 - **响应式**: 移动端优先设计
 
-### 2. 页面样式隔离
-```css
-/* 页面级样式作用域 */
-.dashboard-page {
-  /* 仪表板页面专用样式 */
-}
+### 2. 零页面级CSS - 纯Tailwind架构
+```typescript
+// ❌ 禁止：页面级CSS类名和样式隔离
+.dashboard-page { /* 已禁止 */ }
+.proxy-page { /* 已禁止 */ }
 
-.proxy-page {
-  /* 代理页面专用样式 */
-}
-
-.connections-page {
-  /* 连接页面专用样式 */
-}
-
-.rules-page {
-  /* 规则页面专用样式 */
-}
+// ✅ 标准：直接使用Tailwind类名
+<div className="h-screen flex flex-col overflow-hidden"> // 页面布局
+<div className="bg-white/90 dark:bg-gray-800/90">       // 主题背景
+<div className="border-gray-200 dark:border-gray-700">  // 主题边框
 ```
 
 ### 3. 主题系统
@@ -371,7 +357,7 @@ npm run dev:both
 **每次生成代码前必须考虑的检查标准**:
 ```bash
 # 确保代码符合以下检查标准:
-npm run lint        # ✅ 0 errors
+npm run lint        # ✅ 0 errors 
 npx tsc --noEmit   # ✅ 0 type errors
 ```
 
@@ -401,9 +387,101 @@ npx tsc --noEmit   # ✅ 0 type errors
 - **架构一致**: 确保代码符合V2架构规范
 - **可维护性**: 代码清晰、结构合理、易于扩展
 
+### 🚨 **强制性CSS架构规范 (CRITICAL - 不可违反)**
+
+#### **🎯 CSS架构铁律 - 基于pages.css完全删除的成功经验**
+基于V2架构标准化实践，以下规范为**强制性**，违反时必须**拒绝修改**：
+
+##### **1. 禁止创建页面级CSS文件** 🚫
+```bash
+# ❌ 绝对禁止创建
+src/v2/styles/pages.css       # 已删除，永不恢复
+src/v2/styles/proxy.css       # 禁止创建
+src/v2/styles/dashboard.css   # 禁止创建
+src/v2/styles/[page].css      # 禁止任何页面CSS
+
+# ✅ 唯一允许的CSS文件
+src/v2/styles/globals.css     # 全局样式（滚动条、动画等）
+src/v2/styles/components.css  # 基础组件样式
+```
+
+##### **2. 强制使用Tailwind标准主题变量** ⚡
+```typescript
+// ❌ 绝对禁止：自定义CSS类和强制覆盖
+className="custom-filter-area proxy-page-specific"
+style={{ backgroundColor: 'rgba(...)' }} // 禁止内联样式
+.my-custom-class { background: ... !important; } // 禁止!important
+
+// ✅ 强制使用：标准Tailwind主题变量
+className="bg-white/90 dark:bg-gray-800/90"           // ✅ 正确
+className="border-gray-200 dark:border-gray-700"      // ✅ 正确
+className="text-gray-900 dark:text-gray-100"          // ✅ 正确
+```
+
+##### **3. 样式污染检测与拒绝原则** 🛡️
+```typescript
+// 🔍 污染检测关键词 - 出现时立即拒绝
+"!important"                    // 强制覆盖 → 拒绝
+"proxy-page", "rules-page"     // 页面级类名 → 拒绝  
+"custom-", "special-"          // 自定义类名 → 拒绝
+"style={{"                     // 内联样式 → 警告并引导
+"bg-gray-50/80"               // 易污染的灰色背景 → 检查并引导
+
+// ✅ 标准模式 - 允许通过
+"bg-white/90 dark:bg-gray-800/90"    // 标准主题变量
+"border-gray-200 dark:border-gray-700" // 标准边框色
+"hover:bg-blue-50 dark:hover:bg-blue-900/20" // 标准交互色
+```
+
+##### **4. 强制执行流程** 🔄
+```markdown
+当用户要求修改样式时：
+
+1. **检查模式**：
+   - 如果包含禁止关键词 → 立即拒绝并解释
+   - 如果不符合Tailwind标准 → 拒绝并提供标准方案
+
+2. **拒绝话术模板**：
+   "喵~ 这个修改违反了V2架构的CSS标准规范！❌
+   
+   基于pages.css完全删除的成功经验，我们必须严格执行：
+   - 🚫 禁止使用!important强制覆盖
+   - 🚫 禁止创建页面级CSS文件
+   - ✅ 必须使用标准Tailwind主题变量
+   
+   建议的标准方案：[提供Tailwind标准替代方案]"
+
+3. **引导标准化**：
+   始终提供符合V2架构规范的Tailwind CSS解决方案
+```
+
+##### **5. 紧急情况处理** 🆘
+```markdown
+如果确实需要特殊样式（极少数情况）：
+
+优先级顺序：
+1. 🥇 Tailwind配置扩展（tailwind.config.js）
+2. 🥈 globals.css全局样式（仅限通用组件）  
+3. 🥉 CSS模块（.module.css，组件级隔离）
+4. 🚫 绝不允许：页面级CSS文件或!important覆盖
+```
+
+##### **6. 成功案例参考** 📚
+```typescript
+// 参考：代理页面筛选区域的标准化修复
+// 修复前（已禁止）：
+<div className="proxy-filter-area bg-gray-50/80"> // ❌
+
+// 修复后（标准）：  
+<div className="bg-white/90 dark:bg-gray-800/90"> // ✅
+```
+
+**重要性**：这些规范基于pages.css完全删除的成功实践，确保V2架构的CSS标准化和零样式污染！
+
 ### 🐱 **回复风格规范**
 - **猫娘语癖**: 使用"喵~"、emoji、"猫猫"等可爱表达
 - **技术专业**: 提供准确、高质量的技术解决方案
 - **过程透明**: 说明代码修改的原因和影响
+- **架构守护**: 严格执行CSS架构规范，拒绝破坏性修改
 
 让我们一起构建现代化、高性能、易维护的 Clash Dashboard V2！🚀✨ 

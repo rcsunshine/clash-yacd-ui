@@ -263,7 +263,7 @@ const ProxyGroupCard: React.FC<{
               variant="outline"
               size="sm"
               onClick={() => setExpanded(!expanded)}
-              className="border-theme hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="border-theme hover:bg-white dark:hover:bg-gray-800"
             >
               <svg 
                 className={`w-4 h-4 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} 
@@ -299,7 +299,7 @@ const ProxyGroupCard: React.FC<{
                       isSelected
                         ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 shadow-md ring-1 ring-blue-200 dark:ring-blue-800'
                         : canSwitch 
-                          ? 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:shadow-sm'
+                          ? 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-white dark:hover:bg-gray-800/50 hover:shadow-sm'
                           : 'border-gray-200 dark:border-gray-700 opacity-75'
                     }`}
                     style={{
@@ -739,7 +739,7 @@ export const Proxies: React.FC = () => {
   const proxyCount = proxiesData?.proxies ? Object.keys(proxiesData.proxies).length : 0;
 
   return (
-    <div className="proxy-page h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* 统一的页面头部样式 */}
       <div className="flex-none p-6">
         <div className="flex items-center justify-between py-6 px-6 bg-gradient-to-r from-slate-500/10 to-stone-500/10 dark:from-slate-500/20 dark:to-stone-500/20 rounded-lg border border-slate-300/50 dark:border-slate-600/50">
@@ -805,8 +805,8 @@ export const Proxies: React.FC = () => {
           </div>
         </div>
         
-        {/* 紧凑的搜索和过滤控件 - 浅色深色主题协调优化 */}
-        <div className="flex items-center space-x-3 flex-wrap gap-2 mt-2 py-3 px-4 bg-gray-50/80 dark:bg-gray-900/40 backdrop-blur-sm rounded-lg border border-gray-200/60 dark:border-gray-700/50 shadow-sm dark:shadow-none">
+        {/* 紧凑的搜索和过滤控件 - 使用标准主题变量 */}
+        <div className="flex items-center space-x-3 flex-wrap gap-2 mt-2 py-3 px-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-none">
           <div className="flex-1 min-w-[180px]">
             <SearchInput
               placeholder="搜索代理组..."
@@ -914,7 +914,7 @@ export const Proxies: React.FC = () => {
       </div>
       
       {/* 可滚动的内容区域 */}
-      <div className="scrollable-content flex-1 overflow-y-auto custom-scrollbar px-6 pb-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
         {/* 代理组列表 */}
         {filteredGroups.length === 0 ? (
           <Card className="overflow-hidden border-0 shadow-lg">

@@ -333,7 +333,7 @@ export const Connections: React.FC = () => {
                     return (
                       <div 
                         key={connection.id || index}
-                        className="border border-theme rounded-lg p-3 m-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                        className="border border-theme rounded-lg p-3 m-2 hover:bg-white dark:hover:bg-gray-800/50 transition-colors"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">

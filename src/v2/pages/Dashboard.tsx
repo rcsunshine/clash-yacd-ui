@@ -613,7 +613,7 @@ export const Dashboard: React.FC = () => {
                 variant="outline" 
                 size="sm" 
                 fullWidth 
-                className="text-xs justify-start hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="text-xs justify-start hover:bg-white dark:hover:bg-slate-800 transition-colors"
                 onClick={() => navigateToPage('proxies')}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -625,7 +625,7 @@ export const Dashboard: React.FC = () => {
                 variant="outline" 
                 size="sm" 
                 fullWidth 
-                className="text-xs justify-start hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="text-xs justify-start hover:bg-white dark:hover:bg-slate-800 transition-colors"
                 onClick={() => navigateToPage('rules')}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -637,7 +637,7 @@ export const Dashboard: React.FC = () => {
                 variant="outline" 
                 size="sm" 
                 fullWidth 
-                className="text-xs justify-start hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="text-xs justify-start hover:bg-white dark:hover:bg-slate-800 transition-colors"
                 onClick={() => navigateToPage('connections')}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -649,7 +649,7 @@ export const Dashboard: React.FC = () => {
                 variant="outline" 
                 size="sm" 
                 fullWidth 
-                className="text-xs justify-start hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="text-xs justify-start hover:bg-white dark:hover:bg-slate-800 transition-colors"
                 onClick={() => navigateToPage('logs')}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

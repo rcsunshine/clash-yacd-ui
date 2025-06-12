@@ -1,4 +1,4 @@
-import '../styles/pages.css';
+
 
 import React, { useMemo,useState } from 'react';
 
@@ -291,7 +291,7 @@ const RulesContent: React.FC = () => {
                       renderItem={(rule: Rule, index: number) => (
                         <div 
                           key={index}
-                          className="border border-theme rounded-lg p-3 m-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                          className="border border-theme rounded-lg p-3 m-2 hover:bg-white dark:hover:bg-gray-800/50 transition-colors"
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
@@ -355,7 +355,7 @@ const RulesContent: React.FC = () => {
                     renderItem={(provider, _index) => (
                       <div 
                         key={provider.name}
-                        className="border border-theme rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                        className="border border-theme rounded-lg p-4 hover:bg-white dark:hover:bg-gray-800/50 transition-colors"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
