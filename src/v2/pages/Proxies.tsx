@@ -1,4 +1,4 @@
-import React, { useMemo,useState } from 'react';
+import React, { useMemo,useRef,useState } from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent,CardHeader } from '../components/ui/Card';
@@ -21,9 +21,11 @@ const ProxyGroupCard: React.FC<{
   onTestSingleProxy: (proxyName: string) => void;
   testingProxies: Set<string>;
   testingSingleProxies: Set<string>;
+  testingAllProxiesNodes: Set<string>;
+  testingGroupProxiesNodes: Set<string>;
   sortBy: string;
   hideUnavailable: boolean;
-}> = ({ group, proxiesData, onSwitchProxy, onTestGroupDelay, onTestSingleProxy, testingProxies, testingSingleProxies, sortBy, hideUnavailable }) => {
+}> = ({ group, proxiesData, onSwitchProxy, onTestGroupDelay, onTestSingleProxy, testingProxies, testingSingleProxies, testingAllProxiesNodes, testingGroupProxiesNodes, sortBy, hideUnavailable }) => {
   const [expanded, setExpanded] = useState(false);
 
   const getProxyDelay = (proxyName: string) => {
@@ -96,12 +98,15 @@ const ProxyGroupCard: React.FC<{
     return (
       <div className="flex items-center space-x-1">
         <div className="flex items-center space-x-0.5 flex-wrap">
-          {proxies.map((proxyName, index) => {
+          {proxies.map((proxyName) => {
             const delay = getProxyDelay(proxyName);
             const isSelected = group.now === proxyName;
+            const isTesting = testingSingleProxies.has(proxyName) || testingAllProxiesNodes.has(proxyName) || testingGroupProxiesNodes.has(proxyName);
             
             let dotColor = 'bg-gray-400'; // 默认未测试
-            if (delay > 0) {
+            if (isTesting) {
+              dotColor = 'bg-blue-500 animate-pulse'; // 测试中动画
+            } else if (delay > 0) {
               if (delay < 100) dotColor = 'bg-green-500';
               else if (delay < 300) dotColor = 'bg-yellow-500';
               else dotColor = 'bg-red-500';
@@ -113,7 +118,7 @@ const ProxyGroupCard: React.FC<{
                 className={`w-2 h-2 rounded-full transition-all duration-200 ${dotColor} ${
                   isSelected ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-white dark:ring-offset-gray-800 scale-125' : ''
                 }`}
-                title={`${proxyName}: ${delay === 0 ? '未测试' : `${delay}ms`}`}
+                title={`${proxyName}: ${isTesting ? '测试中...' : delay === 0 ? '未测试' : `${delay}ms`}`}
               />
             );
           })}
@@ -222,18 +227,37 @@ const ProxyGroupCard: React.FC<{
               variant="outline"
               size="sm"
               onClick={() => onTestGroupDelay(group)}
-              className="border-theme hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-              disabled={testingProxies.has(group.name)}
+              className={`border-theme ${
+                testingProxies.has(group.name) 
+                  ? 'hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600' 
+                  : 'hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+              }`}
             >
-              <svg 
-                className={`w-4 h-4 mr-1 ${testingProxies.has(group.name) ? 'animate-spin' : ''}`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <span>{testingProxies.has(group.name) ? `测试中 (${group.all.length}个)` : '组测速'}</span>
+              {testingProxies.has(group.name) ? (
+                <>
+                  <svg 
+                    className="w-4 h-4 mr-1" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>取消</span>
+                </>
+              ) : (
+                <>
+                  <svg 
+                    className="w-4 h-4 mr-1" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span>测速</span>
+                </>
+              )}
             </Button>
             <Button
               variant="outline"
@@ -293,37 +317,53 @@ const ProxyGroupCard: React.FC<{
                   >
                     {/* 选中状态指示器 - 紧凑版 */}
                     {isSelected && (
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center z-10">
                         <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
                     )}
 
-                    {/* 测试延迟按钮 */}
-                    {!isSelected && (
-                      <div 
-                        className={`absolute -top-1 -left-1 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
-                          testingSingleProxies.has(proxyName) 
-                            ? 'bg-blue-500 opacity-100 scale-110' 
-                            : 'bg-yellow-500 hover:bg-yellow-600 opacity-0 group-hover:opacity-100'
-                        }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
+                    {/* 测试延迟按钮 - 所有节点都显示 */}
+                    <div 
+                      className={`absolute -top-1 -left-1 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 z-10 ${
+                        testingSingleProxies.has(proxyName) || testingAllProxiesNodes.has(proxyName) || testingGroupProxiesNodes.has(proxyName)
+                          ? 'bg-blue-500 opacity-100 scale-110' 
+                          : 'bg-yellow-500 hover:bg-yellow-600 opacity-0 group-hover:opacity-100'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!testingAllProxiesNodes.has(proxyName) && !testingGroupProxiesNodes.has(proxyName)) {
                           onTestSingleProxy(proxyName);
-                        }}
-                        title={testingSingleProxies.has(proxyName) ? '测试中...' : '测试延迟'}
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (!testingAllProxiesNodes.has(proxyName) && !testingGroupProxiesNodes.has(proxyName)) {
+                            onTestSingleProxy(proxyName);
+                          }
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      title={
+                        testingSingleProxies.has(proxyName) ? '测试中...' :
+                        testingAllProxiesNodes.has(proxyName) ? '全部测速中...' :
+                        testingGroupProxiesNodes.has(proxyName) ? '组测速中...' :
+                        '测试延迟'
+                      }
+                    >
+                      <svg 
+                        className={`w-3 h-3 text-white ${(testingSingleProxies.has(proxyName) || testingAllProxiesNodes.has(proxyName) || testingGroupProxiesNodes.has(proxyName)) ? 'animate-spin' : ''}`} 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
                       >
-                        <svg 
-                          className={`w-3 h-3 text-white ${testingSingleProxies.has(proxyName) ? 'animate-spin' : ''}`} 
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                      </div>
-                    )}
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
 
                     {/* 代理类型和图标 - 紧凑版 */}
                     <div className="flex items-center justify-between mb-2">
@@ -362,12 +402,14 @@ const ProxyGroupCard: React.FC<{
                       <div className="flex items-center space-x-1">
                         <div className={`w-1.5 h-1.5 rounded-full ${
                           isSelected ? 'bg-blue-500 animate-pulse' : 
+                          (testingSingleProxies.has(proxyName) || testingAllProxiesNodes.has(proxyName) || testingGroupProxiesNodes.has(proxyName)) ? 'bg-blue-500 animate-spin' :
                           delay === 0 ? 'bg-gray-400' :
                           delay < 100 ? 'bg-green-500' :
                           delay < 300 ? 'bg-yellow-500' : 'bg-red-500'
                         }`}></div>
                         <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
                           {isSelected ? '使用中' : 
+                           (testingSingleProxies.has(proxyName) || testingAllProxiesNodes.has(proxyName) || testingGroupProxiesNodes.has(proxyName)) ? '测试中' :
                            !canSwitch ? '自动' : 
                            delay === 0 ? '未测试' : '可用'}
                         </span>
@@ -407,6 +449,11 @@ export const Proxies: React.FC = () => {
   const [testingProxies, setTestingProxies] = useState<Set<string>>(new Set());
   const [testingSingleProxies, setTestingSingleProxies] = useState<Set<string>>(new Set());
   const [testingAllProxies, setTestingAllProxies] = useState(false);
+  const [testingAllProxiesNodes, setTestingAllProxiesNodes] = useState<Set<string>>(new Set());
+  const [testingGroupProxiesNodes, setTestingGroupProxiesNodes] = useState<Set<string>>(new Set());
+  
+  // 使用 useRef 来跟踪取消状态，避免异步循环中状态更新问题
+  const cancelAllTestingRef = useRef(false);
   
   // 测速进度状态
   const [testingProgress, setTestingProgress] = useState({ current: 0, total: 0 });
@@ -475,21 +522,45 @@ export const Proxies: React.FC = () => {
 
   // 测试代理组延迟
   const handleTestGroupDelay = async (group: ProxyGroup) => {
-    if (testingProxies.has(group.name)) return;
+    // 如果正在测试，则取消测试
+    if (testingProxies.has(group.name)) {
+      setTestingProxies(prev => {
+        const next = new Set(prev);
+        next.delete(group.name);
+        return next;
+      });
+      // 清除组内节点的测试状态
+      setTestingGroupProxiesNodes(prev => {
+        const next = new Set(prev);
+        group.all.forEach(proxyName => next.delete(proxyName));
+        return next;
+      });
+      showNotification('info', `已取消代理组 "${group.name}" 的测试`);
+      return;
+    }
     
     setTestingProxies(prev => new Set([...prev, group.name]));
     
     try {
-      // 并发测试组内所有代理的延迟
-      const testPromises = group.all.map(async (proxyName) => {
+      // 逐个测试组内代理的延迟（串行执行，显示当前测试节点）
+      for (const proxyName of group.all) {
+        // 添加当前节点到测试状态
+        setTestingGroupProxiesNodes(prev => new Set([...prev, proxyName]));
+        
         try {
           await testDelay(proxyName);
         } catch (error) {
           console.error(`Failed to test delay for ${proxyName}:`, error);
+        } finally {
+          // 完成后从组测试状态中移除该节点
+          setTestingGroupProxiesNodes(prev => {
+            const next = new Set(prev);
+            next.delete(proxyName);
+            return next;
+          });
         }
-      });
+      }
       
-      await Promise.all(testPromises);
       refetch(); // 刷新数据以获取最新的延迟结果
       showNotification('success', `代理组 "${group.name}" 测试完成！共测试 ${group.all.length} 个节点`);
     } catch (error) {
@@ -499,6 +570,12 @@ export const Proxies: React.FC = () => {
       setTestingProxies(prev => {
         const next = new Set(prev);
         next.delete(group.name);
+        return next;
+      });
+      // 确保清除所有组内节点的测试状态
+      setTestingGroupProxiesNodes(prev => {
+        const next = new Set(prev);
+        group.all.forEach(proxyName => next.delete(proxyName));
         return next;
       });
     }
@@ -528,8 +605,18 @@ export const Proxies: React.FC = () => {
 
   // 测试所有代理延迟
   const handleTestAllProxies = async () => {
-    if (testingAllProxies) return;
+    // 如果正在测试，则取消测试
+    if (testingAllProxies) {
+      cancelAllTestingRef.current = true; // 设置取消标志
+      setTestingAllProxies(false);
+      setTestingAllProxiesNodes(new Set()); // 清空所有测试节点状态
+      setShowTestingProgress(false);
+      showNotification('info', '已取消全部测速');
+      return;
+    }
     
+    // 重置取消标志并开始测试
+    cancelAllTestingRef.current = false;
     setTestingAllProxies(true);
     setShowTestingProgress(true);
     
@@ -550,8 +637,22 @@ export const Proxies: React.FC = () => {
       // 并发测试所有代理的延迟（限制并发数以避免过载）
       const batchSize = 10; // 每批测试10个代理
       for (let i = 0; i < uniqueProxyNames.length; i += batchSize) {
+        // 检查是否已被取消 - 使用ref而不是state
+        if (cancelAllTestingRef.current) {
+          console.log('Test cancelled by user');
+          break;
+        }
+        
         const batch = uniqueProxyNames.slice(i, i + batchSize);
         const batchPromises = batch.map(async (proxyName) => {
+          // 在开始测试前再次检查是否被取消
+          if (cancelAllTestingRef.current) {
+            return;
+          }
+          
+          // 添加当前节点到测试状态
+          setTestingAllProxiesNodes(prev => new Set([...prev, proxyName]));
+          
           try {
             await testDelay(proxyName);
             success++;
@@ -562,18 +663,30 @@ export const Proxies: React.FC = () => {
             completed++;
             setTestingProgress({ current: completed, total });
             setTestingStats({ success, failed });
+            // 从测试节点集合中移除已完成的节点
+            setTestingAllProxiesNodes(prev => {
+              const next = new Set(prev);
+              next.delete(proxyName);
+              return next;
+            });
           }
         });
         await Promise.all(batchPromises);
       }
       
-      refetch(); // 刷新数据以获取最新的延迟结果
-      
-      // 显示完成提示，3秒后隐藏进度条
-      showNotification('success', `测试完成！成功 ${success} 个，失败 ${failed} 个，共 ${total} 个代理节点`);
-      setTimeout(() => {
+      // 只有在未被取消且完全完成时才刷新和显示成功消息
+      if (!cancelAllTestingRef.current && completed === uniqueProxyNames.length) {
+        refetch(); // 刷新数据以获取最新的延迟结果
+        
+        // 显示完成提示，3秒后隐藏进度条
+        showNotification('success', `测试完成！成功 ${success} 个，失败 ${failed} 个，共 ${total} 个代理节点`);
+        setTimeout(() => {
+          setShowTestingProgress(false);
+        }, 3000);
+      } else if (cancelAllTestingRef.current) {
+        // 如果被取消，隐藏进度条
         setShowTestingProgress(false);
-      }, 3000);
+      }
       
     } catch (error) {
       console.error('Failed to test all proxies delay:', error);
@@ -583,6 +696,8 @@ export const Proxies: React.FC = () => {
       }, 3000);
     } finally {
       setTestingAllProxies(false);
+      setTestingAllProxiesNodes(new Set()); // 清空测试节点集合
+      cancelAllTestingRef.current = false; // 重置取消标志
     }
   };
 
@@ -655,21 +770,37 @@ export const Proxies: React.FC = () => {
               variant="outline" 
               size="sm" 
               onClick={() => handleTestAllProxies()} 
-              className="text-xs px-3 py-1 h-7 text-blue-600 dark:text-blue-400 border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-              disabled={testingAllProxies}
+              className={`text-xs px-3 py-1 h-7 ${
+                testingAllProxies 
+                  ? 'text-red-600 dark:text-red-400 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20' 
+                  : 'text-blue-600 dark:text-blue-400 border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+              }`}
             >
-              <svg 
-                className={`w-3 h-3 mr-1 ${testingAllProxies ? 'animate-spin' : ''}`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              {testingAllProxies 
-                ? `测试中 ${testingProgress.current}/${testingProgress.total}` 
-                : '全部测速'
-              }
+              {testingAllProxies ? (
+                <>
+                  <svg 
+                    className="w-3 h-3 mr-1" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  取消
+                </>
+              ) : (
+                <>
+                  <svg 
+                    className="w-3 h-3 mr-1" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  全部测速
+                </>
+              )}
             </Button>
             <Button variant="outline" size="sm" onClick={() => refetch()} className="text-xs px-3 py-1 h-7">
               <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -680,14 +811,14 @@ export const Proxies: React.FC = () => {
           </div>
         </div>
         
-        {/* 紧凑的搜索和过滤控件 - 优化深色主题协调性 */}
-        <div className="flex items-center space-x-3 flex-wrap gap-2 mt-2 py-3 px-4 bg-gray-50/90 dark:bg-gray-900/40 backdrop-blur-sm rounded-lg border border-gray-300/50 dark:border-gray-700/50 shadow-sm dark:shadow-none">
+        {/* 紧凑的搜索和过滤控件 - 浅色深色主题协调优化 */}
+        <div className="flex items-center space-x-3 flex-wrap gap-2 mt-2 py-3 px-4 bg-gray-50/80 dark:bg-gray-900/40 backdrop-blur-sm rounded-lg border border-gray-200/60 dark:border-gray-700/50 shadow-sm dark:shadow-none">
           <div className="flex-1 min-w-[180px]">
             <SearchInput
               placeholder="搜索代理组..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="!h-8 !text-sm !font-medium !text-gray-900 dark:!text-gray-100 !bg-white dark:!bg-gray-800/60 !border-gray-300 dark:!border-gray-600"
+              className="!h-8 !text-sm !font-medium !text-gray-900 dark:!text-gray-100 !bg-white/90 dark:!bg-gray-800/60 !border-gray-200 dark:!border-gray-600 !shadow-sm"
             />
           </div>
           <Select
@@ -700,7 +831,7 @@ export const Proxies: React.FC = () => {
               { value: 'Fallback', label: '故障转移' },
             ]}
             size="sm"
-            className="min-w-[120px] !h-9 !text-sm !font-bold !text-gray-900 dark:!text-gray-100 !bg-white dark:!bg-gray-800/60 !border !border-gray-300 dark:!border-gray-600 !leading-5"
+            className="min-w-[120px] !h-9 !text-sm !font-bold !text-gray-900 dark:!text-gray-100 !bg-white/90 dark:!bg-gray-800/60 !border !border-gray-200 dark:!border-gray-600 !leading-5 !shadow-sm"
           />
           <Select
             value={sortBy}
@@ -713,9 +844,9 @@ export const Proxies: React.FC = () => {
               { value: 'NameDesc', label: '名称 Z-A' },
             ]}
             size="sm"
-            className="min-w-[120px] !h-9 !text-sm !font-bold !text-gray-900 dark:!text-gray-100 !bg-white dark:!bg-gray-800/60 !border !border-gray-300 dark:!border-gray-600 !leading-5"
+            className="min-w-[120px] !h-9 !text-sm !font-bold !text-gray-900 dark:!text-gray-100 !bg-white/90 dark:!bg-gray-800/60 !border !border-gray-200 dark:!border-gray-600 !leading-5 !shadow-sm"
           />
-          <label className="flex items-center space-x-2 cursor-pointer whitespace-nowrap px-3 py-2 bg-white dark:bg-gray-800/60 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-gray-700/70 hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 shadow-sm">
+          <label className="flex items-center space-x-2 cursor-pointer whitespace-nowrap px-3 py-2 bg-white/90 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-gray-700/70 hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 shadow-sm">
             <input
               type="checkbox"
               className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-600 border-2 border-gray-500 dark:border-gray-400 rounded focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:ring-offset-0 checked:bg-blue-600 dark:checked:bg-blue-500 checked:border-blue-600 dark:checked:border-blue-500"
@@ -835,6 +966,8 @@ export const Proxies: React.FC = () => {
                   onTestSingleProxy={handleTestSingleProxy}
                   testingProxies={testingProxies}
                   testingSingleProxies={testingSingleProxies}
+                  testingAllProxiesNodes={testingAllProxiesNodes}
+                  testingGroupProxiesNodes={testingGroupProxiesNodes}
                   sortBy={sortBy}
                   hideUnavailable={hideUnavailable}
                 />
