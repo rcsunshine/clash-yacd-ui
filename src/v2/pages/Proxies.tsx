@@ -812,7 +812,7 @@ export const Proxies: React.FC = () => {
               placeholder="搜索代理组..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="!h-8 !text-sm !font-medium !text-gray-900 dark:!text-gray-100 !bg-white/90 dark:!bg-gray-800/60 !border-gray-200 dark:!border-gray-600 !shadow-sm"
+              className="!h-10 !text-base !font-medium !text-gray-900 dark:!text-gray-100 !bg-white/90 dark:!bg-gray-800/60 !border-gray-200 dark:!border-gray-600 !shadow-sm"
             />
           </div>
           <Select
@@ -824,8 +824,8 @@ export const Proxies: React.FC = () => {
               { value: 'URLTest', label: '自动选择' },
               { value: 'Fallback', label: '故障转移' },
             ]}
-            size="sm"
-            className="min-w-[120px] !h-9 !text-sm !font-bold !text-gray-900 dark:!text-gray-100 !bg-white/90 dark:!bg-gray-800/60 !border !border-gray-200 dark:!border-gray-600 !leading-5 !shadow-sm"
+            size="md"
+            className="min-w-[120px] !font-bold !text-gray-900 dark:!text-gray-100 !bg-white/90 dark:!bg-gray-800/60 !border !border-gray-200 dark:!border-gray-600 !shadow-sm"
           />
           <Select
             value={sortBy}
@@ -837,8 +837,8 @@ export const Proxies: React.FC = () => {
               { value: 'NameAsc', label: '名称 A-Z' },
               { value: 'NameDesc', label: '名称 Z-A' },
             ]}
-            size="sm"
-            className="min-w-[120px] !h-9 !text-sm !font-bold !text-gray-900 dark:!text-gray-100 !bg-white/90 dark:!bg-gray-800/60 !border !border-gray-200 dark:!border-gray-600 !leading-5 !shadow-sm"
+            size="md"
+            className="min-w-[120px] !font-bold !text-gray-900 dark:!text-gray-100 !bg-white/90 dark:!bg-gray-800/60 !border !border-gray-200 dark:!border-gray-600 !shadow-sm"
           />
           <label className="flex items-center space-x-2 cursor-pointer whitespace-nowrap px-3 py-2 bg-white/90 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-gray-700/70 hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 shadow-sm">
             <input

@@ -2,6 +2,7 @@ import React from 'react';
 
 import { createAPIClient } from '../../api/client';
 import { useApiConfig } from '../../hooks/useApiConfig';
+import { useConnections } from '../../hooks/useAPI';
 import { cn } from '../../utils/cn';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { ThemeDropdown } from '../ui/ThemeDropdown';
@@ -160,6 +161,8 @@ function useConnectionStatus() {
 export function Sidebar(props: SidebarProps = {}) {
   const { className, currentPage, onPageChange } = props;
   const connectionState = useConnectionStatus();
+  const { data: connectionsData } = useConnections();
+  const totalConnections = connectionsData?.connections?.length || 0;
   const [currentPageState, setCurrentPageState] = React.useState(currentPage || 'dashboard');
   
   // 响应外部页面变化
@@ -222,7 +225,7 @@ export function Sidebar(props: SidebarProps = {}) {
       label: '连接',
       href: '#connections',
       active: currentPageState === 'connections',
-      badge: '12',
+      badge: totalConnections.toString(),
       onClick: () => handlePageChange('connections'),
     },
     {

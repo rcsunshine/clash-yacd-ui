@@ -1350,3 +1350,20 @@ npm run type-check
 
 #### 配置和API页面UI美化统一 (2024-01-XX)
 // ... existing code ...
+
+## V2 界面优化
+
+### 2024-12-19 用户体验优化
+- ✅ **代理页面UI优化**: 搜索框和筛选项改为更大尺寸(h-10, text-base)，Select组件统一使用md尺寸
+- ✅ **Select组件统一**: 代理页面Select组件从sm改为md，确保文字完整显示，高度与搜索框对齐
+- ✅ **连接数统计修复**: 侧边栏连接菜单项的badge从硬编码'12'改为动态显示真实连接数，使用useConnections hook获取实时数据
+- ✅ **仪表盘卡片hover效果**: 为SystemInfoCard、ConnectionsCard、ConfigStatusCard、快速操作卡片、TrafficChart等所有卡片添加统一的hover效果(hover:shadow-lg hover:-translate-y-1)
+- ✅ **CSS架构一致性**: 坚持V2架构规范，其他页面Select组件保持原有尺寸避免文字显示不全问题
+- ✅ **代理搜索样式优化**: 移除下拉选项不必要的高度和文字大小限制，保持size="md"确保文字完整显示，与其他页面搜索样式保持一致
+
+**技术成果**:
+- 代理页面搜索筛选区域视觉更加协调统一  
+- 连接数在侧边栏和连接页面显示完全一致
+- 仪表盘所有卡片具有优雅的浮动交互效果
+- 代理搜索样式与其他页面保持一致，避免文字显示不全问题
+- 确保0个TypeScript错误，用户体验大幅提升

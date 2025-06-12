@@ -105,7 +105,7 @@ const TrafficChart: React.FC = () => {
   const latestData = trafficData[trafficData.length - 1];
   
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
       <CardHeader className="bg-gradient-to-r from-slate-700 to-slate-800 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -294,7 +294,7 @@ const SystemInfoCard: React.FC = () => {
   const { uploadTotalFormatted, downloadTotalFormatted, isConnected: statsConnected } = useConnectionStats();
   
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
       <CardHeader className="bg-gradient-to-r from-stone-700 to-stone-800 text-white">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
@@ -367,7 +367,7 @@ const ConnectionsCard: React.FC = () => {
   const connections = connectionsData?.connections || [];
   
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
       <CardHeader className="bg-gradient-to-r from-gray-700 to-gray-800 text-white">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
@@ -449,7 +449,7 @@ const ConfigStatusCard: React.FC = () => {
   };
   
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
       <CardHeader className="bg-gradient-to-r from-neutral-700 to-neutral-800 text-white">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
@@ -596,7 +596,7 @@ export const Dashboard: React.FC = () => {
         <SystemInfoCard />
         <ConnectionsCard />
         <ConfigStatusCard />
-        <Card className="overflow-hidden card-hover">
+        <Card className="overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
           <CardHeader className="bg-gradient-to-r from-stone-700 to-neutral-800 text-white">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
