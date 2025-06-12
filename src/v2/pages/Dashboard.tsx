@@ -12,6 +12,88 @@ import { v2CurrentPageAtom } from '../store/atoms';
 const TrafficChart: React.FC = () => {
   const { data: trafficData, isConnected } = useTraffic();
   
+  // 防抖优化：避免频繁重新计算刻度
+  const [debouncedTrafficData, setDebouncedTrafficData] = React.useState(trafficData);
+  
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedTrafficData(trafficData);
+    }, 100); // 100ms防抖
+    
+    return () => clearTimeout(timer);
+  }, [trafficData]);
+
+  // 高性能智能刻度算法 - "Nice Numbers" 算法 + 缓存优化 + 防抖
+  const getCurrentMaxValue = React.useMemo(() => {
+    if (debouncedTrafficData.length === 0) return 1024 * 1024; // 默认1MB
+    return Math.max(...debouncedTrafficData.map(d => Math.max(d.up, d.down)));
+  }, [debouncedTrafficData]);
+  
+  const generateNiceSteps = React.useMemo(() => {
+    const niceNum = (range: number, round: boolean): number => {
+      const exponent = Math.floor(Math.log10(range));
+      const fraction = range / Math.pow(10, exponent);
+      let niceFraction: number;
+      
+      if (round) {
+        if (fraction < 1.5) niceFraction = 1;
+        else if (fraction < 3) niceFraction = 2;
+        else if (fraction < 7) niceFraction = 5;
+        else niceFraction = 10;
+      } else {
+        if (fraction <= 1) niceFraction = 1;
+        else if (fraction <= 2) niceFraction = 2;
+        else if (fraction <= 5) niceFraction = 5;
+        else niceFraction = 10;
+      }
+      
+      return niceFraction * Math.pow(10, exponent);
+    };
+    
+    const calculateNiceScale = (maxValue: number, tickCount: number = 5) => {
+      // 向上取整到一个更大的整数值，确保所有刻度都是整数
+      const getRoundedMax = (value: number): number => {
+        const KB = 1024;
+        const MB = KB * 1024;
+        const GB = MB * 1024;
+        
+        if (value <= 100 * KB) {
+          // 小于100KB: 向上取整到10KB的倍数
+          return Math.ceil(value / (10 * KB)) * (10 * KB);
+        } else if (value <= MB) {
+          // 100KB-1MB: 向上取整到50KB的倍数  
+          return Math.ceil(value / (50 * KB)) * (50 * KB);
+        } else if (value <= 10 * MB) {
+          // 1-10MB: 向上取整到1MB的倍数
+          return Math.ceil(value / MB) * MB;
+        } else if (value <= 100 * MB) {
+          // 10-100MB: 向上取整到10MB的倍数
+          return Math.ceil(value / (10 * MB)) * (10 * MB);
+        } else if (value <= GB) {
+          // 100MB-1GB: 向上取整到100MB的倍数
+          return Math.ceil(value / (100 * MB)) * (100 * MB);
+        } else {
+          // >1GB: 向上取整到1GB的倍数
+          return Math.ceil(value / GB) * GB;
+        }
+      };
+      
+      const niceMax = getRoundedMax(maxValue);
+      const tickSize = niceMax / (tickCount - 1);
+      
+      const steps: number[] = [];
+      // 从最大值到0，生成整数刻度
+      for (let i = tickCount - 1; i >= 0; i--) {
+        steps.push(Math.round(i * tickSize));
+      }
+      
+      return { steps, maxValue: niceMax };
+    };
+    
+    const { steps, maxValue: chartMax } = calculateNiceScale(getCurrentMaxValue);
+    return { steps, chartMax };
+  }, [getCurrentMaxValue]);
+  
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -89,40 +171,45 @@ const TrafficChart: React.FC = () => {
             
             {/* 图表容器 - 带Y轴刻度和网格线 */}
             <div className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              {/* Y轴刻度标签 */}
-              <div className="absolute left-0 top-0 h-32 w-12 flex flex-col justify-between text-xs text-gray-500 dark:text-gray-400 py-2">
-                {(() => {
-                  const maxValue = trafficData.length > 0 ? Math.max(...trafficData.map(d => Math.max(d.up, d.down))) : 1024 * 1024; // 默认1MB
-                  const steps = [maxValue, maxValue * 0.75, maxValue * 0.5, maxValue * 0.25, 0];
-                  return steps.map((value, idx) => (
-                    <div key={idx} className="text-right pr-1 leading-none">
+              {/* Y轴刻度标签 - 优化样式 */}
+              <div className="absolute left-0 top-0 h-32 w-20 flex flex-col justify-between py-2">
+                {generateNiceSteps.steps.map((value, idx) => (
+                    <div 
+                      key={idx} 
+                      className="text-right pr-2 leading-none text-xs font-mono font-medium text-gray-700 dark:text-gray-300 bg-gray-50/80 dark:bg-gray-800/60 rounded px-1 py-0.5 border border-gray-200/50 dark:border-gray-600/30"
+                      style={{ 
+                        fontSize: '10px',
+                        backdropFilter: 'blur(4px)'
+                      }}
+                    >
                       {formatBytes(value)}/s
                     </div>
-                  ));
-                })()}
+                  ))}
               </div>
               
               {/* 网格线 */}
-              <div className="absolute left-12 top-0 right-0 h-32 flex flex-col justify-between">
+              <div className="absolute left-20 top-0 right-0 h-32 flex flex-col justify-between">
                 {[0, 1, 2, 3, 4].map(idx => (
                   <div key={idx} className="border-t border-gray-200 dark:border-gray-600 border-dashed opacity-30"></div>
                 ))}
               </div>
               
               {/* 图表主体 */}
-              <div className="ml-12 h-32 flex items-end space-x-0.5 bg-transparent rounded-lg p-2 overflow-hidden">
+              <div className="ml-20 h-32 flex items-end justify-between bg-transparent rounded-lg p-2 overflow-hidden">
                 {trafficData.length > 0 ? (
                   // 有数据时显示真实图表
-                  trafficData.slice(-80).map((data, index) => {
-                    const maxValue = Math.max(...trafficData.map(d => Math.max(d.up, d.down)));
+                                    trafficData.slice(-80).map((data, index) => {
+                    // 使用在组件顶层计算的图表最大值
+                    const chartMaxValue = generateNiceSteps.chartMax;
+                    
                     // 确保数据不为负值，从底部开始绘制
                     const upValue = Math.max(0, data.up);
                     const downValue = Math.max(0, data.down);
-                    const upHeight = maxValue > 0 ? (upValue / maxValue) * 90 : 0; // 最大90%避免溢出
-                    const downHeight = maxValue > 0 ? (downValue / maxValue) * 90 : 0;
+                    const upHeight = (upValue / chartMaxValue) * 90; // 最大90%避免溢出
+                    const downHeight = (downValue / chartMaxValue) * 90;
                     
                     return (
-                      <div key={index} className="flex flex-col justify-end h-full flex-1 min-w-0 group relative">
+                      <div key={index} className="flex flex-col justify-end h-full group relative flex-1">
                         {/* 工具提示 */}
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10">
                           <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded px-2 py-1 whitespace-nowrap">
@@ -131,20 +218,22 @@ const TrafficChart: React.FC = () => {
                           </div>
                         </div>
                         
-                        {/* 上传条形图 - 使用更明显的颜色 */}
+                        {/* 上传条形图 - 固定细宽度 */}
                         <div 
-                          className="bg-gradient-to-t from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 w-full transition-all duration-300 hover:from-blue-600 hover:to-blue-700"
+                          className="bg-gradient-to-t from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 transition-all duration-300 hover:from-blue-600 hover:to-blue-700"
                           style={{ 
+                            width: '4px',
                             height: `${upHeight}%`, 
                             minHeight: upValue > 0 ? '1px' : '0',
                             borderRadius: '2px 2px 0 0'
                           }}
                         />
                         
-                        {/* 下载条形图 - 使用更明显的颜色 */}
+                        {/* 下载条形图 - 固定细宽度 */}
                         <div 
-                          className="bg-gradient-to-t from-green-500 to-green-600 dark:from-green-400 dark:to-green-500 w-full transition-all duration-300 hover:from-green-600 hover:to-green-700"
+                          className="bg-gradient-to-t from-green-500 to-green-600 dark:from-green-400 dark:to-green-500 transition-all duration-300 hover:from-green-600 hover:to-green-700"
                           style={{ 
+                            width: '4px',
                             height: `${downHeight}%`, 
                             minHeight: downValue > 0 ? '1px' : '0',
                             borderRadius: '0 0 2px 2px'
@@ -156,16 +245,16 @@ const TrafficChart: React.FC = () => {
                 ) : (
                   // 无数据时显示占位图表
                   Array.from({ length: 40 }, (_, index) => (
-                    <div key={index} className="flex flex-col justify-end h-full flex-1 min-w-0">
-                      <div className="bg-gradient-to-t from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 w-full opacity-20" style={{ height: '8px', borderRadius: '1px' }} />
-                      <div className="bg-gradient-to-t from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 w-full opacity-20" style={{ height: '6px', borderRadius: '1px' }} />
+                    <div key={index} className="flex flex-col justify-end h-full flex-1">
+                      <div className="bg-gradient-to-t from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 opacity-20" style={{ width: '4px', height: '8px', borderRadius: '1px' }} />
+                      <div className="bg-gradient-to-t from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 opacity-20" style={{ width: '4px', height: '6px', borderRadius: '1px' }} />
                     </div>
                   ))
                 )}
               </div>
               
               {/* X轴基线 */}
-              <div className="ml-12 border-t-2 border-gray-300 dark:border-gray-600"></div>
+              <div className="ml-20 border-t-2 border-gray-300 dark:border-gray-600"></div>
             </div>
             
             {/* 图例和统计信息 */}
