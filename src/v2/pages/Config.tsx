@@ -401,9 +401,9 @@ export const Config: React.FC = () => {
         </div>
       </ConfigSection>
 
-      {/* 系统信息 */}
+      {/* 版本信息 */}
       <ConfigSection 
-        title="系统信息" 
+        title="版本信息" 
         description="Clash 核心和应用版本信息"
       >
         <div className="space-y-0">
@@ -411,9 +411,13 @@ export const Config: React.FC = () => {
             label="Clash 版本" 
             description="当前运行的 Clash 核心版本"
           >
-            <span className="text-theme font-mono">
-              {systemInfo.version}
-            </span>
+            {systemLoading ? (
+              <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            ) : (
+              <span className="text-theme font-mono">
+                {systemInfo?.version || 'N/A'}
+              </span>
+            )}
           </ConfigItem>
 
           <ConfigItem 
@@ -421,7 +425,7 @@ export const Config: React.FC = () => {
             description="当前 YACD V2 版本"
           >
             <span className="text-theme font-mono">
-              2.0.0-dev
+              v2.0.0-dev
             </span>
           </ConfigItem>
 
@@ -429,10 +433,14 @@ export const Config: React.FC = () => {
             label="Premium 功能" 
             description="是否支持 Premium 功能"
           >
-            <StatusIndicator 
-              status={systemInfo.premium ? 'success' : 'warning'} 
-              label={systemInfo.premium ? '支持' : '不支持'} 
-            />
+            {systemLoading ? (
+              <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            ) : (
+              <StatusIndicator 
+                status={systemInfo?.premium ? 'success' : 'warning'} 
+                label={systemInfo?.premium ? '支持' : '不支持'} 
+              />
+            )}
           </ConfigItem>
         </div>
       </ConfigSection>
