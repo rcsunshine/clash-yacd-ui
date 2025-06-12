@@ -1,5 +1,329 @@
 /* V2 页面样式 - 优化版本 */
 
+/* 代理页面样式 */
+.proxy-page {
+  height: 100vh;
+  overflow: hidden;
+  /* 字体渲染优化 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.proxy-page .scrollable-content {
+  /* 确保滚动区域能正确显示 */
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.proxy-page .card-hover {
+  transition: all 0.2s ease-in-out;
+}
+
+.proxy-page .card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* 代理页面整体字体优化 */
+.proxy-page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', sans-serif;
+}
+
+/* 代理组卡片样式优化 */
+.proxy-page .card {
+  background: rgb(255, 255, 255);
+  border: 1px solid rgb(229, 231, 235);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.proxy-page .card-header {
+  background: linear-gradient(135deg, rgb(248, 250, 252) 0%, rgb(241, 245, 249) 100%);
+  border-bottom: 1px solid rgb(229, 231, 235);
+  padding: 16px 20px;
+}
+
+.proxy-page .card-content {
+  padding: 16px 20px;
+}
+
+/* 代理组标题优化 */
+.proxy-page h3 {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: rgb(17, 24, 39) !important;
+  line-height: 1.4 !important;
+  letter-spacing: -0.025em !important;
+}
+
+/* 代理节点文字优化 */
+.proxy-page .proxy-node-name {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: rgb(17, 24, 39) !important;
+  line-height: 1.5 !important;
+}
+
+.proxy-page .proxy-node-info {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  color: rgb(107, 114, 128) !important;
+  line-height: 1.4 !important;
+}
+
+/* 延迟数字优化 */
+.proxy-page .delay-text {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+}
+
+/* 类型标签优化 */
+.proxy-page .type-badge {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  line-height: 1.2 !important;
+}
+
+/* 深色主题下的优化 */
+:root[data-theme='dark'] .proxy-page .card {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-theme='dark'] .proxy-page .card-header {
+  background: linear-gradient(135deg, rgb(31, 41, 55) 0%, rgb(17, 24, 39) 100%);
+  border-bottom-color: rgb(55, 65, 81);
+}
+
+:root[data-theme='dark'] .proxy-page h3 {
+  color: rgb(243, 244, 246) !important;
+}
+
+:root[data-theme='dark'] .proxy-page .proxy-node-name {
+  color: rgb(243, 244, 246) !important;
+}
+
+:root[data-theme='dark'] .proxy-page .proxy-node-info {
+  color: rgb(156, 163, 175) !important;
+}
+
+/* 代理页面 Select 组件样式优化 - 深色主题协调性 */
+.proxy-page select {
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  color: rgb(17, 24, 39) !important;
+  background-color: rgb(255, 255, 255) !important;
+  border: 1px solid rgb(209, 213, 219) !important;
+  padding: 8px 12px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  border-radius: 8px !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+.proxy-page select option {
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  color: rgb(17, 24, 39) !important;
+  background-color: rgb(255, 255, 255) !important;
+  padding: 10px 14px !important;
+  min-height: 40px !important;
+  border: none !important;
+}
+
+/* 深色主题下的 Select 样式 - 更协调的配色 */
+:root[data-theme='dark'] .proxy-page select {
+  color: rgb(243, 244, 246) !important;
+  background-color: rgba(31, 41, 55, 0.8) !important;
+  border-color: rgb(75, 85, 99) !important;
+}
+
+:root[data-theme='dark'] .proxy-page select option {
+  color: rgb(243, 244, 246) !important;
+  background-color: rgba(31, 41, 55, 0.9) !important;
+}
+
+/* Select 组件聚焦状态 */
+.proxy-page select:focus {
+  outline: none !important;
+  ring: 2px solid rgb(59, 130, 246) !important;
+  border-color: rgb(59, 130, 246) !important;
+}
+
+/* 筛选区域背景色优化 */
+.proxy-page .filter-container {
+  background: rgba(248, 250, 252, 0.8) !important;
+  border: 1px solid rgba(203, 213, 225, 0.5) !important;
+  backdrop-filter: blur(8px) saturate(180%) !important;
+  border-radius: 10px !important;
+}
+
+:root[data-theme='dark'] .proxy-page .filter-container {
+  background: rgba(17, 24, 39, 0.6) !important;
+  border-color: rgba(75, 85, 99, 0.5) !important;
+}
+
+/* 搜索框优化 */
+.proxy-page input[type="text"] {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: rgb(17, 24, 39) !important;
+  background: rgb(255, 255, 255) !important;
+  border: 1px solid rgb(209, 213, 219) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  height: 36px !important;
+}
+
+:root[data-theme='dark'] .proxy-page input[type="text"] {
+  color: rgb(243, 244, 246) !important;
+  background: rgba(31, 41, 55, 0.8) !important;
+  border-color: rgb(75, 85, 99) !important;
+}
+
+/* 测速进度条优化 */
+.proxy-page .testing-progress {
+  background: rgba(219, 234, 254, 0.8) !important;
+  border: 1px solid rgba(147, 197, 253, 0.5) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+}
+
+:root[data-theme='dark'] .proxy-page .testing-progress {
+  background: rgba(30, 58, 138, 0.3) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+}
+
+/* 代理节点卡片样式 - 强制边框显示 */
+.proxy-page .proxy-button {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgb(229, 231, 235) !important;
+  background: rgb(255, 255, 255) !important;
+  color: rgb(17, 24, 39) !important;
+  transition: all 0.15s ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.proxy-page .proxy-button:hover {
+  border-color: rgb(59, 130, 246) !important;
+  background: rgb(239, 246, 255) !important;
+  color: rgb(59, 130, 246) !important;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15) !important;
+}
+
+.proxy-page .proxy-button.selected {
+  border-color: rgb(59, 130, 246) !important;
+  background: rgb(59, 130, 246) !important;
+  color: rgb(255, 255, 255) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* 测速中状态样式 */
+.proxy-page .proxy-button.testing {
+  border-color: rgb(251, 191, 36) !important;
+  background: rgb(254, 249, 195) !important;
+  color: rgb(180, 83, 9) !important;
+  position: relative !important;
+  box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2) !important;
+}
+
+.proxy-page .proxy-button.testing::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 8px;
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.3), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+/* 深色主题下的代理按钮样式 */
+:root[data-theme='dark'] .proxy-page .proxy-button {
+  border-color: rgb(55, 65, 81) !important;
+  background: rgb(31, 41, 55) !important;
+  color: rgb(243, 244, 246) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+:root[data-theme='dark'] .proxy-page .proxy-button:hover {
+  border-color: rgb(59, 130, 246) !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: rgb(147, 197, 253) !important;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25) !important;
+}
+
+:root[data-theme='dark'] .proxy-page .proxy-button.selected {
+  border-color: rgb(59, 130, 246) !important;
+  background: rgb(59, 130, 246) !important;
+  color: rgb(255, 255, 255) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35) !important;
+}
+
+:root[data-theme='dark'] .proxy-page .proxy-button.testing {
+  border-color: rgb(251, 191, 36) !important;
+  background: rgba(180, 83, 9, 0.2) !important;
+  color: rgb(251, 191, 36) !important;
+  box-shadow: 0 2px 6px rgba(251, 191, 36, 0.3) !important;
+}
+
+:root[data-theme='dark'] .proxy-page .proxy-button.testing::before {
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.2), transparent);
+}
+
+/* 测速动画 */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* 测速状态指示器 */
+.proxy-page .testing-indicator {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background: rgb(251, 191, 36);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+:root[data-theme='dark'] .proxy-page .testing-indicator {
+  background: rgb(251, 191, 36);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
 /* 规则页面样式 */
 .rules-page {
   /* 卡片悬停效果 */
@@ -64,6 +388,10 @@
 }
 
 /* 深色主题优化 */
+:root[data-theme='dark'] .proxy-page .card-hover:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
 :root[data-theme='dark'] .rules-page .card-hover:hover {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
