@@ -37,7 +37,6 @@ export const APIConfig: React.FC = () => {
   
   const [isAdding, setIsAdding] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [showSecret, setShowSecret] = useState(false);
   const [testingCurrent, setTestingCurrent] = useState(false);
   const [currentTestResult, setCurrentTestResult] = useState<APITestResult | null>(null);
   const [testingConfigs, setTestingConfigs] = useState<Set<number>>(new Set());
@@ -250,267 +249,241 @@ export const APIConfig: React.FC = () => {
   }
 
   return (
-    <div className="page-wrapper api-config-page">
-      <div className="page-body">
-        <div className="container-fluid px-4">
-    <div className="space-y-6">
-            {/* 页面标题 */}
-        <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                API 配置管理
-              </h1>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-            管理 Clash API 连接配置
-          </p>
-        </div>
-        
-            {/* 当前配置状态 */}
-            <Card>
-              <div className="p-4">
-                <div className="flex justify-between items-center mb-3">
-                  <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-                    当前配置
-                  </h2>
-                  <Button
-                    variant="outline"
-                    onClick={handleTestCurrent}
-                    disabled={testingCurrent}
-                  >
-                    {testingCurrent ? '测试中...' : '测试连接'}
-                  </Button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="currentBaseURL" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      API 地址
-                    </label>
-                    <p id="currentBaseURL" className="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded border">
-                      {currentConfig.baseURL}
-                    </p>
-                  </div>
-                  <div>
-                    <label htmlFor="currentSecret" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Secret
-                    </label>
-                    <div className="flex items-center space-x-2">
-                      <p id="currentSecret" className="flex-1 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded border">
-                        {currentConfig.secret 
-                          ? (showSecret ? currentConfig.secret : '••••••••••••')
-                          : '(未设置)'
-                        }
-                      </p>
-                      {currentConfig.secret && (
-          <Button
-            variant="outline"
-                          size="sm"
-                          onClick={() => setShowSecret(!showSecret)}
-                          className="px-2 py-1 text-xs"
-          >
-                          {showSecret ? '隐藏' : '显示'}
-          </Button>
-          )}
-        </div>
-      </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* 配置列表 */}
-            <Card>
-              <div className="p-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-                    配置列表
-                  </h2>
-                  <Button variant="primary" onClick={handleStartAdd}>
-                    添加配置
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  {configs.map((config, index) => (
-                    <div
-                      key={index}
-                      className={`p-3 border rounded-lg ${
-                        index === selectedIndex
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                          : 'border-gray-200 dark:border-gray-700'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {config.baseURL}
-                          </div>
-                          {config.secret && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              Secret: ••••••••
-              </div>
-                          )}
-            </div>
-                        
-                                                  <div className="flex items-center space-x-2">
-                            {index === selectedIndex && (
-                              <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded">
-                                当前
-                              </span>
-                            )}
-                            
-                            {index !== selectedIndex && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleSwitch(index)}
-                              >
-                                切换
-                              </Button>
-                            )}
-                            
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleTestConfig(index)}
-                              disabled={testingConfigs.has(index)}
-                            >
-                              {testingConfigs.has(index) ? '测试中...' : '测试'}
-                            </Button>
-                            
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleStartEdit(index)}
-                            >
-                              编辑
-                            </Button>
-                            
-                            {index !== 0 && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDelete(index)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                删除
-            </Button>
-          )}
-                                                    </div>
-        </div>
-
-                        {/* 配置测试结果 */}
-                        {configTestResults.has(index) && (
-                          <div className={`mt-2 p-2 rounded text-sm ${
-                            configTestResults.get(index)?.success 
-                              ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
-                              : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                          }`}>
-                            <div className="font-medium">{configTestResults.get(index)?.message}</div>
-                            {configTestResults.get(index)?.version && (
-                              <div className="text-xs mt-1">版本: {configTestResults.get(index)?.version}</div>
-                            )}
-                            {configTestResults.get(index)?.error && (
-                              <div className="text-xs mt-1 opacity-75">{configTestResults.get(index)?.error}</div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-              </div>
-            </Card>
-
-            {/* 添加/编辑表单 */}
-            {(isAdding || editingIndex !== null) && (
-              <Card>
-                <div className="p-4">
-                  <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                    {isAdding ? '添加新配置' : '编辑配置'}
-                  </h2>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label htmlFor="baseURL" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        API 地址 *
-                      </label>
-                      <Input
-                        id="baseURL"
-                        type="text"
-                        placeholder="http://127.0.0.1:9090"
-                        value={formData.baseURL}
-                        onChange={(e) => setFormData(prev => ({ ...prev, baseURL: e.target.value }))}
-                      />
-      </div>
-
-                    <div>
-                      <label htmlFor="secret" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Secret
-                      </label>
-                      <Input
-                        id="secret"
-                        type="password"
-                        placeholder="留空表示无密码"
-                        value={formData.secret}
-                        onChange={(e) => setFormData(prev => ({ ...prev, secret: e.target.value }))}
-                      />
-                    </div>
-                    
-                    {/* 测试结果显示 */}
-                    {formTestResult && (
-                      <div className={`p-3 rounded-md ${
-                        formTestResult.success 
-                          ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
-                          : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                      }`}>
-                        <div className="font-medium">{formTestResult.message}</div>
-                        {formTestResult.version && (
-                          <div className="text-sm mt-1">Clash 版本: {formTestResult.version}</div>
-                        )}
-                        {formTestResult.error && (
-                          <div className="text-sm mt-1 opacity-75">{formTestResult.error}</div>
-                        )}
-                      </div>
-                    )}
-                    
-                    <div className="flex space-x-3">
-                      <Button
-                        variant="outline"
-                        onClick={handleTestForm}
-                        disabled={testingForm || !formData.baseURL.trim()}
-                      >
-                        {testingForm ? '测试中...' : '测试连接'}
-                      </Button>
-                      
-                      <Button variant="primary" onClick={handleSave}>
-                        保存
-                      </Button>
-                      
-                      <Button variant="outline" onClick={handleCancel}>
-                        取消
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {/* 测试结果显示 */}
-                  {currentTestResult && (
-                    <div className={`mt-4 p-3 rounded-md ${
-                      currentTestResult.success 
-                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
-                        : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                    }`}>
-                      <div className="font-medium">{currentTestResult.message}</div>
-                      {currentTestResult.version && (
-                        <div className="text-sm mt-1">Clash 版本: {currentTestResult.version}</div>
-                      )}
-                      {currentTestResult.error && (
-                        <div className="text-sm mt-1 opacity-75">{currentTestResult.error}</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-      </Card>
-            )}
+    <div className="space-y-4 p-6">
+      {/* 统一的页面头部样式 */}
+      <div className="flex items-center justify-between py-6 px-6 bg-gradient-to-r from-slate-500/10 to-stone-500/10 dark:from-slate-500/20 dark:to-stone-500/20 rounded-lg border border-slate-300/50 dark:border-slate-600/50">
+        <div className="flex items-center space-x-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-stone-700 rounded-lg flex items-center justify-center">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-theme hidden lg:block">API 配置</h1>
+            <p className="text-sm text-theme-secondary">
+              管理 Clash API 连接和多配置切换
+            </p>
           </div>
         </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-sm"
+            onClick={handleTestCurrent}
+            disabled={testingCurrent}
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {testingCurrent ? '测试中...' : '测试连接'}
+          </Button>
+          <Button variant="outline" size="sm" className="text-sm" onClick={() => window.location.reload()}>
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            刷新
+          </Button>
+        </div>
       </div>
+              
+      {/* 当前配置测试结果 */}
+      {currentTestResult && (
+        <Card>
+          <div className="p-4">
+            <div className={`p-3 rounded-md ${
+              currentTestResult.success 
+                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+            }`}>
+              <div className="font-medium">{currentTestResult.message}</div>
+              {currentTestResult.version && (
+                <div className="text-sm mt-1">Clash 版本: {currentTestResult.version}</div>
+              )}
+              {currentTestResult.error && (
+                <div className="text-sm mt-1 opacity-75">{currentTestResult.error}</div>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* 配置列表 */}
+      <Card>
+        <div className="p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+              配置列表
+            </h2>
+            <Button variant="primary" onClick={handleStartAdd}>
+              添加配置
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {configs.map((config, index) => (
+              <div
+                key={index}
+                className={`p-3 border rounded-lg ${
+                  index === selectedIndex
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-gray-200 dark:border-gray-700'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      {config.baseURL}
+                    </div>
+                    {config.secret && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        Secret: ••••••••
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    {index === selectedIndex && (
+                      <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded">
+                        当前
+                      </span>
+                    )}
+                    
+                    {index !== selectedIndex && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSwitch(index)}
+                      >
+                        切换
+                      </Button>
+                    )}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleTestConfig(index)}
+                      disabled={testingConfigs.has(index)}
+                    >
+                      {testingConfigs.has(index) ? '测试中...' : '测试'}
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleStartEdit(index)}
+                    >
+                      编辑
+                    </Button>
+                    
+                    {index !== 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(index)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        删除
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 配置测试结果 */}
+                {configTestResults.has(index) && (
+                  <div className={`mt-2 p-2 rounded text-sm ${
+                    configTestResults.get(index)?.success 
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                      : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                  }`}>
+                    <div className="font-medium">{configTestResults.get(index)?.message}</div>
+                    {configTestResults.get(index)?.version && (
+                      <div className="text-xs mt-1">版本: {configTestResults.get(index)?.version}</div>
+                    )}
+                    {configTestResults.get(index)?.error && (
+                      <div className="text-xs mt-1 opacity-75">{configTestResults.get(index)?.error}</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      {/* 添加/编辑表单 */}
+      {(isAdding || editingIndex !== null) && (
+        <Card>
+          <div className="p-4">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              {isAdding ? '添加新配置' : '编辑配置'}
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="baseURL" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  API 地址 *
+                </label>
+                <Input
+                  id="baseURL"
+                  type="text"
+                  placeholder="http://127.0.0.1:9090"
+                  value={formData.baseURL}
+                  onChange={(e) => setFormData(prev => ({ ...prev, baseURL: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="secret" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Secret
+                </label>
+                <Input
+                  id="secret"
+                  type="password"
+                  placeholder="留空表示无密码"
+                  value={formData.secret}
+                  onChange={(e) => setFormData(prev => ({ ...prev, secret: e.target.value }))}
+                />
+              </div>
+              
+              {/* 测试结果显示 */}
+              {formTestResult && (
+                <div className={`p-3 rounded-md ${
+                  formTestResult.success 
+                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                    : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                }`}>
+                  <div className="font-medium">{formTestResult.message}</div>
+                  {formTestResult.version && (
+                    <div className="text-sm mt-1">Clash 版本: {formTestResult.version}</div>
+                  )}
+                  {formTestResult.error && (
+                    <div className="text-sm mt-1 opacity-75">{formTestResult.error}</div>
+                  )}
+                </div>
+              )}
+              
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={handleTestForm}
+                  disabled={testingForm || !formData.baseURL.trim()}
+                >
+                  {testingForm ? '测试中...' : '测试连接'}
+                </Button>
+                
+                <Button variant="primary" onClick={handleSave}>
+                  保存
+                </Button>
+                
+                <Button variant="outline" onClick={handleCancel}>
+                  取消
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }; 

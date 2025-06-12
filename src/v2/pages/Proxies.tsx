@@ -740,27 +740,21 @@ export const Proxies: React.FC = () => {
 
   return (
     <div className="proxy-page h-screen flex flex-col overflow-hidden">
-      {/* 简化的紧凑头部 */}
-      <div className="flex-none p-3">
-        <div className="flex items-center justify-between py-2 px-4 bg-slate-50/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+      {/* 统一的页面头部样式 */}
+      <div className="flex-none p-6">
+        <div className="flex items-center justify-between py-6 px-6 bg-gradient-to-r from-slate-500/10 to-stone-500/10 dark:from-slate-500/20 dark:to-stone-500/20 rounded-lg border border-slate-300/50 dark:border-slate-600/50">
           {/* 左侧：标题和统计信息 */}
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-slate-600 to-stone-700 rounded-md flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9m0 9c-5 0-9-4-9-9s4-9 9-9" />
-                </svg>
-              </div>
-              <span className="font-semibold text-theme">代理</span>
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-stone-700 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9m0 9c-5 0-9-4-9-9s4-9 9-9" />
+              </svg>
             </div>
-            
-            {/* 紧凑的统计信息 */}
-            <div className="flex items-center space-x-4 text-xs text-theme-secondary">
-              <span>{proxyGroups.length} 组</span>
-              <span>{proxyCount} 节点</span>
-              <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
-                {config?.mode || 'N/A'}
-              </span>
+            <div>
+              <h1 className="text-xl font-bold text-theme hidden lg:block">代理</h1>
+              <p className="text-sm text-theme-secondary">
+                {proxyGroups.length} 组 • {proxyCount} 节点 • {config?.mode || 'N/A'} 模式
+              </p>
             </div>
           </div>
           
@@ -770,7 +764,7 @@ export const Proxies: React.FC = () => {
               variant="outline" 
               size="sm" 
               onClick={() => handleTestAllProxies()} 
-              className={`text-xs px-3 py-1 h-7 ${
+              className={`text-sm ${
                 testingAllProxies 
                   ? 'text-red-600 dark:text-red-400 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20' 
                   : 'text-blue-600 dark:text-blue-400 border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20'
@@ -779,7 +773,7 @@ export const Proxies: React.FC = () => {
               {testingAllProxies ? (
                 <>
                   <svg 
-                    className="w-3 h-3 mr-1" 
+                    className="w-4 h-4 mr-1" 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -791,7 +785,7 @@ export const Proxies: React.FC = () => {
               ) : (
                 <>
                   <svg 
-                    className="w-3 h-3 mr-1" 
+                    className="w-4 h-4 mr-1" 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -802,8 +796,8 @@ export const Proxies: React.FC = () => {
                 </>
               )}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => refetch()} className="text-xs px-3 py-1 h-7">
-              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <Button variant="outline" size="sm" onClick={() => refetch()} className="text-sm">
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               刷新
@@ -920,7 +914,7 @@ export const Proxies: React.FC = () => {
       </div>
       
       {/* 可滚动的内容区域 */}
-      <div className="scrollable-content flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
+      <div className="scrollable-content flex-1 overflow-y-auto custom-scrollbar px-6 pb-6 space-y-4">
         {/* 代理组列表 */}
         {filteredGroups.length === 0 ? (
           <Card className="overflow-hidden border-0 shadow-lg">
