@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { createAPIClient } from '../../api/client';
-import { useApiConfig } from '../../hooks/useApiConfig';
 import { useConnections } from '../../hooks/useAPI';
+import { useApiConfig } from '../../hooks/useApiConfig';
 import { cn } from '../../utils/cn';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { ThemeDropdown } from '../ui/ThemeDropdown';

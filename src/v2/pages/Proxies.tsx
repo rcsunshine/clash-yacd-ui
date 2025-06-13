@@ -89,6 +89,49 @@ const ProxyGroupCard: React.FC<{
     }
   };
 
+  // 排序和过滤代理节点
+  const getSortedAndFilteredProxies = (proxies: string[]) => {
+    let filtered = [...proxies];
+    
+    // 过滤不可用的代理
+    if (hideUnavailable) {
+      filtered = filtered.filter((proxyName) => {
+        const delay = getProxyDelay(proxyName);
+        return delay !== 0; // 只显示有延迟数据的代理
+      });
+    }
+    
+    // 排序
+    switch (sortBy) {
+      case 'LatencyAsc':
+        filtered.sort((a, b) => {
+          const delayA = getProxyDelay(a) || 999999;
+          const delayB = getProxyDelay(b) || 999999;
+          return delayA - delayB;
+        });
+        break;
+      case 'LatencyDesc':
+        filtered.sort((a, b) => {
+          const delayA = getProxyDelay(a) || 0;
+          const delayB = getProxyDelay(b) || 0;
+          return delayB - delayA;
+        });
+        break;
+      case 'NameAsc':
+        filtered.sort((a, b) => a.localeCompare(b));
+        break;
+      case 'NameDesc':
+        filtered.sort((a, b) => b.localeCompare(a));
+        break;
+      case 'Natural':
+      default:
+        // 保持原始顺序
+        break;
+    }
+    
+    return filtered;
+  };
+
   // 生成代理组的小圆点延迟指示器
   const generateProxyDots = (group: ProxyGroup) => {
     const maxDots = 30; // 最多显示30个圆点
@@ -133,49 +176,6 @@ const ProxyGroupCard: React.FC<{
         )}
       </div>
     );
-  };
-
-  // 排序和过滤代理节点
-  const getSortedAndFilteredProxies = (proxies: string[]) => {
-    let filtered = [...proxies];
-    
-    // 过滤不可用的代理
-    if (hideUnavailable) {
-      filtered = filtered.filter((proxyName) => {
-        const delay = getProxyDelay(proxyName);
-        return delay !== 0; // 只显示有延迟数据的代理
-      });
-    }
-    
-    // 排序
-    switch (sortBy) {
-      case 'LatencyAsc':
-        filtered.sort((a, b) => {
-          const delayA = getProxyDelay(a) || 999999;
-          const delayB = getProxyDelay(b) || 999999;
-          return delayA - delayB;
-        });
-        break;
-      case 'LatencyDesc':
-        filtered.sort((a, b) => {
-          const delayA = getProxyDelay(a) || 0;
-          const delayB = getProxyDelay(b) || 0;
-          return delayB - delayA;
-        });
-        break;
-      case 'NameAsc':
-        filtered.sort((a, b) => a.localeCompare(b));
-        break;
-      case 'NameDesc':
-        filtered.sort((a, b) => b.localeCompare(a));
-        break;
-      case 'Natural':
-      default:
-        // 保持原始顺序
-        break;
-    }
-    
-    return filtered;
   };
 
   return (
@@ -462,6 +462,46 @@ const sortProxyGroupsByGlobal = (proxiesData: any) => {
     .map((group: any) => group[1]);
 };
 
+const LoadingContent = () => (
+  <Card className="overflow-hidden border-0 shadow-lg">
+    <CardContent className="p-12">
+      <div className="text-center">
+        <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center animate-pulse">
+          <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+        </div>
+        <h3 className="text-xl font-semibold text-theme mb-3">
+          加载中...
+        </h3>
+        <p className="text-theme-secondary">
+          正在获取代理组信息
+        </p>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const ErrorContent = ({ error }: { error: unknown }) => (
+  <Card className="overflow-hidden border-0 shadow-lg">
+    <CardContent className="p-12">
+      <div className="text-center">
+        <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/50 dark:to-red-800/50 rounded-full flex items-center justify-center">
+          <svg className="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 className="text-xl font-semibold text-theme mb-3">
+          加载失败
+        </h3>
+        <p className="text-theme-secondary max-w-md mx-auto">
+          {error instanceof Error ? error.message : '获取代理组信息时发生错误'}
+        </p>
+      </div>
+    </CardContent>
+  </Card>
+);
+
 export const Proxies: React.FC = () => {
   const { data: proxiesData, isLoading, error, refetch, switchProxy, testDelay } = useProxies();
   const { data: config } = useClashConfig();
@@ -521,15 +561,6 @@ export const Proxies: React.FC = () => {
     });
     return groups;
   }, [proxiesData]);
-
-  // 过滤代理组
-  const filteredGroups = useMemo(() => {
-    return proxyGroups.filter((group) => {
-      const matchesSearch = group.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = filterType === 'all' || group.type === filterType;
-      return matchesSearch && matchesType;
-    });
-  }, [proxyGroups, searchQuery, filterType]);
 
   // 切换代理
   const handleSwitchProxy = async (groupName: string, proxyName: string) => {
@@ -728,6 +759,67 @@ export const Proxies: React.FC = () => {
       setTestingAllProxiesNodes(new Set()); // 清空测试节点集合
       cancelAllTestingRef.current = false; // 重置取消标志
     }
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return <LoadingContent />;
+    }
+
+    if (error) {
+      return <ErrorContent error={error} />;
+    }
+
+    return (
+      <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
+        {/* 代理组列表 */}
+        {sortedGroupNames.length === 0 ? (
+          <Card className="overflow-hidden border-0 shadow-lg">
+            <CardContent className="p-12">
+              <div className="text-center">
+                <div className="text-4xl mb-4">🤔</div>
+                <h3 className="text-lg font-medium text-theme mb-2">没有找到代理组</h3>
+                <p className="text-theme-secondary">请检查你的配置文件是否正确。</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {sortedGroupNames.map((groupName, index) => {
+              const group = proxiesData?.proxies?.[groupName];
+              if (!group || !group.all) return null;
+              
+              return (
+                <div 
+                  key={groupName}
+                  className="animate-in slide-in-from-bottom-4 duration-300"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <ProxyGroupCard
+                    group={{
+                      name: groupName,
+                      type: group.type,
+                      now: group.now,
+                      all: group.all,
+                    }}
+                    proxiesData={proxiesData}
+                    onSwitchProxy={handleSwitchProxy}
+                    onTestGroupDelay={handleTestGroupDelay}
+                    onTestSingleProxy={handleTestSingleProxy}
+                    testingProxies={testingProxies}
+                    testingSingleProxies={testingSingleProxies}
+                    testingAllProxiesNodes={testingAllProxiesNodes}
+                    testingGroupProxiesNodes={testingGroupProxiesNodes}
+                    sortBy={sortBy}
+                    hideUnavailable={hideUnavailable}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -942,73 +1034,7 @@ export const Proxies: React.FC = () => {
 
       </div>
       
-      {/* 可滚动的内容区域 */}
-      <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
-        {/* 代理组列表 */}
-        {sortedGroupNames.length === 0 ? (
-          <Card className="overflow-hidden border-0 shadow-lg">
-            <CardContent className="p-12">
-              <div className="text-center">
-                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center">
-                  <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9m0 9c-5 0-9-4-9-9s4-9 9-9" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-theme mb-3">
-                  没有找到代理组
-                </h3>
-                <p className="text-theme-secondary max-w-md mx-auto">
-                  {searchQuery ? '尝试调整搜索条件或清空搜索框' : '当前没有可用的代理组，请检查 Clash 配置'}
-                </p>
-                {searchQuery && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setSearchQuery('')}
-                    className="mt-4"
-                  >
-                    清空搜索
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {sortedGroupNames.map((groupName, index) => {
-              const group = proxiesData?.proxies?.[groupName];
-              if (!group || !group.all) return null;
-              
-              return (
-                <div 
-                  key={groupName}
-                  className="animate-in slide-in-from-bottom-4 duration-300"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <ProxyGroupCard
-                    group={{
-                      name: groupName,
-                      type: group.type,
-                      now: group.now,
-                      all: group.all,
-                    }}
-                    proxiesData={proxiesData}
-                    onSwitchProxy={handleSwitchProxy}
-                    onTestGroupDelay={handleTestGroupDelay}
-                    onTestSingleProxy={handleTestSingleProxy}
-                    testingProxies={testingProxies}
-                    testingSingleProxies={testingSingleProxies}
-                    testingAllProxiesNodes={testingAllProxiesNodes}
-                    testingGroupProxiesNodes={testingGroupProxiesNodes}
-                    sortBy={sortBy}
-                    hideUnavailable={hideUnavailable}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {renderContent()}
       
       {/* 通知提示 */}
       {notification.show && (
