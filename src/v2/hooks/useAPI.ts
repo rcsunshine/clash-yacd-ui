@@ -336,8 +336,29 @@ export function useRules(): UseQueryResult<RulesResponse> {
       // 获取规则提供者
       let providersData = {};
       try {
+        // 首先尝试获取规则提供者列表
         const providersResponse = await client.get('/providers/rules');
-        providersData = providersResponse.data || {};
+        if (providersResponse.data) {
+          // 如果成功获取到提供者列表，则获取每个提供者的详细信息
+          const providers = providersResponse.data;
+          const providersDetails = {};
+          
+          // 并行获取所有提供者的详细信息
+          await Promise.all(
+            Object.keys(providers).map(async (name) => {
+              try {
+                const detailResponse = await client.get(`/providers/rules/${encodeURIComponent(name)}`);
+                if (detailResponse.data) {
+                  providersDetails[name] = detailResponse.data;
+                }
+              } catch (error) {
+                console.warn(`Failed to fetch details for rule provider ${name}:`, error);
+              }
+            })
+          );
+          
+          providersData = providersDetails;
+        }
       } catch (error) {
         console.log('No rule providers found:', error);
         providersData = {};
