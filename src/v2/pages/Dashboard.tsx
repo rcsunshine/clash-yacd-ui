@@ -289,9 +289,17 @@ const TrafficChart: React.FC = () => {
   );
 };
 
-const SystemInfoCard: React.FC = () => {
+const SystemInfoCard: React.FC<{ connectionsData?: any; connectionsLoading?: boolean; connectionsError?: any }> = ({ 
+  connectionsData, 
+  connectionsLoading, 
+  connectionsError 
+}) => {
   const { data: systemInfo, isLoading, error } = useSystemInfo();
-  const { uploadTotalFormatted, downloadTotalFormatted, isConnected: statsConnected } = useConnectionStats();
+  const { uploadTotalFormatted, downloadTotalFormatted, isConnected: statsConnected } = useConnectionStats(
+    connectionsData,
+    connectionsLoading,
+    connectionsError
+  );
   
   return (
     <Card className="overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
@@ -362,9 +370,10 @@ const SystemInfoCard: React.FC = () => {
   );
 };
 
-const ConnectionsCard: React.FC = () => {
-  const { data: connectionsData, isLoading, error } = useConnections();
+const ConnectionsCard: React.FC<{ connectionsData: any }> = ({ connectionsData }) => {
   const connections = connectionsData?.connections || [];
+  const isLoading = !connectionsData;
+  const error = null; // 错误处理由父组件负责
   
   return (
     <Card className="overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
@@ -539,7 +548,7 @@ export const Dashboard: React.FC = () => {
   // 获取所有API hooks的refetch方法
   const { refetch: refetchSystemInfo } = useSystemInfo();
   const { refetch: refetchConfig } = useClashConfig();
-  const { refetch: refetchConnections } = useConnections();
+  const { data: connectionsData, isLoading: connectionsLoading, error: connectionsError, refetch: refetchConnections } = useConnections();
   
   // 页面导航
   const [, setCurrentPage] = useAtom(v2CurrentPageAtom);
@@ -593,8 +602,12 @@ export const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SystemInfoCard />
-        <ConnectionsCard />
+                    <SystemInfoCard 
+              connectionsData={connectionsData} 
+              connectionsLoading={connectionsLoading} 
+              connectionsError={connectionsError} 
+            />
+        <ConnectionsCard connectionsData={connectionsData} />
         <ConfigStatusCard />
         <Card className="overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
           <CardHeader className="bg-gradient-to-r from-stone-700 to-neutral-800 text-white">

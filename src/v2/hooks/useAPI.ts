@@ -20,6 +20,424 @@ import { useApiConfig } from './useApiConfig';
 let isConfigChanging = false;
 let configChangePromise: Promise<void> | null = null;
 
+// ================================
+// 彻底重写：全局唯一 WebSocket 管理器
+// ================================
+
+interface WebSocketConnection {
+  ws: WebSocket | null;
+  endpoint: string;
+  status: 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error';
+  lastError: string | null;
+  subscribers: number;
+  lastActivity: number;
+}
+
+class GlobalWebSocketManager {
+  private static instance: GlobalWebSocketManager;
+  private connections = new Map<string, WebSocketConnection>();
+  private eventListeners = new Map<string, Set<(data: any) => void>>();
+  private reconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  private currentApiConfig: any = null;
+  private isInitialized = false;
+
+  private constructor() {
+    console.log('🏗️ GlobalWebSocketManager: Initializing singleton');
+    this.isInitialized = true;
+    
+    // 页面卸载时清理
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', () => this.destroy());
+      
+      // 开发环境调试工具
+      if (process.env.NODE_ENV === 'development') {
+        (window as any).wsManager = {
+          status: () => this.getDebugInfo(),
+          cleanup: () => this.destroy(),
+          reconnect: (endpoint: string) => this.forceReconnect(endpoint),
+          connections: () => Array.from(this.connections.entries())
+        };
+        console.log('🔧 WebSocket debug: window.wsManager');
+      }
+    }
+  }
+
+  public static getInstance(): GlobalWebSocketManager {
+    if (!GlobalWebSocketManager.instance) {
+      GlobalWebSocketManager.instance = new GlobalWebSocketManager();
+    }
+    return GlobalWebSocketManager.instance;
+  }
+
+  public subscribe(endpoint: string, callback: (data: any) => void, apiConfig: any): () => void {
+    // 检查 API 配置变化
+    this.checkApiConfigChange(apiConfig);
+    
+    const connectionKey = this.getConnectionKey(endpoint);
+    
+    console.log(`📝 Subscribe: ${connectionKey}`, {
+      hasConnection: this.connections.has(connectionKey),
+      status: this.connections.get(connectionKey)?.status,
+      currentSubscribers: this.eventListeners.get(connectionKey)?.size || 0
+    });
+
+    // 初始化事件监听器
+    if (!this.eventListeners.has(connectionKey)) {
+      this.eventListeners.set(connectionKey, new Set());
+    }
+
+    // 防止重复订阅
+    const listeners = this.eventListeners.get(connectionKey)!;
+    if (listeners.has(callback)) {
+      console.warn(`⚠️ Duplicate subscription attempt: ${connectionKey}`);
+      return () => {}; // 返回空函数
+    }
+
+    // 添加监听器
+    listeners.add(callback);
+
+    // 确保连接存在
+    this.ensureConnection(connectionKey, endpoint, apiConfig);
+    
+    // 更新订阅者计数
+    const connection = this.connections.get(connectionKey);
+    if (connection) {
+      connection.subscribers = listeners.size;
+    }
+
+    // 返回取消订阅函数
+    return () => this.unsubscribe(connectionKey, callback);
+  }
+
+  private unsubscribe(connectionKey: string, callback: (data: any) => void): void {
+    const listeners = this.eventListeners.get(connectionKey);
+    if (!listeners) return;
+
+    listeners.delete(callback);
+    console.log(`🗑️ Unsubscribe: ${connectionKey}, remaining: ${listeners.size}`);
+
+    // 更新订阅者计数
+    const connection = this.connections.get(connectionKey);
+    if (connection) {
+      connection.subscribers = listeners.size;
+    }
+
+    // 如果没有订阅者了，关闭连接
+    if (listeners.size === 0) {
+      this.closeConnection(connectionKey);
+    }
+  }
+
+  private checkApiConfigChange(newApiConfig: any): void {
+    const configChanged = this.currentApiConfig && (
+      this.currentApiConfig.baseURL !== newApiConfig?.baseURL ||
+      this.currentApiConfig.secret !== newApiConfig?.secret
+    );
+
+    if (configChanged) {
+      console.log('🔄 API config changed, destroying all connections');
+      this.destroy();
+    }
+
+    this.currentApiConfig = newApiConfig;
+  }
+
+  private ensureConnection(connectionKey: string, endpoint: string, apiConfig: any): void {
+    let connection = this.connections.get(connectionKey);
+    
+    // 如果连接不存在，创建新的
+    if (!connection) {
+      connection = {
+        ws: null,
+        endpoint,
+        status: 'idle',
+        lastError: null,
+        subscribers: 0,
+        lastActivity: Date.now()
+      };
+      this.connections.set(connectionKey, connection);
+    }
+
+    // 检查连接状态
+    if (connection.status === 'connecting' || connection.status === 'connected') {
+      console.log(`✅ Connection already active: ${connectionKey} (${connection.status})`);
+      return;
+    }
+
+    // 检查 WebSocket 实际状态
+    if (connection.ws && connection.ws.readyState === WebSocket.OPEN) {
+      connection.status = 'connected';
+      console.log(`✅ WebSocket restored: ${connectionKey}`);
+      return;
+    }
+
+    // 创建新连接
+    this.createConnection(connectionKey, endpoint, apiConfig);
+  }
+
+  private createConnection(connectionKey: string, endpoint: string, apiConfig: any): void {
+    const connection = this.connections.get(connectionKey);
+    if (!connection) return;
+
+    // 防止重复连接
+    if (connection.status === 'connecting') {
+      console.log(`⏳ Already connecting: ${connectionKey}`);
+      return;
+    }
+
+    console.log(`🚀 Creating WebSocket: ${connectionKey}`);
+    connection.status = 'connecting';
+    connection.lastError = null;
+
+    try {
+      // 关闭现有连接
+      if (connection.ws) {
+        connection.ws.close(1000, 'Replacing');
+        connection.ws = null;
+      }
+
+      // 构建 WebSocket URL
+      const wsURL = new URL(apiConfig.baseURL);
+      wsURL.protocol = wsURL.protocol.replace('http', 'ws');
+      
+      const [path, params] = endpoint.split('?');
+      wsURL.pathname = path;
+      
+      if (apiConfig.secret) {
+        wsURL.searchParams.set('token', apiConfig.secret);
+      }
+      
+      if (params) {
+        const urlParams = new URLSearchParams(params);
+        urlParams.forEach((value, key) => {
+          wsURL.searchParams.set(key, value);
+        });
+      }
+
+      console.log(`🔗 Connecting to: ${wsURL.toString()}`);
+
+      // 创建 WebSocket
+      const ws = new WebSocket(wsURL.toString());
+      connection.ws = ws;
+
+      ws.onopen = () => {
+        console.log(`📡 Connected: ${connectionKey}`);
+        connection.status = 'connected';
+        connection.lastActivity = Date.now();
+        this.clearReconnectTimer(connectionKey);
+      };
+
+      ws.onmessage = (event) => {
+        connection.lastActivity = Date.now();
+        try {
+          const data = JSON.parse(event.data);
+          this.broadcast(connectionKey, data);
+        } catch (error) {
+          console.error(`❌ Parse error for ${connectionKey}:`, error);
+        }
+      };
+
+      ws.onclose = (event) => {
+        console.log(`🔌 Disconnected: ${connectionKey} (code: ${event.code})`);
+        connection.status = 'disconnected';
+        connection.ws = null;
+
+        // 如果还有订阅者且不是主动关闭，尝试重连
+        const listeners = this.eventListeners.get(connectionKey);
+        if (listeners && listeners.size > 0 && event.code !== 1000) {
+          this.scheduleReconnect(connectionKey, endpoint, apiConfig);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error(`❌ WebSocket error: ${connectionKey}`, error);
+        connection.status = 'error';
+        connection.lastError = 'Connection error';
+      };
+
+    } catch (error) {
+      console.error(`❌ Failed to create WebSocket: ${connectionKey}`, error);
+      connection.status = 'error';
+      connection.lastError = String(error);
+    }
+  }
+
+  private broadcast(connectionKey: string, data: any): void {
+    const listeners = this.eventListeners.get(connectionKey);
+    if (!listeners) return;
+
+    listeners.forEach(callback => {
+      try {
+        callback(data);
+      } catch (error) {
+        console.error(`❌ Callback error for ${connectionKey}:`, error);
+      }
+    });
+  }
+
+  private scheduleReconnect(connectionKey: string, endpoint: string, apiConfig: any): void {
+    this.clearReconnectTimer(connectionKey);
+
+    console.log(`⏰ Scheduling reconnect: ${connectionKey} in 3s`);
+    const timer = setTimeout(() => {
+      this.reconnectTimers.delete(connectionKey);
+      const listeners = this.eventListeners.get(connectionKey);
+      if (listeners && listeners.size > 0) {
+        console.log(`🔄 Reconnecting: ${connectionKey}`);
+        this.createConnection(connectionKey, endpoint, apiConfig);
+      }
+    }, 3000);
+
+    this.reconnectTimers.set(connectionKey, timer);
+  }
+
+  private clearReconnectTimer(connectionKey: string): void {
+    const timer = this.reconnectTimers.get(connectionKey);
+    if (timer) {
+      clearTimeout(timer);
+      this.reconnectTimers.delete(connectionKey);
+    }
+  }
+
+  private closeConnection(connectionKey: string): void {
+    console.log(`🗑️ Closing connection: ${connectionKey}`);
+    
+    const connection = this.connections.get(connectionKey);
+    if (connection?.ws) {
+      connection.ws.close(1000, 'No subscribers');
+    }
+
+    this.connections.delete(connectionKey);
+    this.eventListeners.delete(connectionKey);
+    this.clearReconnectTimer(connectionKey);
+  }
+
+  public forceReconnect(endpoint: string): void {
+    const connectionKey = this.getConnectionKey(endpoint);
+    const connection = this.connections.get(connectionKey);
+    
+    if (connection) {
+      console.log(`🔄 Force reconnecting: ${connectionKey}`);
+      if (connection.ws) {
+        connection.ws.close(1000, 'Force reconnect');
+      }
+      connection.status = 'idle';
+      this.ensureConnection(connectionKey, connection.endpoint, this.currentApiConfig);
+    }
+  }
+
+  public destroy(): void {
+    console.log('🧹 Destroying all WebSocket connections');
+    
+    // 关闭所有连接
+    this.connections.forEach((connection, key) => {
+      if (connection.ws) {
+        connection.ws.close(1000, 'Manager destroyed');
+      }
+    });
+
+    // 清除所有定时器
+    this.reconnectTimers.forEach(timer => clearTimeout(timer));
+
+    // 清空所有状态
+    this.connections.clear();
+    this.eventListeners.clear();
+    this.reconnectTimers.clear();
+  }
+
+  private getConnectionKey(endpoint: string): string {
+    // 使用端点作为键，确保唯一性
+    return endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  }
+
+  public getDebugInfo(): any {
+    return {
+      connections: Array.from(this.connections.entries()).map(([key, conn]) => ({
+        key,
+        status: conn.status,
+        subscribers: conn.subscribers,
+        wsState: conn.ws?.readyState,
+        lastError: conn.lastError,
+        lastActivity: new Date(conn.lastActivity).toLocaleTimeString()
+      })),
+      eventListeners: Array.from(this.eventListeners.entries()).map(([key, listeners]) => ({
+        key,
+        listenerCount: listeners.size
+      })),
+      totalConnections: this.connections.size,
+      totalListeners: Array.from(this.eventListeners.values()).reduce((sum, set) => sum + set.size, 0)
+    };
+  }
+}
+
+// 全局实例
+const globalWsManager = GlobalWebSocketManager.getInstance();
+
+// ================================
+// 兼容层：替换原有的 manageWebSocket
+// ================================
+
+interface WebSocketManager {
+  ws: WebSocket | null;
+  subscribers: Set<(data: any) => void>;
+  reconnectTimeout: ReturnType<typeof setTimeout> | null;
+  currentApiConfig: any;
+  isConnecting: boolean;
+}
+
+// 保留原有变量以避免破坏现有代码
+const connectionsManager: WebSocketManager = {
+  ws: null,
+  subscribers: new Set(),
+  reconnectTimeout: null,
+  currentApiConfig: null,
+  isConnecting: false,
+};
+
+const trafficManager: WebSocketManager = {
+  ws: null,
+  subscribers: new Set(),
+  reconnectTimeout: null,
+  currentApiConfig: null,
+  isConnecting: false,
+};
+
+const logsManager: WebSocketManager = {
+  ws: null,
+  subscribers: new Set(),
+  reconnectTimeout: null,
+  currentApiConfig: null,
+  isConnecting: false,
+};
+
+// 替换 manageWebSocket 为全局管理器
+function manageWebSocket(
+  manager: WebSocketManager,
+  endpoint: string,
+  apiConfig: any,
+  subscriber: (data: any) => void,
+  onConnected?: () => void,
+  onDisconnected?: () => void
+): () => void {
+  console.log(`🎯 manageWebSocket: ${endpoint}`);
+  
+  // 使用全局管理器
+  return globalWsManager.subscribe(endpoint, (data) => {
+    subscriber(data);
+    // 首次数据接收时触发连接回调
+    if (onConnected) {
+      onConnected();
+      onConnected = undefined; // 只触发一次
+    }
+  }, apiConfig);
+}
+
+// 全局清理函数
+function clearAllWebSockets() {
+  console.log('🧹 clearAllWebSockets called');
+  globalWsManager.destroy();
+}
+
 // 改进的基础查询Hook - 自动处理API配置变化
 export function useQuery2<T>(
   queryKey: string,
@@ -96,6 +514,9 @@ export function useApiConfigEffect() {
       
       // 设置配置变更锁定
       isConfigChanging = true;
+      
+      // 立即清理所有 WebSocket 连接
+      clearAllWebSockets();
       
       // 创建配置变更Promise
       configChangePromise = new Promise(async (resolve) => {
@@ -302,22 +723,74 @@ export function useProxies() {
   };
 }
 
-// 连接Hook - 使用V2独立API
+// 连接Hook - 使用全局单例管理器
 export function useConnections() {
   const apiConfig = useApiConfig();
-  
-  return useQuery2<{ connections: ConnectionItem[] }>(
-    'connections',
-    async () => {
-      const client = createAPIClient(apiConfig);
-      const response = await client.get('/connections');
-      if (response.data) {
-        return response.data;
+  const [connections, setConnections] = useState<{ connections: ConnectionItem[] }>({ connections: [] });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    // 如果正在配置变更，等待完成
+    if (isConfigChanging) {
+      console.log('⏳ Connections: Waiting for config change to complete...');
+      setIsLoading(true);
+      setError(null);
+      return;
+    }
+
+    if (!apiConfig?.baseURL) {
+      setIsLoading(true);
+      setError(null);
+      return;
+    }
+
+    // 创建订阅者函数
+    const subscriber = (data: any) => {
+      if (mountedRef.current) {
+        setConnections(data);
+        setIsLoading(false);
+        setError(null);
       }
-      throw new Error(response.error || 'Failed to fetch connections');
-    },
-    { refetchInterval: 1000 }
-  );
+    };
+
+    // 使用全局管理器
+    const cleanup = manageWebSocket(
+      connectionsManager,
+      '/connections',
+      apiConfig,
+      subscriber,
+      () => {
+        if (mountedRef.current) {
+          setIsLoading(false);
+          setError(null);
+        }
+      },
+      () => {
+        if (mountedRef.current) {
+          setError(new Error('Connection lost'));
+        }
+      }
+    );
+
+    return () => {
+      mountedRef.current = false;
+      cleanup();
+    };
+  }, [apiConfig]);
+
+  return {
+    data: connections,
+    isLoading,
+    error,
+    refetch: () => {
+      // 重新连接WebSocket - 使用全局管理器
+      globalWsManager.forceReconnect('/connections');
+    }
+  };
 }
 
 // 规则Hook - 移除重复的useApiConfigEffect调用
@@ -373,89 +846,27 @@ export function useRules(): UseQueryResult<RulesResponse> {
   );
 }
 
-// 连接统计Hook - 优化API配置检查和定时器管理
-export function useConnectionStats() {
-  const apiConfig = useApiConfig();
+// 连接统计Hook - 接收连接数据避免重复WebSocket连接
+export function useConnectionStats(connectionsData?: { connections: ConnectionItem[] }, isLoading?: boolean, error?: any) {
   const [stats, setStats] = useState({
     activeConnections: 0,
     uploadTotal: 0,
     downloadTotal: 0,
     isConnected: false,
   });
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const mountedRef = useRef(true);
-  const lastApiConfigRef = useRef<typeof apiConfig>();
-
+  
   useEffect(() => {
-    mountedRef.current = true;
-    
-    // 检查API配置是否变化
-    const configChanged = lastApiConfigRef.current && 
-      (lastApiConfigRef.current.baseURL !== apiConfig?.baseURL || 
-       lastApiConfigRef.current.secret !== apiConfig?.secret);
-    
-    if (configChanged || !lastApiConfigRef.current) {
-      console.log('🔄 ConnectionStats: API config changed, restarting timers...');
-      // 清理旧的定时器
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
+    if (connectionsData) {
+      setStats({
+        activeConnections: Array.isArray(connectionsData.connections) ? connectionsData.connections.length : 0,
+        uploadTotal: (connectionsData as any).uploadTotal || 0,
+        downloadTotal: (connectionsData as any).downloadTotal || 0,
+        isConnected: !isLoading && !error,
+      });
+    } else if (error) {
       setStats(prev => ({ ...prev, isConnected: false }));
     }
-    
-    lastApiConfigRef.current = apiConfig;
-    
-    // 如果正在配置变更，等待完成
-    if (isConfigChanging) {
-      console.log('⏳ ConnectionStats: Waiting for config change to complete...');
-      setStats(prev => ({ ...prev, isConnected: false }));
-      return;
-    }
-    
-    if (!apiConfig?.baseURL) {
-      setStats(prev => ({ ...prev, isConnected: false }));
-      return;
-    }
-
-    const fetchStats = async () => {
-      if (!mountedRef.current || isConfigChanging) return;
-      
-      try {
-        // 使用当前的API配置
-        const client = createAPIClient(apiConfig);
-        const response = await client.get('/connections');
-        if (response.data && mountedRef.current && !isConfigChanging) {
-          setStats({
-            activeConnections: Array.isArray(response.data.connections) ? response.data.connections.length : 0,
-            uploadTotal: response.data.uploadTotal || 0,
-            downloadTotal: response.data.downloadTotal || 0,
-            isConnected: true,
-          });
-        }
-      } catch (error) {
-        if (mountedRef.current && !isConfigChanging) {
-          setStats(prev => ({ ...prev, isConnected: false }));
-        }
-      }
-    };
-    
-    // 立即获取一次数据
-    fetchStats();
-    
-    // 设置定时更新，确保没有重复的定时器
-    if (!intervalRef.current) {
-      intervalRef.current = setInterval(fetchStats, 3000);
-    }
-
-    return () => {
-      mountedRef.current = false;
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [apiConfig]);
+  }, [connectionsData, isLoading, error]);
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 B';
@@ -472,195 +883,95 @@ export function useConnectionStats() {
   };
 }
 
-// 流量监控Hook - 优化WebSocket连接管理
+// 流量监控Hook - 使用全局单例管理器
 export function useTraffic() {
   const apiConfig = useApiConfig();
   const [trafficData, setTrafficData] = useState<TrafficData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
-  const lastApiConfigRef = useRef<typeof apiConfig>();
   const maxDataPoints = 150;
 
   useEffect(() => {
     mountedRef.current = true;
-    
-    // 检查API配置是否变化
-    const configChanged = lastApiConfigRef.current && 
-      (lastApiConfigRef.current.baseURL !== apiConfig?.baseURL || 
-       lastApiConfigRef.current.secret !== apiConfig?.secret);
-    
-    if (configChanged) {
-      console.log('🔄 Traffic WebSocket: API config changed, reconnecting...');
-      // 立即关闭现有连接
-      if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-      setIsConnected(false);
-      setTrafficData([]);
-    }
-    
-    lastApiConfigRef.current = apiConfig;
-    
+
     // 如果正在配置变更，等待完成
     if (isConfigChanging) {
-      console.log('⏳ Traffic WebSocket: Waiting for config change to complete...');
+      console.log('⏳ Traffic: Waiting for config change to complete...');
       setIsConnected(false);
-      setTrafficData([]);
       return;
     }
-    
-    // 确保 API 配置已正确设置
+
     if (!apiConfig?.baseURL) {
-      console.log('⏳ Traffic WebSocket: Waiting for API config...');
       setIsConnected(false);
-      setTrafficData([]);
       return;
     }
 
-    // 清理之前的连接和定时器
-    if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-
-    const connectWebSocket = () => {
-      if (!mountedRef.current) return;
-      
-      try {
-        // 使用正确的 /traffic WebSocket 端点
-        const baseWsUrl = apiConfig.baseURL.replace(/^http/, 'ws');
-        const wsUrl = baseWsUrl + '/traffic' + (apiConfig.secret ? `?token=${encodeURIComponent(apiConfig.secret)}` : '');
-        
-        // 在React严格模式下延迟连接，避免重复连接
-        const ws = new WebSocket(wsUrl);
-        
-        // 立即检查组件是否仍然挂载
-        if (!mountedRef.current) {
-          ws.close();
-          return;
-        }
-        
-        wsRef.current = ws;
-
-        ws.onopen = () => {
-          if (!mountedRef.current) return;
-          setIsConnected(true);
-          console.log('🔗 Traffic WebSocket connected to', apiConfig.baseURL);
+    // 创建订阅者函数
+    const subscriber = (data: any) => {
+      if (mountedRef.current) {
+        const trafficPoint: TrafficData = {
+          up: data.up || 0,
+          down: data.down || 0,
+          timestamp: Date.now(),
         };
-
-        ws.onmessage = (event) => {
-          if (!mountedRef.current) return;
-          try {
-            // 解析实时速率数据 (bytes/s)
-            const data = JSON.parse(event.data);
-            const trafficPoint: TrafficData = {
-              up: data.up || 0,      // 当前上传速率 bytes/s
-              down: data.down || 0,  // 当前下载速率 bytes/s  
-              timestamp: Date.now(),
-            };
-            
-            setTrafficData(prev => {
-              const newData = [...prev, trafficPoint];
-              return newData.slice(-maxDataPoints);
-            });
-          } catch (error) {
-            console.error('Failed to parse traffic data:', error);
-          }
-        };
-
-        ws.onclose = (event) => {
-          if (!mountedRef.current) return;
-          setIsConnected(false);
-          
-          // 只有在非正常关闭时才重连
-          if (event.code !== 1000 && event.code !== 1001) {
-            console.log('💔 Traffic WebSocket disconnected, attempting reconnect...');
-            reconnectTimeoutRef.current = setTimeout(() => {
-              if (mountedRef.current) {
-                connectWebSocket();
-              }
-            }, 3000);
-          }
-        };
-
-        ws.onerror = (error) => {
-          if (!mountedRef.current) return;
-          console.error('❌ Traffic WebSocket error:', error);
-          setIsConnected(false);
-        };
-      } catch (error) {
-        if (!mountedRef.current) return;
-        console.error('Failed to connect traffic WebSocket:', error);
-        setIsConnected(false);
-        // 重连逻辑
-        reconnectTimeoutRef.current = setTimeout(() => {
-          if (mountedRef.current) {
-            connectWebSocket();
-          }
-        }, 3000);
+        setTrafficData(prev => {
+          const newData = [...prev, trafficPoint];
+          return newData.slice(-maxDataPoints);
+        });
       }
     };
 
-    connectWebSocket();
+    // 使用全局管理器
+    const cleanup = manageWebSocket(
+      trafficManager,
+      '/traffic',
+      apiConfig,
+      subscriber,
+      () => {
+        if (mountedRef.current) {
+          setIsConnected(true);
+        }
+      },
+      () => {
+        if (mountedRef.current) {
+          setIsConnected(false);
+        }
+      }
+    );
 
     return () => {
       mountedRef.current = false;
-      if (wsRef.current) {
-        const ws = wsRef.current;
-        wsRef.current = null;
-        
-        // 只关闭已连接或正在连接的WebSocket
-        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
-          try {
-            ws.close(1000, 'Component unmounted');
-          } catch (error) {
-            // 忽略关闭时的错误，这通常发生在连接还没建立时
-            console.debug('Traffic WebSocket close error (ignored):', error);
-          }
-        }
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
+      cleanup();
     };
   }, [apiConfig]);
-
-  const clearData = useCallback(() => {
-    setTrafficData([]);
-  }, []);
 
   return {
     data: trafficData,
     isConnected,
-    clearData,
   };
 }
 
-// 日志Hook - 优化WebSocket连接管理并添加日志级别支持
+// 日志Hook - 使用全局单例管理器
 export function useLogs() {
   const apiConfig = useApiConfig();
   const { data: clashConfig } = useClashConfig(); // 获取Clash配置以获得日志级别
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [isConnected, setIsConnected] = useState(false);
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
   const maxLogs = 500;
 
   useEffect(() => {
     mountedRef.current = true;
     
-    // 确保 API 配置已正确设置且不是默认值
-    if (!apiConfig?.baseURL || apiConfig.baseURL === 'http://127.0.0.1:9090') {
-      console.log('⏳ Logs WebSocket: Waiting for API config, current:', apiConfig?.baseURL);
+    // 如果正在配置变更，等待完成
+    if (isConfigChanging) {
+      console.log('⏳ Logs: Waiting for config change to complete...');
+      setIsConnected(false);
+      return;
+    }
+
+    // 确保 API 配置已正确设置
+    if (!apiConfig?.baseURL) {
       setIsConnected(false);
       setLogs([]);
       return;
@@ -668,114 +979,45 @@ export function useLogs() {
 
     // 等待Clash配置加载完成，确保有日志级别
     if (!clashConfig?.['log-level']) {
-      console.log('⏳ Logs WebSocket: Waiting for clash config with log level...');
+      console.log('⏳ Logs: Waiting for clash config with log level...');
       setIsConnected(false);
       return;
     }
 
-    // 清理之前的连接和定时器
-    if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-
-    const connectWebSocket = () => {
-      if (!mountedRef.current) return;
-      
-      try {
-        const baseWsUrl = apiConfig.baseURL.replace(/^http/, 'ws');
-        // 构建WebSocket URL，包含日志级别参数
-        const params = new URLSearchParams();
-        if (apiConfig.secret) {
-          params.append('token', apiConfig.secret);
-        }
-        // 添加日志级别参数 - 这是关键修复！
-        params.append('level', clashConfig['log-level']);
-        
-        const wsUrl = `${baseWsUrl}/logs?${params.toString()}`;
-        console.log('📝 Logs WebSocket: Connecting with level:', clashConfig['log-level']);
-        
-        const ws = new WebSocket(wsUrl);
-        wsRef.current = ws;
-
-        ws.onopen = () => {
-          if (!mountedRef.current) return;
-          setIsConnected(true);
-          console.log('📝 Logs WebSocket connected to', apiConfig.baseURL, 'with level:', clashConfig['log-level']);
-        };
-
-        ws.onmessage = (event) => {
-          if (!mountedRef.current) return;
-          try {
-            const logItem: LogItem = JSON.parse(event.data);
-            setLogs(prev => {
-              const newLogs = [...prev, logItem];
-              return newLogs.slice(-maxLogs);
-            });
-          } catch (error) {
-            console.error('Failed to parse log data:', error);
-          }
-        };
-
-        ws.onclose = (event) => {
-          if (!mountedRef.current) return;
-          setIsConnected(false);
-          
-          // 只有在非正常关闭时才重连
-          if (event.code !== 1000 && event.code !== 1001) {
-            console.log('💔 Logs WebSocket disconnected, attempting reconnect...');
-            reconnectTimeoutRef.current = setTimeout(() => {
-              if (mountedRef.current) {
-                connectWebSocket();
-              }
-            }, 3000);
-          }
-        };
-
-        ws.onerror = (error) => {
-          if (!mountedRef.current) return;
-          console.error('❌ Logs WebSocket error:', error);
-          setIsConnected(false);
-        };
-      } catch (error) {
-        if (!mountedRef.current) return;
-        console.error('Failed to connect logs WebSocket:', error);
-        setIsConnected(false);
-        // 重连逻辑
-        reconnectTimeoutRef.current = setTimeout(() => {
-          if (mountedRef.current) {
-            connectWebSocket();
-          }
-        }, 3000);
+    // 创建订阅者函数
+    const subscriber = (data: any) => {
+      if (mountedRef.current) {
+        setLogs(prev => {
+          const newLogs = [...prev, data];
+          return newLogs.slice(-maxLogs);
+        });
       }
     };
 
-    connectWebSocket();
+    // 构建带日志级别的参数
+    const extraParams = `level=${clashConfig['log-level']}`;
+
+    // 使用全局管理器
+    const cleanup = manageWebSocket(
+      logsManager,
+      `/logs?${extraParams}`,
+      apiConfig,
+      subscriber,
+      () => {
+        if (mountedRef.current) {
+          setIsConnected(true);
+        }
+      },
+      () => {
+        if (mountedRef.current) {
+          setIsConnected(false);
+        }
+      }
+    );
 
     return () => {
       mountedRef.current = false;
-      if (wsRef.current) {
-        const ws = wsRef.current;
-        wsRef.current = null;
-        
-        // 只关闭已连接或正在连接的WebSocket
-        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
-          try {
-            ws.close(1000, 'Component unmounted');
-          } catch (error) {
-            // 忽略关闭时的错误，这通常发生在连接还没建立时
-            console.debug('Logs WebSocket close error (ignored):', error);
-          }
-        }
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
+      cleanup();
     };
   }, [apiConfig, clashConfig]); // 依赖项包含clashConfig以便在日志级别变化时重连
 
