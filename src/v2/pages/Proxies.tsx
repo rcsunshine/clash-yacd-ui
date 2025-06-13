@@ -92,8 +92,11 @@ const ProxyGroupCard: React.FC<{
   // 生成代理组的小圆点延迟指示器
   const generateProxyDots = (group: ProxyGroup) => {
     const maxDots = 30; // 最多显示30个圆点
-    const proxies = group.all.slice(0, maxDots);
-    const remainingCount = Math.max(0, group.all.length - maxDots);
+    
+    // 使用相同的排序逻辑处理代理列表
+    const sortedProxies = getSortedAndFilteredProxies(group.all);
+    const proxies = sortedProxies.slice(0, maxDots);
+    const remainingCount = Math.max(0, sortedProxies.length - maxDots);
     
     return (
       <div className="flex items-center space-x-1">
@@ -439,6 +442,26 @@ const ProxyGroupCard: React.FC<{
   );
 };
 
+// 根据 GLOBAL 组的顺序对代理组进行排序
+const sortProxyGroupsByGlobal = (proxiesData: any) => {
+  if (!proxiesData?.proxies?.GLOBAL?.all) return [];
+  
+  const globalAll = proxiesData.proxies.GLOBAL.all;
+  // 将 GLOBAL 放在最后
+  globalAll.push('GLOBAL');
+  
+  // 获取所有代理组
+  const groupNames = Object.keys(proxiesData.proxies).filter(name => 
+    proxiesData.proxies[name].all && Array.isArray(proxiesData.proxies[name].all)
+  );
+  
+  // 根据 GLOBAL 组中的顺序进行排序
+  return groupNames
+    .map(name => [globalAll.indexOf(name), name])
+    .sort((a: any, b: any) => a[0] - b[0])
+    .map((group: any) => group[1]);
+};
+
 export const Proxies: React.FC = () => {
   const { data: proxiesData, isLoading, error, refetch, switchProxy, testDelay } = useProxies();
   const { data: config } = useClashConfig();
@@ -474,6 +497,12 @@ export const Proxies: React.FC = () => {
       setNotification(prev => ({ ...prev, show: false }));
     }, 3000);
   };
+
+  // 获取排序后的代理组列表
+  const sortedGroupNames = useMemo(() => {
+    if (!proxiesData) return [];
+    return sortProxyGroupsByGlobal(proxiesData);
+  }, [proxiesData]);
 
   // 处理代理数据
   const proxyGroups = useMemo(() => {
@@ -916,7 +945,7 @@ export const Proxies: React.FC = () => {
       {/* 可滚动的内容区域 */}
       <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
         {/* 代理组列表 */}
-        {filteredGroups.length === 0 ? (
+        {sortedGroupNames.length === 0 ? (
           <Card className="overflow-hidden border-0 shadow-lg">
             <CardContent className="p-12">
               <div className="text-center">
@@ -946,27 +975,37 @@ export const Proxies: React.FC = () => {
           </Card>
         ) : (
           <div className="space-y-4">
-            {filteredGroups.map((group, index) => (
-              <div 
-                key={group.name}
-                className="animate-in slide-in-from-bottom-4 duration-300"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <ProxyGroupCard
-                  group={group}
-                  proxiesData={proxiesData}
-                  onSwitchProxy={handleSwitchProxy}
-                  onTestGroupDelay={handleTestGroupDelay}
-                  onTestSingleProxy={handleTestSingleProxy}
-                  testingProxies={testingProxies}
-                  testingSingleProxies={testingSingleProxies}
-                  testingAllProxiesNodes={testingAllProxiesNodes}
-                  testingGroupProxiesNodes={testingGroupProxiesNodes}
-                  sortBy={sortBy}
-                  hideUnavailable={hideUnavailable}
-                />
-              </div>
-            ))}
+            {sortedGroupNames.map((groupName, index) => {
+              const group = proxiesData?.proxies?.[groupName];
+              if (!group || !group.all) return null;
+              
+              return (
+                <div 
+                  key={groupName}
+                  className="animate-in slide-in-from-bottom-4 duration-300"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <ProxyGroupCard
+                    group={{
+                      name: groupName,
+                      type: group.type,
+                      now: group.now,
+                      all: group.all,
+                    }}
+                    proxiesData={proxiesData}
+                    onSwitchProxy={handleSwitchProxy}
+                    onTestGroupDelay={handleTestGroupDelay}
+                    onTestSingleProxy={handleTestSingleProxy}
+                    testingProxies={testingProxies}
+                    testingSingleProxies={testingSingleProxies}
+                    testingAllProxiesNodes={testingAllProxiesNodes}
+                    testingGroupProxiesNodes={testingGroupProxiesNodes}
+                    sortBy={sortBy}
+                    hideUnavailable={hideUnavailable}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
