@@ -352,20 +352,22 @@ class GlobalWebSocketManager {
 
   public getDebugInfo(): any {
     return {
+      initialized: this.isInitialized,
+      connectionCount: this.connections.size,
       connections: Array.from(this.connections.entries()).map(([key, conn]) => ({
         key,
+        endpoint: conn.endpoint,
         status: conn.status,
         subscribers: conn.subscribers,
-        wsState: conn.ws?.readyState,
+        lastActivity: conn.lastActivity,
         lastError: conn.lastError,
-        lastActivity: new Date(conn.lastActivity).toLocaleTimeString()
+        wsState: conn.ws?.readyState
       })),
       eventListeners: Array.from(this.eventListeners.entries()).map(([key, listeners]) => ({
         key,
         listenerCount: listeners.size
       })),
-      totalConnections: this.connections.size,
-      totalListeners: Array.from(this.eventListeners.values()).reduce((sum, set) => sum + set.size, 0)
+      reconnectTimers: Array.from(this.reconnectTimers.keys())
     };
   }
 }
@@ -421,15 +423,49 @@ function manageWebSocket(
 ): () => void {
   console.log(`🎯 manageWebSocket: ${endpoint}`);
   
-  // 使用全局管理器
-  return globalWsManager.subscribe(endpoint, (data) => {
-    subscriber(data);
-    // 首次数据接收时触发连接回调
-    if (onConnected) {
-      onConnected();
-      onConnected = undefined; // 只触发一次
+  // 使用全局管理器订阅数据
+  const unsubscribeData = globalWsManager.subscribe(endpoint, subscriber, apiConfig);
+  
+  // 监听连接状态变化
+  let statusCheckInterval: ReturnType<typeof setInterval> | null = null;
+  let lastStatus = 'idle';
+  
+  // 定期检查连接状态
+  const checkConnectionStatus = () => {
+    const debugInfo = globalWsManager.getDebugInfo();
+    const connection = debugInfo.connections.find((conn: any) => conn.endpoint === endpoint);
+    
+    if (connection) {
+      const currentStatus = connection.status;
+      
+      // 状态变化时触发回调
+      if (currentStatus !== lastStatus) {
+        console.log(`📡 ${endpoint} status: ${lastStatus} -> ${currentStatus}`);
+        
+        if (currentStatus === 'connected' && onConnected) {
+          onConnected();
+        } else if (currentStatus === 'disconnected' && onDisconnected) {
+          onDisconnected();
+        }
+        
+        lastStatus = currentStatus;
+      }
     }
-  }, apiConfig);
+  };
+  
+  // 立即检查一次状态
+  setTimeout(checkConnectionStatus, 100);
+  
+  // 开始定期检查状态
+  statusCheckInterval = setInterval(checkConnectionStatus, 1000);
+  
+  // 返回清理函数
+  return () => {
+    if (statusCheckInterval) {
+      clearInterval(statusCheckInterval);
+    }
+    unsubscribeData();
+  };
 }
 
 // 全局清理函数
