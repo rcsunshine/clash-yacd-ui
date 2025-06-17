@@ -200,7 +200,7 @@ export function Sidebar(props: SidebarProps = {}) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6a2 2 0 01-2 2H10a2 2 0 01-2-2V5z" />
         </svg>
       ),
-      label: '仪表板',
+      label: '概览',
       href: '#dashboard',
       active: currentPageState === 'dashboard',
       onClick: () => handlePageChange('dashboard'),

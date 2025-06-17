@@ -39,7 +39,7 @@ YACD V2 是 Yet Another Clash Dashboard 的现代化重构版本，成功实现�
 
 ### 🎯 核心功能详情
 
-#### 1. Dashboard (仪表板) - 100%
+#### 1. Dashboard (概览) - 100%
 - ✅ 实时流量监控 (上传/下载速度)
 - ✅ 系统信息展示 (内存、CPU 使用率)
 - ✅ 活跃连接统计

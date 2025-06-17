@@ -585,7 +585,7 @@ export const Dashboard: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-theme hidden lg:block">仪表盘</h1>
+            <h1 className="text-xl font-bold text-theme hidden lg:block">概览</h1>
             <p className="text-sm text-theme-secondary">
               Clash 代理服务状态总览
             </p>

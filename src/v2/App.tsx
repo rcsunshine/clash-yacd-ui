@@ -42,7 +42,7 @@ const PageRenderer: React.FC<{ currentPage: string }> = ({ currentPage }) => {
   const getPageComponent = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Suspense fallback={<PageLoadingFallback pageName="仪表盘" />}><Dashboard /></Suspense>;
+        return <Suspense fallback={<PageLoadingFallback pageName="概览" />}><Dashboard /></Suspense>;
       case 'proxies':
         return <Suspense fallback={<PageLoadingFallback pageName="代理" />}><Proxies /></Suspense>;
       case 'connections':
@@ -56,7 +56,7 @@ const PageRenderer: React.FC<{ currentPage: string }> = ({ currentPage }) => {
       case 'api-config':
         return <Suspense fallback={<PageLoadingFallback pageName="API配置" />}><APIConfig /></Suspense>;
       default:
-        return <Suspense fallback={<PageLoadingFallback pageName="仪表盘" />}><Dashboard /></Suspense>;
+        return <Suspense fallback={<PageLoadingFallback pageName="概览" />}><Dashboard /></Suspense>;
     }
   };
 

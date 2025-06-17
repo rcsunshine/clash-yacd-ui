@@ -75,7 +75,7 @@ src/v2/                                    # V2完整源代码
 │   │   └── Sidebar.tsx                    # 侧边栏 (已修复)
 │   └── APIConfig.tsx                      # API配置组件
 ├── pages/
-│   ├── Dashboard.tsx                      # 仪表板
+│   ├── Dashboard.tsx                      # 概览
 │   └── TestPage.tsx                       # 测试页面
 ├── hooks/
 │   └── useAPI.ts                          # API数据管理

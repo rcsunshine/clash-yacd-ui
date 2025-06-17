@@ -148,7 +148,7 @@ localStorage.setItem('v2-api-config', JSON.stringify(v2State));
 
 ## 📱 页面开发完成情况
 
-### 1. Dashboard 仪表盘 ✅ 100%
+### 1. Dashboard 概览 ✅ 100%
 - **功能**: 实时监控、系统信息、流量统计
 - **特性**: WebSocket实时数据、性能图表
 - **状态**: 生产就绪
@@ -472,7 +472,7 @@ npm run type-check
   - ✅ 解决筛选区域和下拉框样式污染问题
 - **影响**: 彻底解决了V2页面间的样式冲突，建立了标准化的CSS架构，提升了代码维护性和一致性
 
-#### 仪表盘流量图柱状图优化 (2024-01-XX)
+#### 概览流量图柱状图优化 (2024-01-XX)
 - **问题**: 流量图柱状图柱子过宽，影响数据展示的精细度
 - **解决方案**:
   - 将柱子宽度从自适应 (`w-full flex-1`) 改为固定 `4px` 宽度
@@ -552,7 +552,7 @@ npm run type-check
   - ✅ 连接页面 (`Connections.tsx`) - 协议筛选下拉框
   - ✅ 规则页面 (`Rules.tsx`) - 规则类型筛选下拉框
   - ✅ 配置页面 (`Config.tsx`) - 代理模式、日志级别、刷新间隔下拉框
-  - ✅ 仪表板页面 (`Dashboard.tsx`) - 快速代理模式切换下拉框
+  - ✅ 概览页面 (`Dashboard.tsx`) - 快速代理模式切换下拉框
 - **技术特性**:
   - 完全适配深色主题的背景色和文字颜色
   - 优雅的聚焦和悬停效果
@@ -572,7 +572,7 @@ npm run type-check
   - ✅ ErrorBoundary - 错误边界组件
 
 #### 核心页面实现 (2024-01-XX)
-- ✅ **仪表板** (`Dashboard.tsx`) - 100% 完成
+- ✅ **概览** (`Dashboard.tsx`) - 100% 完成
   - 实时系统信息展示
   - 连接状态监控
   - 流量图表可视化
@@ -1267,7 +1267,7 @@ npm run type-check
 - **解决方案**:
   - **统一头部设计**: 将两个页面头部更新为与其他页面一致的梯度背景风格
   - **增强视觉层级**: 图标从8x8/6x6升级到12x12，图标内容从4x4/3x3升级到6x6
-  - **添加页面标题**: Dashboard显示"仪表盘"，Proxies显示"代理"(大屏显示)
+  - **添加页面标题**: Dashboard显示"概览"，Proxies显示"代理"(大屏显示)
   - **优化间距**: 头部py从4升级到6，元素间距从space-x-3升级到space-x-4
   - **统一页面间距**: 为页面添加适当的p-6 padding，确保与菜单保持一致的间距
 - **技术细节**:
@@ -1276,10 +1276,10 @@ npm run type-check
 <div className="flex items-center justify-between py-6 px-6 bg-gradient-to-r from-slate-500/10 to-stone-500/10 dark:from-slate-500/20 dark:to-stone-500/20 rounded-lg border border-slate-300/50 dark:border-slate-600/50">
   <div className="flex items-center space-x-4">
     <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-stone-700 rounded-lg flex items-center justify-center">
-      <svg className="w-6 h-6 text-white">{/* 仪表盘图标 */}</svg>
+      <svg className="w-6 h-6 text-white">{/* 概览图标 */}</svg>
     </div>
     <div>
-      <h1 className="text-xl font-bold text-theme hidden lg:block">仪表盘</h1>
+      <h1 className="text-xl font-bold text-theme hidden lg:block">概览</h1>
       <p className="text-sm text-theme-secondary">Clash 代理服务状态总览</p>
     </div>
   </div>
@@ -1305,7 +1305,7 @@ npm run type-check
 - **解决方案**:
   - 统一头部结构: 采用梯度背景(bg-gradient-to-r from-slate-500/10 to-stone-500/10)和边框样式
   - 增强视觉层级: 图标容器从8x8升级到12x12，图标从4x4升级到6x6，提升视觉重点
-  - 添加页面标题: Dashboard显示"仪表盘"，Proxies显示"代理"(大屏显示，移动端隐藏)
+  - 添加页面标题: Dashboard显示"概览"，Proxies显示"代理"(大屏显示，移动端隐藏)
   - 优化间距布局: 头部py从4升级到6，元素间距从space-x-3升级到space-x-4
   - 页面边距统一: 所有页面添加p-6 padding确保与sidebar适当间距
   - 按钮样式统一: 操作按钮从text-xs升级到text-sm，图标尺寸统一为4x4
@@ -1357,7 +1357,7 @@ npm run type-check
 - ✅ **代理页面UI优化**: 搜索框和筛选项改为更大尺寸(h-10, text-base)，Select组件统一使用md尺寸
 - ✅ **Select组件统一**: 代理页面Select组件从sm改为md，确保文字完整显示，高度与搜索框对齐
 - ✅ **连接数统计修复**: 侧边栏连接菜单项的badge从硬编码'12'改为动态显示真实连接数，使用useConnections hook获取实时数据
-- ✅ **仪表盘卡片hover效果**: 为SystemInfoCard、ConnectionsCard、ConfigStatusCard、快速操作卡片、TrafficChart等所有卡片添加统一的hover效果(hover:shadow-lg hover:-translate-y-1)
+- ✅ **概览卡片hover效果**: 为SystemInfoCard、ConnectionsCard、ConfigStatusCard、快速操作卡片、TrafficChart等所有卡片添加统一的hover效果(hover:shadow-lg hover:-translate-y-1)
 - ✅ **CSS架构一致性**: 坚持V2架构规范，其他页面Select组件保持原有尺寸避免文字显示不全问题
 - ✅ **代理搜索样式优化**: 移除下拉选项不必要的高度和文字大小限制，保持size="md"确保文字完整显示，与其他页面搜索样式保持一致
 - ✅ **深色主题分割线优化**: 统一所有页面的分割线颜色为`dark:border-gray-600/50`，与搜索框边框样式保持一致，在深色主题下更加柔和不刺眼，涉及代理页面、连接页面、规则页面、日志页面、配置页面的所有border-theme类
@@ -1365,7 +1365,7 @@ npm run type-check
 **技术成果**:
 - 代理页面搜索筛选区域视觉更加协调统一  
 - 连接数在侧边栏和连接页面显示完全一致
-- 仪表盘所有卡片具有优雅的浮动交互效果
+- 概览所有卡片具有优雅的浮动交互效果
 - 代理搜索样式与其他页面保持一致，避免文字显示不全问题
 - 深色主题下所有分割线颜色统一优化，视觉更加柔和协调
 - 确保0个TypeScript错误，用户体验大幅提升

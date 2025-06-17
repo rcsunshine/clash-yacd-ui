@@ -55,7 +55,7 @@ src/v2/
 │   ├── layout/          # 布局组件 (Sidebar, AppLayout)
 │   └── APIConfig.tsx    # API配置组件
 ├── pages/
-│   ├── Dashboard.tsx    # 仪表板页面
+│   ├── Dashboard.tsx    # 概览页面
 │   └── TestPage.tsx     # 测试页面
 ├── docs/                # 项目文档
 │   ├── TECHNICAL_SPECIFICATION.md  # 技术规范文档

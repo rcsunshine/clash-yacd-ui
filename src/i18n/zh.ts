@@ -61,7 +61,7 @@ export const data = {
   'Theme': '主题',
   'Auto': '自动',
   'Navigation': '导航',
-  'Clash Dashboard': 'Clash 仪表板',
+  'Clash Dashboard': 'Clash 概览',
   'Dark': '深色',
   'Light': '浅色',
   'Search proxies...': '搜索代理...',

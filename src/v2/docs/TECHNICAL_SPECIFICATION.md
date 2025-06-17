@@ -36,7 +36,7 @@ src/v2/
 │   │   └── Sidebar.tsx      # 侧边栏 (含连接状态)
 │   └── APIConfig.tsx    # API配置组件
 ├── pages/               # 页面组件
-│   ├── Dashboard.tsx    # 仪表板 (实时数据)
+│   ├── Dashboard.tsx    # 概览 (实时数据)
 │   └── TestPage.tsx     # 测试页面 (组件展示)
 ├── hooks/               # 自定义Hooks
 │   └── useAPI.ts        # API数据管理
