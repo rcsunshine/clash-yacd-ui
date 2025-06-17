@@ -1,41 +1,37 @@
-
-
-import React, { useMemo,useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
-import { APIErrorAlert,ErrorAlert, NetworkErrorAlert } from '../components/ui/ErrorAlert';
+import { APIErrorAlert, ErrorAlert, NetworkErrorAlert } from '../components/ui/ErrorAlert';
 import { PageErrorBoundary } from '../components/ui/ErrorBoundary';
+import { KeyboardShortcutsTooltip, RulesSearchHelpTooltip } from '../components/ui/HelpTooltip';
 import { SearchInput } from '../components/ui/SearchInput';
 import { Select } from '../components/ui/Select';
 import { FixedVirtualList } from '../components/ui/VirtualList';
 import { useRules } from '../hooks/useAPI';
 import { useAPIErrorHandler } from '../hooks/useErrorHandler';
+import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
+import useRulesSearch from '../hooks/useRulesSearch';
 import { Rule, RuleProvider, RuleType } from '../types/api';
 
 const RulesContent: React.FC = () => {
   const { data: rulesData, isLoading, error, refetch } = useRules();
   const { handleError } = useAPIErrorHandler();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<RuleType | 'all'>('all');
   const [activeTab, setActiveTab] = useState<'rules' | 'providers'>('rules');
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const rules = useMemo(() => {
-    if (!rulesData?.rules) return [];
-    
-    const filtered = rulesData.rules.filter((rule: Rule) => {
-      const searchMatch = searchQuery === '' || 
-        rule.payload.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        rule.proxy.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const typeMatch = typeFilter === 'all' || rule.type === typeFilter;
-      
-      return searchMatch && typeMatch;
-    });
+  // 使用增强的规则搜索钩子
+  const {
+    filteredRules: rules,
+    searchQuery,
+    setSearchQuery,
+    typeFilter,
+    setTypeFilter,
+    resetFilters,
+    searchHints
+  } = useRulesSearch(rulesData?.rules || []);
 
-    return filtered;
-  }, [rulesData?.rules, searchQuery, typeFilter]);
-
+  // 处理规则提供者数据
   const providers = useMemo(() => {
     if (!rulesData?.providers) return [];
     return Object.entries(rulesData.providers).map(([name, provider]: [string, RuleProvider]) => ({
@@ -44,18 +40,42 @@ const RulesContent: React.FC = () => {
     }));
   }, [rulesData?.providers]);
 
+  // 获取规则类型列表
   const ruleTypes = useMemo(() => {
     if (!rulesData?.rules) return [];
     const types = [...new Set(rulesData.rules.map((rule: Rule) => rule.type))];
     return types.sort();
   }, [rulesData?.rules]);
 
-    // 处理API错误
+  // 处理API错误
   React.useEffect(() => {
     if (error) {
       handleError(error, '规则页面数据加载失败');
     }
   }, [error, handleError]);
+
+  // 添加键盘快捷键
+  useKeyboardShortcut('f', () => {
+    searchInputRef.current?.focus();
+  });
+
+  useKeyboardShortcut('r', () => {
+    refetch();
+  });
+
+  useKeyboardShortcut('escape', () => {
+    if (searchQuery) {
+      resetFilters();
+    }
+  });
+
+  useKeyboardShortcut('1', () => {
+    setActiveTab('rules');
+  });
+
+  useKeyboardShortcut('2', () => {
+    setActiveTab('providers');
+  });
 
   // 加载状态
   if (isLoading) {
@@ -131,69 +151,15 @@ const RulesContent: React.FC = () => {
             </p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="text-sm">
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          刷新
-        </Button>
-      </div>
-
-      {/* 统计信息 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="overflow-hidden border-0 shadow-lg card-hover">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-700 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-slate-700 dark:text-slate-300">
-                  {totalRules}
-                </div>
-                <div className="text-xs text-theme-secondary font-medium">总规则数</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="overflow-hidden border-0 shadow-lg card-hover">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-zinc-600 to-zinc-700 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-zinc-700 dark:text-zinc-300">
-                  {totalProviders}
-                </div>
-                <div className="text-xs text-theme-secondary font-medium">规则提供者</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="overflow-hidden border-0 shadow-lg card-hover">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-stone-600 to-stone-700 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v14a2 2 0 002 2h8a2 2 0 002-2V6a2 2 0 00-2-2" />
-                </svg>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-stone-700 dark:text-stone-300">
-                  {ruleTypes.length}
-                </div>
-                <div className="text-xs text-theme-secondary font-medium">规则类型</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center space-x-2">
+          <KeyboardShortcutsTooltip />
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="text-sm">
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            刷新 (R)
+          </Button>
+        </div>
       </div>
 
       {/* 标签页切换 */}
@@ -236,12 +202,28 @@ const RulesContent: React.FC = () => {
           <Card className="overflow-hidden border-0 shadow-lg card-hover">
             <CardContent className="p-4">
               <div className="flex flex-col md:flex-row gap-3">
-                <div className="flex-1">
-                  <SearchInput
-                    placeholder="搜索规则内容或代理..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+                <div className="flex-1 relative">
+                  <div className="flex items-center">
+                    <div className="flex-1 relative">
+                      <SearchInput
+                        ref={searchInputRef}
+                        placeholder="搜索规则内容或代理... (按F聚焦)"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={resetFilters}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <RulesSearchHelpTooltip />
+                  </div>
                 </div>
                 <Select
                   value={typeFilter}
@@ -254,8 +236,78 @@ const RulesContent: React.FC = () => {
                   className="min-w-[120px]"
                 />
               </div>
+              
+              {/* 搜索提示 */}
+              {searchQuery && searchHints.length > 0 && (
+                <div className="mt-2 text-xs text-theme-secondary">
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {searchHints.map((hint, index) => (
+                      <span key={index} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded">
+                        {hint}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
+
+          {/* 统计信息 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="overflow-hidden border-0 shadow-lg card-hover">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-700 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-slate-700 dark:text-slate-300">
+                      {totalRules}
+                    </div>
+                    <div className="text-xs text-theme-secondary font-medium">总规则数</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="overflow-hidden border-0 shadow-lg card-hover">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-zinc-600 to-zinc-700 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-zinc-700 dark:text-zinc-300">
+                      {totalProviders}
+                    </div>
+                    <div className="text-xs text-theme-secondary font-medium">规则提供者</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="overflow-hidden border-0 shadow-lg card-hover">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-stone-600 to-stone-700 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v14a2 2 0 002 2h8a2 2 0 002-2V6a2 2 0 00-2-2" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-stone-700 dark:text-stone-300">
+                      {ruleTypes.length}
+                    </div>
+                    <div className="text-xs text-theme-secondary font-medium">规则类型</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* 规则列表 */}
           <Card className="overflow-hidden border-0 shadow-lg">
@@ -276,11 +328,21 @@ const RulesContent: React.FC = () => {
                       : '当前没有配置任何规则'
                     }
                   </p>
+                  {(searchQuery || typeFilter !== 'all') && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={resetFilters}
+                      className="mt-4"
+                    >
+                      清除过滤器
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 border-b border-gray-200 dark:border-gray-600/50">
-                    <span>显示 {rules.length} 条规则</span>
+                    <span>显示 {rules.length} / {totalRules} 条规则</span>
                     <span>按优先级排序</span>
                   </div>
                   <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">

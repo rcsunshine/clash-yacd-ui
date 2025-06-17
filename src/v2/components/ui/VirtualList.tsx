@@ -1,186 +1,354 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { cn } from '../../utils/cn';
 
 interface VirtualListProps<T> {
+  /**
+   * 列表项数据
+   */
   items: T[];
-  height: number; // 容器高度
-  itemHeight: number | ((index: number, item: T) => number); // 每项高度
+  
+  /**
+   * 列表高度
+   */
+  height: number;
+  
+  /**
+   * 列表项高度
+   */
+  itemHeight: number;
+  
+  /**
+   * 渲染列表项的函数
+   */
   renderItem: (item: T, index: number) => React.ReactNode;
+  
+  /**
+   * 额外的类名
+   */
   className?: string;
-  overscan?: number; // 额外渲染的项目数量
+  
+  /**
+   * 列表容器类名
+   */
+  containerClassName?: string;
+  
+  /**
+   * 缓冲区大小（额外渲染的项数）
+   * @default 5
+   */
+  overscan?: number;
+  
+  /**
+   * 是否显示滚动条
+   * @default true
+   */
+  showScrollbar?: boolean;
+  
+  /**
+   * 是否启用平滑滚动
+   * @default true
+   */
+  smoothScroll?: boolean;
+  
+  /**
+   * 滚动到指定索引的项
+   */
+  scrollToIndex?: number;
+  
+  /**
+   * 滚动行为
+   * @default 'auto'
+   */
+  scrollBehavior?: ScrollBehavior;
+  
+  /**
+   * 滚动位置
+   * @default 'start'
+   */
+  scrollPosition?: 'start' | 'center' | 'end';
+  
+  /**
+   * 滚动事件回调
+   */
   onScroll?: (scrollTop: number) => void;
-  loading?: boolean;
+  
+  /**
+   * 是否禁用虚拟化（用于小列表）
+   * @default false
+   */
+  disableVirtualization?: boolean;
+  
+  /**
+   * 列表为空时显示的内容
+   */
   emptyComponent?: React.ReactNode;
 }
 
-export function VirtualList<T>({
-  items,
-  height,
-  itemHeight,
-  renderItem,
-  className = '',
-  overscan = 5,
-  onScroll,
-  loading = false,
-  emptyComponent
-}: VirtualListProps<T>) {
+/**
+ * 固定高度的虚拟列表组件
+ */
+export function FixedVirtualList<T>(props: VirtualListProps<T>) {
+  const {
+    items,
+    height,
+    itemHeight,
+    renderItem,
+    className,
+    containerClassName,
+    overscan = 5,
+    showScrollbar = true,
+    smoothScroll = true,
+    scrollToIndex,
+    scrollBehavior = 'auto',
+    scrollPosition = 'start',
+    onScroll,
+    disableVirtualization = false,
+    emptyComponent,
+  } = props;
+  
+  const containerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
-  const scrollElementRef = useRef<HTMLDivElement>(null);
-
-  // 计算可见范围
-  const visibleRange = useMemo(() => {
-    if (items.length === 0) return { start: 0, end: 0 };
-
-    let start = 0;
-    let end = 0;
-    let currentTop = 0;
-
-    // 如果是固定高度
-    if (typeof itemHeight === 'number') {
-      start = Math.floor(scrollTop / itemHeight);
-      end = Math.min(
-        items.length - 1,
-        start + Math.ceil(height / itemHeight)
+  const totalHeight = items.length * itemHeight;
+  
+  // 计算可见项的范围
+  const startIndex = disableVirtualization 
+    ? 0 
+    : Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+    
+  const visibleCount = disableVirtualization 
+    ? items.length 
+    : Math.min(
+        items.length - startIndex,
+        Math.ceil(height / itemHeight) + 2 * overscan
       );
-    } else {
-      // 动态高度计算
-      for (let i = 0; i < items.length; i++) {
-        const height = itemHeight(i, items[i]);
-        if (currentTop + height > scrollTop && start === 0) {
-          start = Math.max(0, i - overscan);
-        }
-        if (currentTop > scrollTop + height) {
-          end = Math.min(items.length - 1, i + overscan);
-          break;
-        }
-        currentTop += height;
-      }
-      if (end === 0) end = items.length - 1;
-    }
-
-    return {
-      start: Math.max(0, start - overscan),
-      end: Math.min(items.length - 1, end + overscan)
-    };
-  }, [items, scrollTop, height, itemHeight, overscan]);
-
-  // 计算总高度
-  const totalHeight = useMemo(() => {
-    if (typeof itemHeight === 'number') {
-      return items.length * itemHeight;
-    }
-    
-    return items.reduce((total, item, index) => {
-      return total + itemHeight(index, item);
-    }, 0);
-  }, [items, itemHeight]);
-
-  // 计算偏移量
-  const offsetY = useMemo(() => {
-    if (typeof itemHeight === 'number') {
-      return visibleRange.start * itemHeight;
-    }
-    
-    let offset = 0;
-    for (let i = 0; i < visibleRange.start; i++) {
-      offset += itemHeight(i, items[i]);
-    }
-    return offset;
-  }, [visibleRange.start, itemHeight, items]);
-
-  // 滚动处理
+      
+  const endIndex = disableVirtualization 
+    ? items.length 
+    : Math.min(startIndex + visibleCount, items.length);
+  
+  const offsetY = disableVirtualization ? 0 : startIndex * itemHeight;
+  
+  // 处理滚动事件
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const scrollTop = e.currentTarget.scrollTop;
-    setScrollTop(scrollTop);
-    onScroll?.(scrollTop);
+    const newScrollTop = e.currentTarget.scrollTop;
+    setScrollTop(newScrollTop);
+    onScroll?.(newScrollTop);
   }, [onScroll]);
-
-  // 渲染可见项目
-  const visibleItems = useMemo(() => {
-    const result = [];
-    for (let i = visibleRange.start; i <= visibleRange.end; i++) {
-      if (i < items.length) {
-        result.push({
-          index: i,
-          item: items[i]
-        });
-      }
+  
+  // 滚动到指定索引
+  useEffect(() => {
+    if (scrollToIndex === undefined || !containerRef.current) return;
+    
+    const targetPosition = itemHeight * scrollToIndex;
+    let scrollPosition = targetPosition;
+    
+    if (props.scrollPosition === 'center') {
+      scrollPosition = targetPosition - (height / 2) + (itemHeight / 2);
+    } else if (props.scrollPosition === 'end') {
+      scrollPosition = targetPosition - height + itemHeight;
     }
-    return result;
-  }, [items, visibleRange]);
-
-  // 空状态处理
-  if (!loading && items.length === 0) {
-    return (
-      <div className={`flex items-center justify-center ${className}`} style={{ height }}>
-        {emptyComponent || (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-            <p className="text-gray-500 dark:text-gray-400">暂无数据</p>
-          </div>
-        )}
-      </div>
-    );
+    
+    containerRef.current.scrollTo({
+      top: Math.max(0, scrollPosition),
+      behavior: scrollBehavior,
+    });
+  }, [scrollToIndex, height, itemHeight, scrollBehavior, props.scrollPosition]);
+  
+  // 如果列表为空，显示空状态
+  if (items.length === 0 && emptyComponent) {
+    return <>{emptyComponent}</>;
   }
-
+  
   return (
     <div
-      ref={scrollElementRef}
-      className={`relative overflow-auto ${className}`}
+      ref={containerRef}
+      className={cn(
+        'overflow-y-auto',
+        !showScrollbar && 'scrollbar-hide',
+        smoothScroll && 'scroll-smooth',
+        containerClassName
+      )}
       style={{ height }}
       onScroll={handleScroll}
     >
-      {/* 总高度占位 */}
-      <div style={{ height: totalHeight }}>
-        {/* 可见内容容器 */}
+      <div
+        className={cn('relative', className)}
+        style={{ height: totalHeight }}
+      >
         <div
-          style={{
-            transform: `translateY(${offsetY}px)`,
-            position: 'relative'
-          }}
+          className="absolute left-0 right-0"
+          style={{ transform: `translateY(${offsetY}px)` }}
         >
-          {loading ? (
-            // 加载状态
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-gray-600 dark:text-gray-400">加载中...</span>
+          {items.slice(startIndex, endIndex).map((item, index) => (
+            <div key={startIndex + index} style={{ height: itemHeight }}>
+              {renderItem(item, startIndex + index)}
             </div>
-          ) : (
-            // 渲染可见项目
-            visibleItems.map(({ index, item }) => (
-              <div key={index} style={{ 
-                height: typeof itemHeight === 'number' ? itemHeight : itemHeight(index, item) 
-              }}>
-                {renderItem(item, index)}
-              </div>
-            ))
-          )}
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-// 简化版本 - 固定高度项目
-export function FixedVirtualList<T>({
-  items,
-  height,
-  itemHeight,
-  renderItem,
-  className,
-  ...props
-}: Omit<VirtualListProps<T>, 'itemHeight'> & { itemHeight: number }) {
+/**
+ * 可变高度的虚拟列表组件
+ * 注意：此组件需要预先知道每个项的高度或提供估计高度
+ */
+export function VariableVirtualList<T>(props: VirtualListProps<T> & {
+  /**
+   * 获取项高度的函数
+   */
+  getItemHeight: (item: T, index: number) => number;
+  
+  /**
+   * 估计的项高度（用于初始渲染）
+   * @default 50
+   */
+  estimatedItemHeight?: number;
+}) {
+  const {
+    items,
+    height,
+    getItemHeight,
+    estimatedItemHeight = 50,
+    renderItem,
+    className,
+    containerClassName,
+    overscan = 5,
+    showScrollbar = true,
+    smoothScroll = true,
+    scrollToIndex,
+    scrollBehavior = 'auto',
+    onScroll,
+    disableVirtualization = false,
+    emptyComponent,
+  } = props;
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  
+  // 计算每个项的位置和高度
+  const itemPositions = React.useMemo(() => {
+    let total = 0;
+    const positions = items.map((item, index) => {
+      const height = getItemHeight(item, index);
+      const position = { top: total, height };
+      total += height;
+      return position;
+    });
+    
+    return {
+      positions,
+      totalHeight: total,
+    };
+  }, [items, getItemHeight]);
+  
+  // 找到第一个可见项的索引
+  const findStartIndex = useCallback(() => {
+    if (disableVirtualization) return 0;
+    
+    const { positions } = itemPositions;
+    let start = 0;
+    let end = positions.length - 1;
+    
+    while (start <= end) {
+      const middle = Math.floor((start + end) / 2);
+      const { top, height } = positions[middle];
+      
+      if (top + height < scrollTop) {
+        start = middle + 1;
+      } else if (top > scrollTop) {
+        end = middle - 1;
+      } else {
+        return middle;
+      }
+    }
+    
+    return Math.max(0, start - 1);
+  }, [itemPositions, scrollTop, disableVirtualization]);
+  
+  // 计算可见项的范围
+  const range = React.useMemo(() => {
+    if (disableVirtualization) {
+      return { startIndex: 0, endIndex: items.length };
+    }
+    
+    const { positions } = itemPositions;
+    const startIndex = Math.max(0, findStartIndex() - overscan);
+    
+    let endIndex = startIndex;
+    let visibleHeight = 0;
+    
+    while (endIndex < positions.length && visibleHeight < height + 2 * overscan * estimatedItemHeight) {
+      visibleHeight += positions[endIndex].height;
+      endIndex += 1;
+    }
+    
+    return {
+      startIndex,
+      endIndex: Math.min(endIndex + overscan, positions.length),
+      totalHeight: itemPositions.totalHeight,
+    };
+  }, [itemPositions, height, findStartIndex, overscan, estimatedItemHeight, disableVirtualization, items.length]);
+  
+  // 处理滚动事件
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const newScrollTop = e.currentTarget.scrollTop;
+    setScrollTop(newScrollTop);
+    onScroll?.(newScrollTop);
+  }, [onScroll]);
+  
+  // 滚动到指定索引
+  useEffect(() => {
+    if (scrollToIndex === undefined || !containerRef.current) return;
+    
+    const { positions } = itemPositions;
+    if (scrollToIndex >= 0 && scrollToIndex < positions.length) {
+      containerRef.current.scrollTo({
+        top: positions[scrollToIndex].top,
+        behavior: scrollBehavior,
+      });
+    }
+  }, [scrollToIndex, itemPositions, scrollBehavior]);
+  
+  // 如果列表为空，显示空状态
+  if (items.length === 0 && emptyComponent) {
+    return <>{emptyComponent}</>;
+  }
+  
   return (
-    <VirtualList
-      items={items}
-      height={height}
-      itemHeight={itemHeight}
-      renderItem={renderItem}
-      className={className}
-      {...props}
-    />
+    <div
+      ref={containerRef}
+      className={cn(
+        'overflow-y-auto',
+        !showScrollbar && 'scrollbar-hide',
+        smoothScroll && 'scroll-smooth',
+        containerClassName
+      )}
+      style={{ height }}
+      onScroll={handleScroll}
+    >
+      <div
+        className={cn('relative', className)}
+        style={{ height: range.totalHeight }}
+      >
+        {items.slice(range.startIndex, range.endIndex).map((item, index) => {
+          const actualIndex = range.startIndex + index;
+          const { top, height } = itemPositions.positions[actualIndex];
+          
+          return (
+            <div
+              key={actualIndex}
+              className="absolute left-0 right-0"
+              style={{ top, height }}
+            >
+              {renderItem(item, actualIndex)}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
-} 
+}
+
+export default FixedVirtualList; 
