@@ -291,7 +291,7 @@ export function Sidebar(props: SidebarProps = {}) {
 
   const getDisplayMessage = () => {
     if (connectionState.status === 'connected' && connectionState.version) {
-      return `已连接 (v${connectionState.version})`;
+      return `已连接 (${connectionState.version})`;
     }
     return connectionState.message;
   };
