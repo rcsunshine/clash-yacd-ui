@@ -628,11 +628,19 @@ export function useSystemInfo() {
     'system-info',
     async () => {
       const client = createAPIClient(apiConfig);
-      const response = await client.get('/');
-      if (response.data) {
-        return response.data;
+      // 获取系统基本配置信息
+      const infoResponse = await client.get('/configs');
+      // 获取版本信息
+      const versionResponse = await client.get('/version');
+      
+      if (infoResponse.data && versionResponse.data) {
+        // 合并信息，确保包含版本字段
+        return {
+          ...infoResponse.data,
+          version: versionResponse.data.version || 'N/A'
+        };
       }
-      throw new Error(response.error || 'Failed to fetch system info');
+      throw new Error(infoResponse.error || versionResponse.error || 'Failed to fetch system info');
     },
     { refetchInterval: 5000 }
   );
