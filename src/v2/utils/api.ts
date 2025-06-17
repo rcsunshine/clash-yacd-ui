@@ -2,7 +2,7 @@ import { APIResponse,ClashAPIConfig } from '../types/api';
 
 // 默认API配置 - 仅用作类型参考，实际配置从V1 store获取
 export const DEFAULT_API_CONFIG: ClashAPIConfig = {
-  baseURL: 'http://10.8.87.121:9090',
+  baseURL: 'http://127.0.0.1:9090',
   secret: '4e431a56ead99c',
 };
 
