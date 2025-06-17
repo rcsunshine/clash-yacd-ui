@@ -1,5 +1,97 @@
 # Clash YACD UI - V2 Development Progress
 
+## 🎯 最新重大更新 (2024-06-16)
+
+### ✅ 修复日志页面WebSocket连接问题
+**问题**: 日志页面一直显示未连接状态，无法获取日志记录
+
+**解决方案**: 
+- **🔧 WebSocket连接状态初始化修复** - 添加initialized状态检查
+- **📊 日志级别参数正确传递** - 确保WebSocket URL包含level参数
+- **🔄 连接状态正确反馈** - 修复连接状态显示逻辑
+
+**技术实现**:
+```typescript
+// 构建带日志级别的参数
+const extraParams = `level=${clashConfig['log-level']}`;
+
+// 使用全局管理器
+const cleanup = manageWebSocket(
+  logsManager,
+  `/logs?${extraParams}`,  // 正确传递日志级别参数
+  apiConfig,
+  subscriber,
+  // ...
+);
+```
+
+**修复成果**:
+- ✅ **日志实时显示** - 正确接收并显示实时日志
+- ✅ **连接状态准确** - 正确显示WebSocket连接状态
+- ✅ **日志级别过滤** - 根据配置的日志级别正确过滤日志
+
+### ✅ 优化规则提供者API错误处理
+**问题**: `/providers/rules` 接口返回404错误导致规则页面数据加载不完整
+
+**解决方案**:
+- **🛡️ 增强错误处理** - 完善规则提供者API的错误捕获机制
+- **🔄 并行数据获取** - 使用Promise.all并行获取所有提供者详情
+- **🧩 数据完整性保证** - 即使部分提供者获取失败也能显示其他数据
+
+**技术实现**:
+```typescript
+try {
+  // 首先尝试获取规则提供者列表
+  const providersResponse = await client.get('/providers/rules');
+  if (providersResponse.data) {
+    // 并行获取所有提供者的详细信息
+    await Promise.all(
+      Object.keys(providers).map(async (name) => {
+        try {
+          const detailResponse = await client.get(`/providers/rules/${encodeURIComponent(name)}`);
+          // ...处理详情数据
+        } catch (error) {
+          console.warn(`Failed to fetch details for rule provider ${name}:`, error);
+        }
+      })
+    );
+  }
+} catch (error) {
+  console.log('No rule providers found:', error);
+  providersData = {};
+}
+```
+
+**优化成果**:
+- ✅ **错误优雅处理** - 404错误不再影响页面整体功能
+- ✅ **性能提升** - 并行请求提高数据加载速度
+- ✅ **用户体验改善** - 即使部分API不可用也能显示可用数据
+- ✅ **兼容性增强** - 适应不同版本的Clash后端API
+
+### ✅ 其他功能优化与问题修复
+1. **版本显示优化**:
+   - 修复配置页面版本信息获取为空的问题
+   - 优化已连接版本号的显示格式
+
+2. **UI优化**:
+   - 仪表盘菜单标题优化为"概览"，提升用户体验
+   - 深色模式下分割线颜色优化，提高视觉对比度
+   - 代理组与小圆点显示顺序优化，使界面更加直观
+
+3. **WebSocket连接优化**:
+   - 修复WebSocket重复调用问题，提高性能和稳定性
+   - 优化WebSocket连接状态管理，减少不必要的重连
+
+4. **默认配置优化**:
+   - 修改默认API地址为127.0.0.1，提高安全性和兼容性
+
+**技术质量**:
+- ✅ **Lint修复** - 解决代码质量问题
+- ✅ **类型安全** - 确保TypeScript类型正确
+- ✅ **性能优化** - 减少不必要的重渲染和API调用
+
+---
+
 ## 🎯 最新重大更新 (2024-01-XX)
 
 ### ✅ V2 CSS架构彻底标准化 - pages.css完全移除
