@@ -595,6 +595,58 @@ const handleModeChange = async (newMode: string) => {
 - ✅ **错误处理**: 添加完整的错误处理和用户反馈机制
 - ✅ **架构一致**: 使用V2的API配置调用更新接口，保持架构独立性
 
+### ✅ 修复配置变更后系统信息不实时更新问题
+**问题**: 在概览页面切换代理模式后，系统信息卡片中的模式显示没有实时更新
+**原因**: `SystemInfoCard`和`ConfigStatusCard`使用了独立的数据获取钩子，配置变更后没有同步刷新系统信息
+
+**解决方案**: 
+- **🔄 组件间通信** - 通过props传递刷新回调函数，实现组件间数据同步
+- **🛠️ 并行刷新机制** - 配置变更成功后同时刷新配置状态和系统信息
+- **📊 类型安全优化** - 正确处理异步刷新函数的类型定义
+- **🎨 用户体验提升** - 确保界面状态与实际配置保持一致
+
+**技术实现**:
+```typescript
+// 1. 传递刷新回调给ConfigStatusCard
+const Dashboard: React.FC = () => {
+  const { refetch: refetchSystemInfo } = useSystemInfo();
+  
+  // 包装系统信息刷新函数以匹配类型
+  const handleSystemInfoRefresh = async (): Promise<void> => {
+    try {
+      await refetchSystemInfo();
+    } catch (error) {
+      console.error('Failed to refresh system info:', error);
+    }
+  };
+  
+  return (
+    <ConfigStatusCard onConfigChange={handleSystemInfoRefresh} />
+  );
+};
+
+// 2. 配置变更后并行刷新多个数据源
+const handleModeChange = async (newMode: string) => {
+  // ... API调用逻辑
+  
+  if (response.ok) {
+    // 成功后刷新配置数据和系统信息以更新界面
+    setTimeout(async () => {
+      await Promise.all([
+        refetch(),      // 刷新配置状态
+        onConfigChange() // 刷新系统信息
+      ]);
+    }, 500); // 延迟500ms刷新，确保服务器状态已更新
+  }
+};
+```
+
+**优化成果**:
+- ✅ **实时同步**: 配置变更后系统信息立即更新，保持界面一致性
+- ✅ **组件解耦**: 通过回调函数实现组件间通信，保持架构清晰
+- ✅ **并行优化**: 同时刷新多个数据源，提高更新效率
+- ✅ **类型安全**: 正确处理异步函数类型，避免编译错误
+
 ## 2023年核心功能优化记录
 
 ### 流量监控与图表优化
