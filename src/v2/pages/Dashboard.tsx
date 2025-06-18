@@ -479,8 +479,28 @@ const ConfigStatusCard: React.FC = () => {
   const apiConfig = useApiConfig(); // 使用V2的API配置
   
   const handleModeChange = async (newMode: string) => {
-    // 模式切换逻辑保持不变
-    console.log('Changing mode to:', newMode);
+    try {
+      console.log('🔄 Changing mode to:', newMode);
+      
+      // 使用V1的API方法来更新配置
+      const { updateConfigs } = await import('../../api/configs');
+      const updateConfigFn = updateConfigs(apiConfig);
+      
+      const response = await updateConfigFn({ 
+        mode: newMode as 'global' | 'rule' | 'direct' 
+      });
+      
+      if (response.ok) {
+        console.log('✅ Mode changed successfully to:', newMode);
+        // 可以添加成功提示
+      } else {
+        console.error('❌ Failed to change mode:', response.statusText);
+        // 可以添加错误提示
+      }
+    } catch (error) {
+      console.error('❌ Error changing mode:', error);
+      // 可以添加错误提示
+    }
   };
   
   return (
