@@ -1,8 +1,8 @@
 import React from 'react';
 
+import { useTranslation } from '../../i18n';
 import { cn } from '../../utils/cn';
 import { StatusIndicator } from '../ui/StatusIndicator';
-import { useTranslation } from '../../i18n';
 
 export interface MobileHeaderProps {
   title: string;

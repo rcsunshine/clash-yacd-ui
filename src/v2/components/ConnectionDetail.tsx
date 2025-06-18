@@ -1,9 +1,9 @@
 import React from 'react';
 
 import { Connection } from '../hooks/useConnectionsSearch';
+import { useTranslation } from '../i18n';
 import { cn } from '../utils/cn';
 import { Card, CardContent } from './ui/Card';
-import { useTranslation } from '../i18n';
 
 interface ConnectionDetailProps {
   connection: Connection | null;

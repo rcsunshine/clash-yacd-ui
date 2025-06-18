@@ -292,7 +292,7 @@ export const Bundle: React.FC = () => {
             <div className="space-y-3">
               {bundleStats.chunks
                 .sort((a, b) => b.size - a.size)
-                .map((chunk, index) => (
+                .map((chunk, _index) => (
                   <div key={chunk.name} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div className={`w-8 h-8 ${getTypeColor(chunk.type)} rounded-lg flex items-center justify-center text-white`}>

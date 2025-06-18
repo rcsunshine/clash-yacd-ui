@@ -1,7 +1,7 @@
 import React, { forwardRef, InputHTMLAttributes } from 'react';
 
-import { cn } from '../../utils/cn';
 import { useTranslation } from '../../i18n';
+import { cn } from '../../utils/cn';
 
 export interface SearchInputProps extends InputHTMLAttributes<HTMLInputElement> {
   className?: string;

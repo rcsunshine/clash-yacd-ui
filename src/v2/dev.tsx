@@ -3,40 +3,8 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { App } from './App';
-import { AppStateProvider } from './store';
 import { useTranslation } from './i18n';
-
-// 简单的错误边界
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; error?: Error }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('V2 Error:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <ErrorBoundaryContent 
-          error={this.state.error}
-          onRetry={() => this.setState({ hasError: false, error: undefined })}
-        />
-      );
-    }
-
-    return this.props.children;
-  }
-}
+import { AppStateProvider } from './store';
 
 // 错误边界内容组件（支持翻译）
 const ErrorBoundaryContent: React.FC<{
@@ -80,6 +48,38 @@ const ErrorBoundaryContent: React.FC<{
     </div>
   );
 };
+
+// 简单的错误边界
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('V2 Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <ErrorBoundaryContent 
+          error={this.state.error}
+          onRetry={() => this.setState({ hasError: false, error: undefined })}
+        />
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 // V2应用启动
 const rootEl = document.getElementById('app');

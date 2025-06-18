@@ -380,7 +380,7 @@ export const BundleAnalysis: React.FC = () => {
             <div className="space-y-3">
               {bundleStats.chunks
                 .sort((a, b) => b.size - a.size)
-                .map((chunk, index) => {
+                .map((chunk, _index) => {
                   const percentage = ((chunk.gzipSize / bundleStats.gzipSize) * 100).toFixed(1);
                   return (
                     <div key={chunk.name} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
@@ -418,8 +418,8 @@ export const BundleAnalysis: React.FC = () => {
           </h3>
           
           <div className="space-y-4">
-            {optimizationSuggestions.map((suggestion, index) => (
-              <div key={index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+            {optimizationSuggestions.map((suggestion, _index) => (
+              <div key={_index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                 <div className="flex items-start justify-between mb-2">
                   <h4 className="font-medium text-theme">{suggestion.title}</h4>
                   <div className="flex items-center space-x-2">

@@ -5,8 +5,8 @@ import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { LoadingState } from '../components/ui/LoadingState';
 import { useV2ApiConfig } from '../hooks/useApiConfig';
-import type { ClashAPIConfig } from '../types/api';
 import { useTranslation } from '../i18n';
+import type { ClashAPIConfig } from '../types/api';
 
 interface APITestResult {
   success: boolean;

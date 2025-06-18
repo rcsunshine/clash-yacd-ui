@@ -1,10 +1,10 @@
 import { useAtom } from 'jotai';
 import React, { useEffect,useRef, useState } from 'react';
 
+import { useTranslation } from '../../i18n';
 import { v2ThemeAtom } from '../../store/atoms';
 import { cn } from '../../utils/cn';
 import { getCurrentAppliedTheme, setTheme, type Theme } from '../../utils/theme';
-import { useTranslation } from '../../i18n';
 
 interface ThemeOption {
   value: Theme;

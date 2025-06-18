@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { cn } from '../../utils/cn';
 import { useTranslation } from '../../i18n';
+import { cn } from '../../utils/cn';
 
 export interface MobileMenuProps {
   isOpen: boolean;

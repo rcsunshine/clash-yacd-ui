@@ -8,9 +8,9 @@ import React, { Suspense, useEffect } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { LoadingState } from './components/ui/LoadingState';
 import { useApiConfigEffect } from './hooks/useAPI';
+import { useTranslation } from './i18n';
 import { v2CurrentPageAtom,v2ThemeAtom } from './store/atoms';
 import { applyTheme, initializeTheme, watchSystemTheme } from './utils/theme';
-import { useTranslation } from './i18n';
 
 // 页面级代码分割 - 懒加载页面组件
 const Dashboard = React.lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));

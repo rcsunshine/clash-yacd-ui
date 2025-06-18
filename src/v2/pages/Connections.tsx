@@ -15,7 +15,7 @@ import { ConnectionSortKey,NetworkType, useConnectionsSearch } from '../hooks/us
 import useKeyboardShortcut from '../hooks/useKeyboardShortcut';
 import { cn } from '../utils/cn';
 
-interface Connection {
+interface _Connection { // 暂时未使用，保留接口定义
   id: string;
   metadata: {
     network: string;
@@ -89,7 +89,7 @@ export const Connections: React.FC = () => {
     sortOrder,
     setSortOrder,
     resetFilters,
-    searchHints,
+    // searchHints, // 暂时未使用
     selectedConnections,
     toggleConnectionSelection,
     toggleAllConnections,
