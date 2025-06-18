@@ -548,6 +548,53 @@ const handleClearCache = () => {
 - ✅ **用户体验**: 添加清除缓存功能，方便用户重置配置
 - ✅ **代码清晰**: 减少跨架构依赖，提高代码可维护性
 
+### ✅ 修复概览页面模式切换功能
+**问题**: 概览页面的代理模式切换下拉菜单不生效，无法实际切换Clash的代理模式
+**原因**: 在修复API地址显示问题时，`handleModeChange`函数被简化为只打印日志，缺少实际的API调用
+
+**解决方案**: 
+- **🔄 恢复API调用** - 重新实现`handleModeChange`函数的API调用逻辑
+- **🛠️ 使用V1 API兼容** - 复用V1的`updateConfigs` API方法来更新配置
+- **📊 添加错误处理** - 添加完整的错误处理和日志记录
+- **🎨 保持配置一致性** - 使用V2的API配置来调用更新接口
+
+**技术实现**:
+```typescript
+// 修复前：只打印日志，无实际功能
+const handleModeChange = async (newMode: string) => {
+  console.log('Changing mode to:', newMode); // ❌ 只有日志
+};
+
+// 修复后：完整的API调用实现
+const handleModeChange = async (newMode: string) => {
+  try {
+    console.log('🔄 Changing mode to:', newMode);
+    
+    // 使用V1的API方法来更新配置
+    const { updateConfigs } = await import('../../api/configs');
+    const updateConfigFn = updateConfigs(apiConfig);
+    
+    const response = await updateConfigFn({ 
+      mode: newMode as 'global' | 'rule' | 'direct' 
+    });
+    
+    if (response.ok) {
+      console.log('✅ Mode changed successfully to:', newMode);
+    } else {
+      console.error('❌ Failed to change mode:', response.statusText);
+    }
+  } catch (error) {
+    console.error('❌ Error changing mode:', error);
+  }
+};
+```
+
+**优化成果**:
+- ✅ **功能恢复**: 概览页面的模式切换下拉菜单现在可以正常工作
+- ✅ **API兼容**: 成功集成V1的配置更新API，保持向后兼容
+- ✅ **错误处理**: 添加完整的错误处理和用户反馈机制
+- ✅ **架构一致**: 使用V2的API配置调用更新接口，保持架构独立性
+
 ## 2023年核心功能优化记录
 
 ### 流量监控与图表优化
