@@ -513,6 +513,41 @@ try {
 - ✅ **降级体验** - 在功能不可用时提供备选UI和操作指导
 - ✅ **兼容性增强** - 支持不同版本的Clash核心和API实现
 
+### ✅ 修复概览页面API地址显示不一致问题
+**问题**: 概览页面显示的API地址与API配置页面选中的地址不一致
+**原因**: Dashboard页面使用了V1的状态管理(`useAppState`)来显示API地址，而不是V2的API配置
+
+**解决方案**: 
+- **🔄 统一API配置源** - 将Dashboard页面改为使用V2的`useApiConfig`钩子
+- **🛠️ 移除V1依赖** - 移除Dashboard页面对V1状态管理的依赖
+- **📊 保证配置一致性** - 确保所有V2页面都使用相同的API配置源
+- **🎨 添加配置管理功能** - 为APIConfig组件添加清除缓存功能
+
+**技术实现**:
+```typescript
+// 修复前：使用V1状态管理
+import { useAppState } from '../store';
+const { state } = useAppState();
+// 显示: {state.apiConfig.baseURL} ❌
+
+// 修复后：使用V2 API配置
+import { useApiConfig } from '../hooks/useApiConfig';
+const apiConfig = useApiConfig();
+// 显示: {apiConfig.baseURL} ✅
+
+// 配置管理增强
+const handleClearCache = () => {
+  localStorage.removeItem('v2-api-config');
+  // 重置为默认配置并提示用户刷新
+};
+```
+
+**优化成果**:
+- ✅ **配置一致性**: 概览页面和API配置页面显示相同的API地址
+- ✅ **架构独立性**: 完全移除对V1状态管理的依赖
+- ✅ **用户体验**: 添加清除缓存功能，方便用户重置配置
+- ✅ **代码清晰**: 减少跨架构依赖，提高代码可维护性
+
 ## 2023年核心功能优化记录
 
 ### 流量监控与图表优化
