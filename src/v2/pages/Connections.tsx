@@ -1,16 +1,16 @@
 import React, { useRef, useState } from 'react';
 
+import ConnectionDetail from '../components/ConnectionDetail';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
+import Drawer from '../components/ui/Drawer';
+import HelpTooltip from '../components/ui/HelpTooltip';
 import { SearchInput } from '../components/ui/SearchInput';
 import { Select } from '../components/ui/Select';
 import { FixedVirtualList } from '../components/ui/VirtualList';
 import { useCloseAllConnections, useCloseConnection, useConnections } from '../hooks/useAPI';
-import { useConnectionsSearch, NetworkType, ConnectionSortKey, ConnectionSortOrder, ConnectionStatus } from '../hooks/useConnectionsSearch';
+import { ConnectionSortKey,NetworkType, useConnectionsSearch } from '../hooks/useConnectionsSearch';
 import useKeyboardShortcut from '../hooks/useKeyboardShortcut';
-import Drawer from '../components/ui/Drawer';
-import ConnectionDetail from '../components/ConnectionDetail';
-import HelpTooltip from '../components/ui/HelpTooltip';
 import { cn } from '../utils/cn';
 
 interface Connection {
@@ -591,6 +591,13 @@ export const Connections: React.FC = () => {
                           "cursor-pointer"
                         )}
                         onClick={() => handleViewConnectionDetail(connection.id)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            handleViewConnectionDetail(connection.id);
+                          }
+                        }}
                       >
                         <div className="flex items-start justify-between w-full">
                           <div className="flex items-center space-x-3 flex-1">
@@ -661,7 +668,13 @@ export const Connections: React.FC = () => {
                           </div>
                           
                           {/* 连接操作按钮 */}
-                          <div className="flex items-center ml-2" onClick={(e) => e.stopPropagation()}>
+                          <div 
+                            className="flex items-center ml-2" 
+                            onClick={(e) => e.stopPropagation()}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => e.stopPropagation()}
+                          >
                             <Button
                               variant="outline"
                               size="sm"

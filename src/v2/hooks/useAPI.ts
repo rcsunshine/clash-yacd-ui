@@ -411,7 +411,7 @@ class GlobalWebSocketManager {
     console.log('🧹 Destroying all WebSocket connections');
     
     // 关闭所有连接
-    this.connections.forEach((connection, key) => {
+    this.connections.forEach((connection, _key) => {
       if (connection.ws) {
         connection.ws.close(1000, 'Manager destroyed');
       }

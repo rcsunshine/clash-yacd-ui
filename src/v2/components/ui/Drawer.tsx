@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+
 import { cn } from '../../utils/cn';
 
 export interface DrawerProps {
@@ -223,6 +224,14 @@ export const Drawer: React.FC<DrawerProps> = ({
             overlayClassName
           )}
           onClick={closeOnOverlayClick ? onClose : undefined}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              closeOnOverlayClick && onClose();
+            }
+          }}
+          aria-label="关闭抽屉"
         />
       )}
       

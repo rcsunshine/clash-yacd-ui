@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import { cn } from '../../utils/cn';
 
 export interface HelpTooltipProps {
@@ -104,6 +105,8 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
     }
   };
   
+  const tooltipRef = React.useRef<HTMLDivElement>(null);
+
   const handleClickOutside = (event: MouseEvent) => {
     if (disabled) return;
     if (trigger === 'click' && isOpen) {
@@ -114,8 +117,6 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
     }
   };
   
-  const tooltipRef = React.useRef<HTMLDivElement>(null);
-  
   React.useEffect(() => {
     if (trigger === 'click') {
       document.addEventListener('mousedown', handleClickOutside);
@@ -124,6 +125,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
       };
     }
     return undefined;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger, isOpen]);
   
   // 提示位置样式
@@ -159,6 +161,13 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       ref={tooltipRef}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          handleClick();
+        }
+      }}
     >
       {children ? (
         <>{children}</>
@@ -214,7 +223,7 @@ export const RulesSearchHelpTooltip: React.FC = () => {
             <div className="pl-2 space-y-1">
               <div><code>type:DOMAIN</code> - 搜索特定类型</div>
               <div><code>proxy:DIRECT</code> - 搜索特定代理</div>
-              <div><code>payload:"google.com"</code> - 精确匹配内容</div>
+              <div><code>payload:&quot;google.com&quot;</code> - 精确匹配内容</div>
             </div>
           </div>
           
