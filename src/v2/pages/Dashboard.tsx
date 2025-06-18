@@ -475,7 +475,7 @@ const ConnectionsCard: React.FC<{ connectionsData: any }> = ({ connectionsData }
 };
 
 const ConfigStatusCard: React.FC = () => {
-  const { data: config, isLoading, error } = useClashConfig();
+  const { data: config, isLoading, error, refetch } = useClashConfig();
   const apiConfig = useApiConfig(); // 使用V2的API配置
   
   const handleModeChange = async (newMode: string) => {
@@ -492,7 +492,10 @@ const ConfigStatusCard: React.FC = () => {
       
       if (response.ok) {
         console.log('✅ Mode changed successfully to:', newMode);
-        // 可以添加成功提示
+        // 成功后刷新配置数据以更新界面
+        setTimeout(() => {
+          refetch();
+        }, 500); // 延迟500ms刷新，确保服务器状态已更新
       } else {
         console.error('❌ Failed to change mode:', response.statusText);
         // 可以添加错误提示
