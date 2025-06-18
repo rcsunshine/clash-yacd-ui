@@ -73,6 +73,25 @@ export function APIConfig() {
     setConnectionStatus({ type: null, message: '' });
   };
 
+  const handleClearCache = () => {
+    // 清除V2配置缓存
+    localStorage.removeItem('v2-api-config');
+    
+    // 重置为默认配置
+    const defaultConfig = {
+      baseURL: 'http://127.0.0.1:9090',
+      secret: '',
+    };
+    
+    setTempConfig(defaultConfig);
+    setApiConfigs([defaultConfig]);
+    
+    setConnectionStatus({
+      type: 'success',
+      message: 'V2配置缓存已清除，请刷新页面'
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -171,6 +190,20 @@ export function APIConfig() {
           >
             重置
           </Button>
+        </div>
+
+        <div className="pt-2">
+          <Button
+            onClick={handleClearCache}
+            variant="outline"
+            disabled={isConnecting}
+            className="w-full text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+          >
+            清除V2配置缓存
+          </Button>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+            如果配置显示异常，可以清除缓存后刷新页面
+          </p>
         </div>
 
         <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
