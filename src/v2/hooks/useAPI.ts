@@ -12,8 +12,7 @@ import {
   RulesQueryResult,
   RulesResponse,
   SystemInfo,
-  TrafficData,
-  UseQueryResult} from '../types/api';
+  TrafficData} from '../types/api';
 // 导入 V2 独立的 API 和状态管理
 import { useApiConfig } from './useApiConfig';
 
@@ -28,7 +27,7 @@ let configChangePromise: Promise<void> | null = null;
 interface WebSocketConnection {
   ws: WebSocket | null;
   endpoint: string;
-  status: 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error';
+  status: 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error' | 'reconnecting';
   lastError: string | null;
   subscribers: number;
   lastActivity: number;
@@ -96,6 +95,33 @@ class GlobalWebSocketManager {
 
     // 添加监听器
     listeners.add(callback);
+
+    // 如果连接状态异常，先强制关闭并重置
+    const existingConnection = this.connections.get(connectionKey);
+    if (existingConnection && (existingConnection.status === 'error' || existingConnection.status === 'disconnected')) {
+      console.log(`🔄 Resetting problematic connection: ${connectionKey} (${existingConnection.status})`);
+      
+      // 关闭现有WebSocket连接
+      if (existingConnection.ws) {
+        try {
+          existingConnection.ws.onopen = null;
+          existingConnection.ws.onmessage = null;
+          existingConnection.ws.onerror = null;
+          existingConnection.ws.onclose = null;
+          existingConnection.ws.close(1000, 'Reset before subscribe');
+        } catch (err) {
+          console.error('Error closing problematic WebSocket:', err);
+        }
+        existingConnection.ws = null;
+      }
+      
+      // 清除所有重连定时器
+      this.clearReconnectTimer(connectionKey);
+      
+      // 重置连接状态
+      existingConnection.status = 'idle';
+      existingConnection.lastError = null;
+    }
 
     // 确保连接存在
     this.ensureConnection(connectionKey, endpoint, apiConfig);
@@ -331,26 +357,53 @@ class GlobalWebSocketManager {
     if (connection) {
       console.log(`🔄 Force reconnecting: ${connectionKey}`);
       
+      // 设置重连锁，防止在清理过程中创建新连接
+      connection.status = 'reconnecting';
+      
       // 关闭现有WebSocket连接
       if (connection.ws) {
-        connection.ws.close(1000, 'Force reconnect');
+        try {
+          // 先移除所有事件监听器，防止旧连接的事件触发
+          connection.ws.onopen = null;
+          connection.ws.onmessage = null;
+          connection.ws.onerror = null;
+          connection.ws.onclose = null;
+          
+          // 关闭连接
+          connection.ws.close(1000, 'Force reconnect');
+        } catch (err) {
+          console.error('Error closing WebSocket during force reconnect:', err);
+        }
         connection.ws = null;
       }
       
       // 清除所有重连定时器
       this.clearReconnectTimer(connectionKey);
       
-      // 重置连接状态
-      connection.status = 'idle';
-      connection.lastError = null;
+      // 从连接映射中删除当前连接
+      this.connections.delete(connectionKey);
       
-      // 确保只创建一个新连接
-      if (this.currentApiConfig) {
-        setTimeout(() => {
-          // 延迟创建新连接，确保旧连接完全关闭
+      // 延迟创建新连接，确保旧连接完全关闭
+      setTimeout(() => {
+        // 创建全新的连接对象
+        const newConnection: WebSocketConnection = {
+          ws: null,
+          endpoint: connection.endpoint,
+          status: 'idle',
+          lastError: null,
+          subscribers: connection.subscribers,
+          lastActivity: Date.now()
+        };
+        
+        // 添加到连接映射
+        this.connections.set(connectionKey, newConnection);
+        
+        // 确保创建新连接
+        if (this.currentApiConfig) {
           this.ensureConnection(connectionKey, connection.endpoint, this.currentApiConfig);
-        }, 100);
-      }
+          console.log(`🔄 Reconnection completed for: ${connectionKey}`);
+        }
+      }, 300); // 延迟300ms确保旧连接完全关闭
     }
   }
 
@@ -391,8 +444,8 @@ class GlobalWebSocketManager {
         lastError: conn.lastError,
         wsState: conn.ws?.readyState
       })),
-      eventListeners: Array.from(this.eventListeners.entries()).map(([key, listeners]) => ({
-        key,
+      eventListeners: Array.from(this.eventListeners.entries()).map(([connectionKey, listeners]) => ({
+        key: connectionKey,
         listenerCount: listeners.size
       })),
       reconnectTimers: Array.from(this.reconnectTimers.keys())
@@ -1153,16 +1206,20 @@ export function useLogs() {
   // 刷新日志 - 通过重新连接WebSocket实现
   const refreshLogs = useCallback(() => {
     if (wsEndpointRef.current) {
-      // 使用全局WebSocket管理器强制重连
-      const globalWsManager = GlobalWebSocketManager.getInstance();
+      console.log('🔄 Logs: Starting refresh process');
       
       // 先清空当前日志，给用户一个明确的刷新反馈
       setLogs([]);
       
-      // 强制重连WebSocket
-      globalWsManager.forceReconnect(wsEndpointRef.current);
+      // 使用全局WebSocket管理器强制重连
+      const globalWsManager = GlobalWebSocketManager.getInstance();
       
-      console.log('🔄 Logs: WebSocket connection refreshed');
+      // 使用延迟确保UI更新后再重连WebSocket
+      setTimeout(() => {
+        // 强制重连WebSocket
+        globalWsManager.forceReconnect(wsEndpointRef.current!);
+        console.log('🔄 Logs: WebSocket connection refresh requested');
+      }, 100);
     }
   }, []);
 

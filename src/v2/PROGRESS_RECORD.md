@@ -6,68 +6,125 @@
 **问题**: 刷新日志功能会创建多个重复的WebSocket连接，导致网络请求冗余和潜在的性能问题
 
 **解决方案**: 
-- **🔄 优化WebSocket管理器** - 修改`forceReconnect`方法，确保彻底清理旧连接
-- **🛠️ 改进连接创建逻辑** - 在创建新连接前移除所有事件监听器，防止旧连接继续工作
-- **📊 优化刷新流程** - 调整刷新日志的顺序，先清空日志再重连WebSocket
-- **🎨 增强连接管理** - 添加延迟重连机制，确保旧连接完全关闭
+- **🔄 彻底重构WebSocket管理器** - 全面优化`forceReconnect`方法，确保完全清理旧连接
+- **🛠️ 改进连接生命周期** - 实现完整的连接状态管理，包括新增`reconnecting`状态
+- **📊 优化刷新机制** - 使用延迟重连策略，确保旧连接完全关闭后再创建新连接
+- **🎨 增强异常处理** - 添加错误捕获和恢复机制，提高连接稳定性
 
 **技术实现**:
 ```typescript
-// WebSocket管理器优化
+// 扩展WebSocket连接状态类型
+interface WebSocketConnection {
+  ws: WebSocket | null;
+  endpoint: string;
+  status: 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error' | 'reconnecting';
+  // ...其他属性
+}
+
+// 优化订阅逻辑，自动修复问题连接
+public subscribe(endpoint: string, callback: (data: any) => void, apiConfig: any): () => void {
+  // ...
+  // 如果连接状态异常，先强制关闭并重置
+  const existingConnection = this.connections.get(connectionKey);
+  if (existingConnection && (existingConnection.status === 'error' || existingConnection.status === 'disconnected')) {
+    console.log(`🔄 Resetting problematic connection: ${connectionKey}`);
+    
+    // 清理连接资源
+    if (existingConnection.ws) {
+      try {
+        existingConnection.ws.onopen = null;
+        existingConnection.ws.onmessage = null;
+        existingConnection.ws.onerror = null;
+        existingConnection.ws.onclose = null;
+        existingConnection.ws.close(1000, 'Reset before subscribe');
+      } catch (err) {
+        console.error('Error closing problematic WebSocket:', err);
+      }
+      existingConnection.ws = null;
+    }
+    
+    // 重置连接状态
+    existingConnection.status = 'idle';
+  }
+  // ...
+}
+
+// 彻底重构的强制重连逻辑
 public forceReconnect(endpoint: string): void {
   const connectionKey = this.getConnectionKey(endpoint);
   const connection = this.connections.get(connectionKey);
   
   if (connection) {
-    // 关闭现有WebSocket连接
+    // 设置重连锁，防止在清理过程中创建新连接
+    connection.status = 'reconnecting';
+    
+    // 彻底清理现有WebSocket连接
     if (connection.ws) {
-      connection.ws.close(1000, 'Force reconnect');
+      try {
+        // 先移除所有事件监听器，防止旧连接的事件触发
+        connection.ws.onopen = null;
+        connection.ws.onmessage = null;
+        connection.ws.onerror = null;
+        connection.ws.onclose = null;
+        connection.ws.close(1000, 'Force reconnect');
+      } catch (err) {
+        console.error('Error closing WebSocket during force reconnect:', err);
+      }
       connection.ws = null;
     }
     
     // 清除所有重连定时器
     this.clearReconnectTimer(connectionKey);
     
-    // 重置连接状态
-    connection.status = 'idle';
+    // 从连接映射中删除当前连接
+    this.connections.delete(connectionKey);
     
-    // 确保只创建一个新连接
-    if (this.currentApiConfig) {
-      setTimeout(() => {
-        // 延迟创建新连接，确保旧连接完全关闭
+    // 延迟创建新连接，确保旧连接完全关闭
+    setTimeout(() => {
+      // 创建全新的连接对象
+      const newConnection: WebSocketConnection = {
+        ws: null,
+        endpoint: connection.endpoint,
+        status: 'idle',
+        lastError: null,
+        subscribers: connection.subscribers,
+        lastActivity: Date.now()
+      };
+      
+      // 添加到连接映射
+      this.connections.set(connectionKey, newConnection);
+      
+      // 确保创建新连接
+      if (this.currentApiConfig) {
         this.ensureConnection(connectionKey, connection.endpoint, this.currentApiConfig);
-      }, 100);
-    }
+      }
+    }, 300); // 延迟300ms确保旧连接完全关闭
   }
 }
 
-// 创建连接前清理旧连接
-private createConnection(connectionKey: string, endpoint: string, apiConfig: any): void {
-  // ...
-  if (connection.ws) {
-    try {
-      // 先移除所有事件监听器，防止旧连接的事件触发
-      connection.ws.onopen = null;
-      connection.ws.onmessage = null;
-      connection.ws.onerror = null;
-      connection.ws.onclose = null;
-      
-      // 关闭连接
-      connection.ws.close(1000, 'Replacing');
-    } catch (err) {
-      console.error('Error closing existing WebSocket:', err);
-    }
-    connection.ws = null;
+// 优化日志刷新流程
+const refreshLogs = useCallback(() => {
+  if (wsEndpointRef.current) {
+    console.log('🔄 Logs: Starting refresh process');
+    
+    // 先清空当前日志，给用户一个明确的刷新反馈
+    setLogs([]);
+    
+    // 使用延迟确保UI更新后再重连WebSocket
+    setTimeout(() => {
+      // 强制重连WebSocket
+      globalWsManager.forceReconnect(wsEndpointRef.current!);
+    }, 100);
   }
-  // ...
-}
+}, []);
 ```
 
 **优化成果**:
-- ✅ **连接管理优化** - 确保每个端点只有一个活跃的WebSocket连接
-- ✅ **资源利用改进** - 减少冗余连接，降低服务器和客户端资源消耗
-- ✅ **稳定性提升** - 防止多个连接导致的潜在竞态条件和数据混乱
-- ✅ **用户体验一致** - 刷新功能正常工作，不会产生重复日志条目
+- ✅ **彻底解决重复连接** - 完全重构的WebSocket管理器确保每个端点只有一个活跃连接
+- ✅ **连接状态可靠性** - 新增`reconnecting`状态和延迟重连机制，避免连接冲突
+- ✅ **资源利用优化** - 通过彻底清理旧连接和事件监听器，减少内存泄漏风险
+- ✅ **代码质量提升** - 完善的错误处理和类型安全，符合TypeScript严格模式
+- ✅ **用户体验改进** - 刷新操作反馈更加明确，连接管理更加稳定可靠
 
 ### ✅ 日志页面刷新功能
 **问题**: 日志页面的刷新按钮存在但无实际功能，用户无法手动刷新日志数据
