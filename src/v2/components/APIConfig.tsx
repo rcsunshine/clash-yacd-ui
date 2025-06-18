@@ -23,40 +23,6 @@ export function APIConfig() {
     message: string;
   }>({ type: null, message: '' });
 
-  // 组件加载时检查V1和V2配置是否一致
-  useEffect(() => {
-    try {
-      const savedV1 = localStorage.getItem('app');
-      if (savedV1) {
-        const parsedV1 = JSON.parse(savedV1);
-        if (parsedV1.apiConfig && parsedV1.apiConfig.baseURL) {
-          // 检查V1和V2配置是否一致
-          if (parsedV1.apiConfig.baseURL !== currentConfig.baseURL) {
-            console.log('⚠️ 检测到API配置不一致，同步中...');
-            console.log('V1:', parsedV1.apiConfig.baseURL);
-            console.log('V2:', currentConfig.baseURL);
-            
-            // 更新V2配置为V1配置
-            const newConfigs = [...apiConfigs];
-            newConfigs[selectedIndex] = {
-              baseURL: parsedV1.apiConfig.baseURL,
-              secret: parsedV1.apiConfig.secret || '',
-            };
-            setApiConfigs(newConfigs);
-            setTempConfig(newConfigs[selectedIndex]);
-            
-            setConnectionStatus({
-              type: 'success',
-              message: '已自动同步API配置'
-            });
-          }
-        }
-      }
-    } catch (error) {
-      console.warn('检查API配置一致性失败:', error);
-    }
-  }, [apiConfigs, currentConfig, selectedIndex, setApiConfigs]);
-
   const handleTest = async () => {
     setIsConnecting(true);
     setConnectionStatus({ type: null, message: '' });

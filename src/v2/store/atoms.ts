@@ -6,7 +6,7 @@ import { getStoredTheme, type Theme } from '../utils/theme';
 // V2独立的API配置初始化
 function getInitialApiConfigs(): { configs: ClashAPIConfig[], selectedIndex: number } {
   try {
-    // 首先尝试从V2配置中获取
+    // 从V2配置中获取
     const savedV2 = localStorage.getItem('v2-api-config');
     if (savedV2) {
       const parsedV2 = JSON.parse(savedV2);
@@ -17,25 +17,8 @@ function getInitialApiConfigs(): { configs: ClashAPIConfig[], selectedIndex: num
         };
       }
     }
-    
-    // 如果V2配置不存在，尝试从V1配置中获取
-    const savedV1 = localStorage.getItem('app');
-    if (savedV1) {
-      const parsedV1 = JSON.parse(savedV1);
-      if (parsedV1.apiConfig && parsedV1.apiConfig.baseURL) {
-        console.log('📝 从V1配置同步API设置:', parsedV1.apiConfig.baseURL);
-        // 使用V1配置创建V2配置
-        return {
-          configs: [{
-            baseURL: parsedV1.apiConfig.baseURL,
-            secret: parsedV1.apiConfig.secret || '',
-          }],
-          selectedIndex: 0
-        };
-      }
-    }
   } catch (error) {
-    console.warn('Failed to load API config from localStorage:', error);
+    console.warn('Failed to load V2 API config from localStorage:', error);
   }
 
   // 默认配置

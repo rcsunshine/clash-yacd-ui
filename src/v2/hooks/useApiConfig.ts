@@ -69,26 +69,7 @@ export function useV2ApiConfig() {
       selectedIndex,
     };
     localStorage.setItem('v2-api-config', JSON.stringify(v2State));
-    
-    // 同步到V1配置
-    try {
-      const savedV1 = localStorage.getItem('app');
-      if (savedV1) {
-        const parsedV1 = JSON.parse(savedV1);
-        // 更新V1配置中的API设置
-        parsedV1.apiConfig = {
-          ...parsedV1.apiConfig,
-          baseURL: currentConfig.baseURL,
-          secret: currentConfig.secret,
-        };
-        // 保存回localStorage
-        localStorage.setItem('app', JSON.stringify(parsedV1));
-        console.log('📝 API配置已同步到V1:', currentConfig.baseURL);
-      }
-    } catch (error) {
-      console.warn('同步API配置到V1失败:', error);
-    }
-  }, [apiConfigs, selectedIndex, currentConfig]);
+  }, [apiConfigs, selectedIndex]);
   
   return {
     configs: apiConfigs,
