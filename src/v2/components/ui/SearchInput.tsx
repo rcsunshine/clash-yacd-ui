@@ -26,7 +26,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           type="text"
           placeholder={placeholder}
           className={cn(
-            'w-full pl-10 pr-4 py-3 border transition-all duration-200',
+            'w-full pl-10 pr-4 py-2 border transition-all duration-200',
             // 深色主题优化的边框和背景
             'border-gray-300 dark:border-gray-600/50',
             'bg-white dark:bg-gray-800/90 backdrop-blur-sm',
@@ -35,7 +35,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
             'text-gray-900 dark:text-gray-100',
             'placeholder:text-gray-500 dark:placeholder:text-gray-400',
             // 圆角和阴影
-            'rounded-xl shadow-sm',
+            'rounded-md shadow-sm h-10',
             'dark:shadow-gray-900/20',
             // 聚焦效果 - 更柔和，不刺眼
             'focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-400/30',

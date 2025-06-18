@@ -32,7 +32,7 @@ case 'time':
   break;
 // ...
 // 升序(asc)：短时长在前，降序(desc)：长时长在前
-return sortOrder === 'asc' ? -comparison : comparison;
+return sortOrder === 'asc' ? comparison : -comparison;
 ```
 
 **优化成果**:

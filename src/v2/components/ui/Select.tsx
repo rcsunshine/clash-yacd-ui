@@ -22,13 +22,13 @@ export const Select: React.FC<SelectProps> = ({
 }) => {
   const baseClasses = cn(
     // 基础样式
-    'relative w-full appearance-none rounded-lg transition-all duration-200',
+    'relative w-full appearance-none rounded-md transition-all duration-200',
     'bg-white dark:bg-gray-800',
-    'border-2 border-gray-300 dark:border-gray-600',
+    'border border-gray-300 dark:border-gray-600',
     'text-gray-900 dark:text-gray-100',
     'placeholder-gray-500 dark:placeholder-gray-400',
     // 确保文字垂直居中和可见性
-    'font-bold text-left cursor-pointer',
+    'font-medium text-left cursor-pointer',
     
     // 聚焦样式
     'focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-400/30',
@@ -45,11 +45,11 @@ export const Select: React.FC<SelectProps> = ({
     // 错误样式
     error && 'border-red-500 dark:border-red-400 focus:border-red-500 dark:focus:border-red-400 focus:ring-red-500/20 dark:focus:ring-red-400/20',
     
-    // 尺寸变体 - 增加高度确保文字完全显示
+    // 尺寸变体 - 调整高度确保与SearchInput对齐
     {
-      'px-3 py-2 pr-8 text-sm h-9 leading-5': size === 'sm',
-      'px-4 py-3 pr-10 text-base h-12 leading-6': size === 'md',
-      'px-5 py-4 pr-12 text-lg h-14 leading-7': size === 'lg',
+      'px-3 py-2 pr-8 text-sm h-10 leading-5': size === 'sm',
+      'px-3 py-2 pr-9 text-base h-10 leading-6': size === 'md',
+      'px-4 py-3 pr-10 text-lg h-12 leading-7': size === 'lg',
     },
     
     // 变体样式
@@ -92,16 +92,7 @@ export const Select: React.FC<SelectProps> = ({
             key={option.value}
             value={option.value}
             disabled={option.disabled}
-            className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 !py-3 !px-4 !font-bold !text-sm !min-h-[44px] !leading-6 hover:!bg-blue-50 dark:hover:!bg-blue-900/30"
-            style={{
-              backgroundColor: 'var(--tw-bg-opacity, 1) rgb(255 255 255)',
-              color: 'var(--tw-text-opacity, 1) rgb(17 24 39)',
-              padding: '12px 16px',
-              fontSize: '14px',
-              fontWeight: '700',
-              lineHeight: '1.5',
-              minHeight: '44px'
-            }}
+            className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 !py-2 !px-3 !font-medium !text-sm !min-h-[40px] !leading-5"
           >
             {option.label}
           </option>
@@ -111,7 +102,7 @@ export const Select: React.FC<SelectProps> = ({
       {/* 自定义下拉箭头 */}
       <div className={iconClasses}>
         <svg 
-          className="w-4 h-4" 
+          className="w-5 h-5" 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -119,7 +110,7 @@ export const Select: React.FC<SelectProps> = ({
           <path 
             strokeLinecap="round" 
             strokeLinejoin="round" 
-            strokeWidth={2.5} 
+            strokeWidth={2} 
             d="M19 9l-7 7-7-7" 
           />
         </svg>

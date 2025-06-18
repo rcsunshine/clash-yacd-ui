@@ -4,7 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { APIErrorAlert, ErrorAlert, NetworkErrorAlert } from '../components/ui/ErrorAlert';
 import { PageErrorBoundary } from '../components/ui/ErrorBoundary';
-import { KeyboardShortcutsTooltip, RulesSearchHelpTooltip } from '../components/ui/HelpTooltip';
+import { HelpTooltip, KeyboardShortcutsTooltip } from '../components/ui/HelpTooltip';
 import { SearchInput } from '../components/ui/SearchInput';
 import { Select } from '../components/ui/Select';
 import { FixedVirtualList } from '../components/ui/VirtualList';
@@ -55,26 +55,41 @@ const RulesContent: React.FC = () => {
   }, [error, handleError]);
 
   // 添加键盘快捷键
-  useKeyboardShortcut('f', () => {
-    searchInputRef.current?.focus();
-  });
-
-  useKeyboardShortcut('r', () => {
-    refetch();
-  });
-
-  useKeyboardShortcut('escape', () => {
-    if (searchQuery) {
-      resetFilters();
+  useKeyboardShortcut({
+    key: 'f',
+    callback: () => {
+      searchInputRef.current?.focus();
     }
   });
 
-  useKeyboardShortcut('1', () => {
-    setActiveTab('rules');
+  useKeyboardShortcut({
+    key: 'r',
+    callback: () => {
+      refetch();
+    }
   });
 
-  useKeyboardShortcut('2', () => {
-    setActiveTab('providers');
+  useKeyboardShortcut({
+    key: 'Escape',
+    callback: () => {
+      if (searchQuery) {
+        resetFilters();
+      }
+    }
+  });
+
+  useKeyboardShortcut({
+    key: '1',
+    callback: () => {
+      setActiveTab('rules');
+    }
+  });
+
+  useKeyboardShortcut({
+    key: '2',
+    callback: () => {
+      setActiveTab('providers');
+    }
   });
 
   // 加载状态
@@ -163,7 +178,7 @@ const RulesContent: React.FC = () => {
       </div>
 
       {/* 标签页切换 */}
-      <Card className="overflow-hidden border-0 shadow-lg">
+      <Card className="border-0 shadow-lg">
         <CardContent className="p-0">
           <div className="flex border-b border-gray-200 dark:border-gray-600/50">
             <button
@@ -199,42 +214,78 @@ const RulesContent: React.FC = () => {
       {activeTab === 'rules' && (
         <>
           {/* 搜索和过滤 */}
-          <Card className="overflow-hidden border-0 shadow-lg card-hover">
+          <Card className="border-0 shadow-lg card-hover">
             <CardContent className="p-4">
               <div className="flex flex-col md:flex-row gap-3">
                 <div className="flex-1 relative">
-                  <div className="flex items-center">
-                    <div className="flex-1 relative">
-                      <SearchInput
-                        ref={searchInputRef}
-                        placeholder="搜索规则内容或代理... (按F聚焦)"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                      {searchQuery && (
-                        <button
-                          onClick={resetFilters}
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                    <RulesSearchHelpTooltip />
+                  <SearchInput
+                    ref={searchInputRef}
+                    placeholder="搜索规则内容或代理... (按F聚焦)"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={resetFilters}
+                      className="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <HelpTooltip
+                      title="规则搜索语法"
+                      content={
+                        <div className="space-y-2">
+                          <div>
+                            <div className="font-medium mb-1">基本搜索:</div>
+                            <div className="pl-2">直接输入关键词搜索规则内容和代理</div>
+                          </div>
+                          
+                          <div>
+                            <div className="font-medium mb-1">高级语法:</div>
+                            <div className="pl-2 space-y-1">
+                              <div><code>type:DOMAIN</code> - 搜索特定类型</div>
+                              <div><code>proxy:DIRECT</code> - 搜索特定代理</div>
+                              <div><code>payload:"google.com"</code> - 精确匹配内容</div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="font-medium mb-1">组合搜索:</div>
+                            <div className="pl-2">
+                              <code>type:DOMAIN proxy:DIRECT google</code>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                      position="bottom"
+                      width={280}
+                    >
+                      <button type="button" className="flex items-center justify-center w-5 h-5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </button>
+                    </HelpTooltip>
                   </div>
                 </div>
-                <Select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value as RuleType)}
-                  options={[
-                    { value: 'all', label: '所有类型' },
-                    ...ruleTypes.map(type => ({ value: type, label: type }))
-                  ]}
-                  size="sm"
-                  className="min-w-[120px]"
-                />
+                
+                <div className="flex items-center space-x-2">
+                  
+                  <Select
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value as RuleType)}
+                    options={[
+                      { value: 'all', label: '所有类型' },
+                      ...ruleTypes.map(type => ({ value: type, label: type }))
+                    ]}
+                    size="sm"
+                    className="min-w-[120px]"
+                  />
+                </div>
               </div>
               
               {/* 搜索提示 */}
@@ -310,7 +361,7 @@ const RulesContent: React.FC = () => {
           </div>
 
           {/* 规则列表 */}
-          <Card className="overflow-hidden border-0 shadow-lg">
+          <Card className="border-0 shadow-lg">
             <CardContent className="p-4">
               {rules.length === 0 ? (
                 <div className="text-center py-12">
@@ -341,20 +392,22 @@ const RulesContent: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 border-b border-gray-200 dark:border-gray-600/50">
+                  <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 mb-2 border-b border-gray-200 dark:border-gray-600/50">
                     <span>显示 {rules.length} / {totalRules} 条规则</span>
                     <span>按优先级排序</span>
                   </div>
-                  <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
+                  <div className="space-y-2 max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar pb-32">
                     <FixedVirtualList<Rule>
                       items={rules}
-                      height={384}
-                      itemHeight={60}
+                      height={500}
+                      itemHeight={70}
+                      overscan={30}
+                      containerClassName="pb-32"
                       renderItem={(rule: Rule, index: number) => (
-                        <div 
-                          key={index}
-                          className="border border-gray-200 dark:border-gray-600/50 rounded-lg p-3 m-2 hover:bg-white dark:hover:bg-gray-800/50 transition-colors"
-                        >
+                                                  <div 
+                            key={index}
+                            className="border border-gray-200 dark:border-gray-600/50 rounded-lg p-3 m-2 mb-6 hover:bg-white dark:hover:bg-gray-800/50 transition-colors"
+                          >
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center space-x-2 mb-1">

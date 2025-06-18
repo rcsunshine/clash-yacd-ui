@@ -173,7 +173,7 @@ export function FixedVirtualList<T>(props: VirtualListProps<T>) {
     >
       <div
         className={cn('relative', className)}
-        style={{ height: totalHeight }}
+        style={{ height: totalHeight + 150 }} // 添加更多底部空间
       >
         <div
           className="absolute left-0 right-0"

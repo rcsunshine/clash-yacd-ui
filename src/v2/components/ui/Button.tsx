@@ -20,9 +20,9 @@ const buttonVariants = {
 };
 
 const buttonSizes = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-6 py-3 text-base',
+  sm: 'px-3 py-2 text-sm h-10',
+  md: 'px-3 py-2 text-sm h-10',
+  lg: 'px-4 py-2.5 text-base h-12',
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(

@@ -773,7 +773,9 @@ export function useConnections() {
   const [connections, setConnections] = useState<{ connections: ConnectionItem[] }>({ connections: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
   const mountedRef = useRef(true);
+  const lastConnectionsRef = useRef<{ connections: ConnectionItem[] }>({ connections: [] });
 
   useEffect(() => {
     mountedRef.current = true;
@@ -792,10 +794,17 @@ export function useConnections() {
       return;
     }
 
+    // 如果暂停刷新，不进行WebSocket连接
+    if (isPaused) {
+      console.log('⏸️ Connections: Updates paused');
+      return () => {};
+    }
+
     // 创建订阅者函数
     const subscriber = (data: any) => {
-      if (mountedRef.current) {
+      if (mountedRef.current && !isPaused) {
         setConnections(data);
+        lastConnectionsRef.current = data;
         setIsLoading(false);
         setError(null);
       }
@@ -824,13 +833,24 @@ export function useConnections() {
       mountedRef.current = false;
       cleanup();
     };
-  }, [apiConfig]);
+  }, [apiConfig, isPaused]);
+
+  // 暂停/恢复刷新
+  const togglePause = useCallback(() => {
+    setIsPaused(prev => !prev);
+  }, []);
 
   return {
-    data: connections,
-    isLoading,
+    data: isPaused ? lastConnectionsRef.current : connections,
+    isLoading: !isPaused && isLoading,
     error,
+    isPaused,
+    togglePause,
     refetch: () => {
+      if (isPaused) {
+        // 如果暂停状态，恢复刷新
+        setIsPaused(false);
+      }
       // 重新连接WebSocket - 使用全局管理器
       globalWsManager.forceReconnect('/connections');
     }

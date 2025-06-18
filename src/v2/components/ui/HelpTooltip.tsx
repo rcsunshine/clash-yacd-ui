@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { cn } from '../../utils/cn';
 
-interface HelpTooltipProps {
+export interface HelpTooltipProps {
   /**
    * 提示内容
    */
@@ -10,24 +10,13 @@ interface HelpTooltipProps {
   /**
    * 提示标题
    */
-  title?: string;
+  title?: React.ReactNode;
   
   /**
-   * 触发元素
-   */
-  children: React.ReactNode;
-  
-  /**
-   * 位置
+   * 提示位置
    * @default 'bottom'
    */
   position?: 'top' | 'right' | 'bottom' | 'left';
-  
-  /**
-   * 宽度
-   * @default 'auto'
-   */
-  width?: string | number;
   
   /**
    * 触发方式
@@ -36,44 +25,108 @@ interface HelpTooltipProps {
   trigger?: 'hover' | 'click';
   
   /**
+   * 子元素
+   */
+  children: React.ReactNode;
+  
+  /**
    * 额外的类名
    */
   className?: string;
   
   /**
-   * 提示内容的类名
+   * 提示框额外的类名
    */
-  contentClassName?: string;
+  tooltipClassName?: string;
+  
+  /**
+   * 是否显示图标
+   * @default true
+   */
+  showIcon?: boolean;
+  
+  /**
+   * 图标
+   */
+  icon?: React.ReactNode;
+  
+  /**
+   * 图标额外的类名
+   */
+  iconClassName?: string;
+  
+  /**
+   * 是否禁用
+   * @default false
+   */
+  disabled?: boolean;
+  
+  /**
+   * 提示框宽度
+   */
+  width?: number;
 }
 
 export const HelpTooltip: React.FC<HelpTooltipProps> = ({
   content,
   title,
-  children,
   position = 'bottom',
-  width = 'auto',
   trigger = 'hover',
+  children,
   className,
-  contentClassName,
+  tooltipClassName,
+  showIcon = true,
+  icon,
+  iconClassName,
+  disabled = false,
+  width,
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   
-  const showTooltip = () => {
-    if (trigger === 'hover') return;
-    setIsVisible(true);
+  const handleClick = () => {
+    if (disabled) return;
+    if (trigger === 'click') {
+      setIsOpen(!isOpen);
+    }
   };
   
-  const hideTooltip = () => {
-    if (trigger === 'hover') return;
-    setIsVisible(false);
+  const handleMouseEnter = () => {
+    if (disabled) return;
+    if (trigger === 'hover') {
+      setIsOpen(true);
+    }
   };
   
-  const toggleTooltip = () => {
-    if (trigger === 'hover') return;
-    setIsVisible(!isVisible);
+  const handleMouseLeave = () => {
+    if (disabled) return;
+    if (trigger === 'hover') {
+      setIsOpen(false);
+    }
   };
   
-  // 位置样式
+  const handleClickOutside = (event: MouseEvent) => {
+    if (disabled) return;
+    if (trigger === 'click' && isOpen) {
+      const target = event.target as Node;
+      if (tooltipRef.current && !tooltipRef.current.contains(target)) {
+        setIsOpen(false);
+      }
+    }
+  };
+  
+  const tooltipRef = React.useRef<HTMLDivElement>(null);
+  
+  React.useEffect(() => {
+    if (trigger === 'click') {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+    return undefined;
+  }, [trigger, isOpen]);
+  
+  // 提示位置样式
   const positionClasses = {
     top: 'bottom-full left-1/2 transform -translate-x-1/2 -translate-y-2 mb-2',
     right: 'left-full top-1/2 transform -translate-y-1/2 translate-x-2 ml-2',
@@ -81,50 +134,61 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
     left: 'right-full top-1/2 transform -translate-y-1/2 -translate-x-2 mr-2',
   };
   
-  // 箭头位置
+  // 箭头位置样式
   const arrowClasses = {
-    top: 'top-full left-1/2 transform -translate-x-1/2 border-t-gray-800 dark:border-t-gray-700 border-l-transparent border-r-transparent border-b-transparent',
-    right: 'right-full top-1/2 transform -translate-y-1/2 border-r-gray-800 dark:border-r-gray-700 border-t-transparent border-b-transparent border-l-transparent',
-    bottom: 'bottom-full left-1/2 transform -translate-x-1/2 border-b-gray-800 dark:border-b-gray-700 border-l-transparent border-r-transparent border-t-transparent',
-    left: 'left-full top-1/2 transform -translate-y-1/2 border-l-gray-800 dark:border-l-gray-700 border-t-transparent border-b-transparent border-r-transparent',
+    top: 'bottom-[-5px] left-1/2 transform -translate-x-1/2 border-t-gray-800 dark:border-t-gray-700 border-r-transparent border-b-transparent border-l-transparent',
+    right: 'left-[-5px] top-1/2 transform -translate-y-1/2 border-t-transparent border-r-gray-800 dark:border-r-gray-700 border-b-transparent border-l-transparent',
+    bottom: 'top-[-5px] left-1/2 transform -translate-x-1/2 border-t-transparent border-r-transparent border-b-gray-800 dark:border-b-gray-700 border-l-transparent',
+    left: 'right-[-5px] top-1/2 transform -translate-y-1/2 border-t-transparent border-r-transparent border-b-transparent border-l-gray-800 dark:border-l-gray-700',
   };
   
+  const defaultIcon = (
+    <svg className={cn("w-4 h-4", iconClassName)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+  
   return (
-    <div 
-      className={cn('relative inline-block', className)}
-      onMouseEnter={trigger === 'hover' ? () => setIsVisible(true) : undefined}
-      onMouseLeave={trigger === 'hover' ? () => setIsVisible(false) : undefined}
-      onClick={trigger === 'click' ? toggleTooltip : undefined}
+    <div
+      className={cn(
+        "relative inline-flex items-center",
+        disabled && "opacity-50 cursor-not-allowed",
+        className
+      )}
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      ref={tooltipRef}
     >
-      {/* 触发元素 */}
-      {children}
+      {children ? (
+        <>{children}</>
+      ) : showIcon && (
+        <span className="text-gray-500 dark:text-gray-400 cursor-help">
+          {icon || defaultIcon}
+        </span>
+      )}
       
-      {/* 提示内容 */}
-      {isVisible && (
-        <div 
+      {isOpen && (
+        <div
           className={cn(
-            'absolute z-50 p-3 text-sm text-white bg-gray-800 dark:bg-gray-700 rounded-md shadow-lg',
+            "absolute z-[100] p-3 text-sm text-white bg-gray-800 dark:bg-gray-700 rounded shadow-lg",
             positionClasses[position],
-            contentClassName
+            tooltipClassName
           )}
-          style={{ width }}
-          onClick={(e) => e.stopPropagation()}
+          style={{ width: width ? `${width}px` : '16rem' }}
         >
-          {/* 箭头 */}
-          <div 
-            className={cn(
-              'absolute w-0 h-0 border-solid border-4',
-              arrowClasses[position]
-            )}
-          />
-          
-          {/* 内容 */}
           {title && (
             <div className="font-medium mb-1 pb-1 border-b border-gray-700 dark:border-gray-600">
               {title}
             </div>
           )}
-          <div className="text-xs">{content}</div>
+          <div className="text-xs text-white dark:text-gray-100">{content}</div>
+          <div
+            className={cn(
+              "absolute w-0 h-0 border-4",
+              arrowClasses[position]
+            )}
+          />
         </div>
       )}
     </div>
@@ -164,8 +228,10 @@ export const RulesSearchHelpTooltip: React.FC = () => {
       }
       position="bottom"
       width={280}
+      showIcon={false}
+      tooltipClassName="bg-gray-800 dark:bg-gray-700 z-50"
     >
-      <button className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+      <button className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none">
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
