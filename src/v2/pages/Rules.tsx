@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useRef,useState } from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
@@ -275,7 +275,7 @@ const RulesContent: React.FC = () => {
                             <div className="pl-2 space-y-1">
                               <div><code>type:DOMAIN</code> - 搜索特定类型</div>
                               <div><code>proxy:DIRECT</code> - 搜索特定代理</div>
-                              <div><code>payload:"google.com"</code> - 精确匹配内容</div>
+                              <div><code>payload:&quot;google.com&quot;</code> - 精确匹配内容</div>
                             </div>
                           </div>
                           

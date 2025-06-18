@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai';
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent,CardHeader } from '../components/ui/Card';
@@ -314,6 +314,9 @@ const TrafficChart: React.FC = React.memo(() => {
     </Card>
   );
 });
+
+// 添加displayName属性
+TrafficChart.displayName = 'TrafficChart';
 
 const SystemInfoCard: React.FC<{ connectionsData?: any; connectionsLoading?: boolean; connectionsError?: any }> = ({ 
   connectionsData, 

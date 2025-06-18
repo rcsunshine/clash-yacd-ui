@@ -199,7 +199,7 @@ export function useConnectionsSearch(
 ): UseConnectionsSearchResult {
   const {
     enableAdvancedSyntax = true,
-    defaultSearchFields = ['host', 'destinationIP', 'chains'],
+    defaultSearchFields: _defaultSearchFields = ['host', 'destinationIP', 'chains'],
     caseInsensitive = true,
   } = options;
   
@@ -229,7 +229,7 @@ export function useConnectionsSearch(
     if (!connections.length) return [];
     
     // 第一步：应用过滤器
-    let filtered = connections.filter(conn => {
+    const filtered = connections.filter(conn => {
       // 网络类型过滤
       if (networkFilter !== 'all' && conn.metadata.network !== networkFilter) {
         return false;
@@ -343,7 +343,7 @@ export function useConnectionsSearch(
     });
     
     // 第二步：应用排序
-    filtered.sort((a, b) => {
+    const sorted = filtered.sort((a, b) => {
       let comparison = 0;
       
       switch (sortKey) {
@@ -384,8 +384,8 @@ export function useConnectionsSearch(
       return sortOrder === 'asc' ? comparison : -comparison;
     });
     
-    return filtered;
-  }, [connections, searchQuery, networkFilter, sortKey, sortOrder, enableAdvancedSyntax, caseInsensitive]);
+    return sorted;
+  }, [connections, searchQuery, networkFilter, statusFilter, sortKey, sortOrder, enableAdvancedSyntax, caseInsensitive]);
   
   // 添加连接状态计数
   const closedConnectionsCount = useMemo(() => {

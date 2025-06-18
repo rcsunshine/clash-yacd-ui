@@ -69,6 +69,36 @@ export const Connections: React.FC = () => {
     { enableAdvancedSyntax: true }
   );
   
+  // 处理单个连接关闭
+  const handleCloseConnection = async (connectionId: string) => {
+    try {
+      await closeConnection.mutateAsync(connectionId);
+    } catch (error) {
+      console.error('关闭连接失败:', error);
+    }
+  };
+  
+  // 处理批量连接关闭
+  const handleCloseAllConnections = async () => {
+    try {
+      await closeAllConnections.mutateAsync();
+    } catch (error) {
+      console.error('关闭所有连接失败:', error);
+    }
+  };
+  
+  // 处理关闭选中的连接
+  const handleCloseSelectedConnections = async () => {
+    try {
+      const promises = Array.from(selectedConnections).map(id => 
+        closeConnection.mutateAsync(id)
+      );
+      await Promise.all(promises);
+    } catch (error) {
+      console.error('关闭选中连接失败:', error);
+    }
+  };
+  
   // 键盘快捷键
   useKeyboardShortcut([
     {
@@ -113,36 +143,6 @@ export const Connections: React.FC = () => {
       description: '关闭选中的连接'
     }
   ]);
-  
-  // 处理单个连接关闭
-  const handleCloseConnection = async (connectionId: string) => {
-    try {
-      await closeConnection.mutateAsync(connectionId);
-    } catch (error) {
-      console.error('关闭连接失败:', error);
-    }
-  };
-  
-  // 处理批量连接关闭
-  const handleCloseAllConnections = async () => {
-    try {
-      await closeAllConnections.mutateAsync();
-    } catch (error) {
-      console.error('关闭所有连接失败:', error);
-    }
-  };
-  
-  // 处理关闭选中的连接
-  const handleCloseSelectedConnections = async () => {
-    try {
-      const promises = Array.from(selectedConnections).map(id => 
-        closeConnection.mutateAsync(id)
-      );
-      await Promise.all(promises);
-    } catch (error) {
-      console.error('关闭选中连接失败:', error);
-    }
-  };
   
   // 处理查看连接详情
   const handleViewConnectionDetail = (connectionId: string) => {

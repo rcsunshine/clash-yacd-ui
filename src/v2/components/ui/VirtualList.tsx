@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+
 import { cn } from '../../utils/cn';
 
 interface VirtualListProps<T> {
@@ -100,20 +101,20 @@ export function FixedVirtualList<T>(props: VirtualListProps<T>) {
     smoothScroll = true,
     scrollToIndex,
     scrollBehavior = 'auto',
-    scrollPosition = 'start',
+    scrollPosition: _scrollPositionProp = 'start',
     onScroll,
     disableVirtualization = false,
     emptyComponent,
   } = props;
   
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollTop, setScrollTop] = useState(0);
+  const [_scrollPosition, setScrollTop] = useState(0);
   const totalHeight = items.length * itemHeight;
   
   // 计算可见项的范围
   const startIndex = disableVirtualization 
     ? 0 
-    : Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+    : Math.max(0, Math.floor(_scrollPosition / itemHeight) - overscan);
     
   const visibleCount = disableVirtualization 
     ? items.length 
@@ -142,9 +143,9 @@ export function FixedVirtualList<T>(props: VirtualListProps<T>) {
     const targetPosition = itemHeight * scrollToIndex;
     let scrollPosition = targetPosition;
     
-    if (props.scrollPosition === 'center') {
+    if (_scrollPositionProp === 'center') {
       scrollPosition = targetPosition - (height / 2) + (itemHeight / 2);
-    } else if (props.scrollPosition === 'end') {
+    } else if (_scrollPositionProp === 'end') {
       scrollPosition = targetPosition - height + itemHeight;
     }
     
@@ -152,7 +153,7 @@ export function FixedVirtualList<T>(props: VirtualListProps<T>) {
       top: Math.max(0, scrollPosition),
       behavior: scrollBehavior,
     });
-  }, [scrollToIndex, height, itemHeight, scrollBehavior, props.scrollPosition]);
+  }, [scrollToIndex, height, itemHeight, scrollBehavior, _scrollPositionProp]);
   
   // 如果列表为空，显示空状态
   if (items.length === 0 && emptyComponent) {
