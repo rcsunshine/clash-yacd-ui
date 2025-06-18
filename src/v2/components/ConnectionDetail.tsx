@@ -1,7 +1,8 @@
 import React from 'react';
+
 import { Connection } from '../hooks/useConnectionsSearch';
-import { Card, CardContent } from './ui/Card';
 import { cn } from '../utils/cn';
+import { Card, CardContent } from './ui/Card';
 
 interface ConnectionDetailProps {
   connection: Connection | null;
