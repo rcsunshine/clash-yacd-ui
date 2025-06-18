@@ -2,6 +2,125 @@
 
 ## 🎯 最新重大更新 (2024-06-19)
 
+### ✅ 修复API配置同步问题
+**问题**: V1和V2架构使用的API配置不同步，导致界面显示的API地址与实际使用的不一致
+
+**解决方案**: 
+- **🔄 双向同步机制** - 实现V1和V2配置的自动双向同步
+- **🛠️ 配置初始化优化** - V2启动时优先从V1配置获取API设置
+- **📊 配置变更传播** - 在V2中修改配置时自动同步到V1
+- **🎨 自动修复不一致** - 检测到配置不一致时自动修复并提示用户
+
+**技术实现**:
+```typescript
+// 1. 优化API配置初始化 - 从V1配置同步
+function getInitialApiConfigs(): { configs: ClashAPIConfig[], selectedIndex: number } {
+  try {
+    // 首先尝试从V2配置中获取
+    const savedV2 = localStorage.getItem('v2-api-config');
+    if (savedV2) {
+      const parsedV2 = JSON.parse(savedV2);
+      if (parsedV2.apiConfigs && Array.isArray(parsedV2.apiConfigs) && parsedV2.apiConfigs.length > 0) {
+        return {
+          configs: parsedV2.apiConfigs,
+          selectedIndex: parsedV2.selectedIndex || 0
+        };
+      }
+    }
+    
+    // 如果V2配置不存在，尝试从V1配置中获取
+    const savedV1 = localStorage.getItem('app');
+    if (savedV1) {
+      const parsedV1 = JSON.parse(savedV1);
+      if (parsedV1.apiConfig && parsedV1.apiConfig.baseURL) {
+        console.log('📝 从V1配置同步API设置:', parsedV1.apiConfig.baseURL);
+        // 使用V1配置创建V2配置
+        return {
+          configs: [{
+            baseURL: parsedV1.apiConfig.baseURL,
+            secret: parsedV1.apiConfig.secret || '',
+          }],
+          selectedIndex: 0
+        };
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to load API config from localStorage:', error);
+  }
+  
+  // 默认配置
+  return {
+    configs: [{
+      baseURL: 'http://127.0.0.1:9090',
+      secret: '',
+    }],
+    selectedIndex: 0
+  };
+}
+
+// 2. V2配置变更时同步到V1
+useEffect(() => {
+  // 保存V2配置到localStorage
+  const v2State = {
+    apiConfigs,
+    selectedIndex,
+  };
+  localStorage.setItem('v2-api-config', JSON.stringify(v2State));
+  
+  // 同步到V1配置
+  try {
+    const savedV1 = localStorage.getItem('app');
+    if (savedV1) {
+      const parsedV1 = JSON.parse(savedV1);
+      // 更新V1配置中的API设置
+      parsedV1.apiConfig = {
+        ...parsedV1.apiConfig,
+        baseURL: currentConfig.baseURL,
+        secret: currentConfig.secret,
+      };
+      // 保存回localStorage
+      localStorage.setItem('app', JSON.stringify(parsedV1));
+      console.log('📝 API配置已同步到V1:', currentConfig.baseURL);
+    }
+  } catch (error) {
+    console.warn('同步API配置到V1失败:', error);
+  }
+}, [apiConfigs, selectedIndex, currentConfig]);
+
+// 3. 组件加载时检查配置一致性
+useEffect(() => {
+  try {
+    const savedV1 = localStorage.getItem('app');
+    if (savedV1) {
+      const parsedV1 = JSON.parse(savedV1);
+      if (parsedV1.apiConfig && parsedV1.apiConfig.baseURL) {
+        // 检查V1和V2配置是否一致
+        if (parsedV1.apiConfig.baseURL !== currentConfig.baseURL) {
+          console.log('⚠️ 检测到API配置不一致，同步中...');
+          console.log('V1:', parsedV1.apiConfig.baseURL);
+          console.log('V2:', currentConfig.baseURL);
+          
+          // 更新V2配置为V1配置
+          const newConfigs = [...apiConfigs];
+          newConfigs[selectedIndex] = {
+            baseURL: parsedV1.apiConfig.baseURL,
+            secret: parsedV1.apiConfig.secret || '',
+          };
+          setApiConfigs(newConfigs);
+          setTempConfig(newConfigs[selectedIndex]);
+          
+          setConnectionStatus({
+            type: 'success',
+            message: '已自动同步API配置'
+          });
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('检查API配置一致性失败:', error);
+  }
+}, [apiConfigs, currentConfig, selectedIndex, setApiConfigs]);
+
 ### ✅ 修复代码质量和类型安全问题
 **问题**: 代码中存在一些lint错误和类型安全问题，影响代码质量和组件可访问性
 
