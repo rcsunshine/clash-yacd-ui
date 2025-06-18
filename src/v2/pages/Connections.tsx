@@ -300,19 +300,7 @@ export const Connections: React.FC = () => {
                 </div>
               )}
               
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                <h4 className="font-medium mb-2">调试信息：</h4>
-                <pre className="text-xs text-theme-secondary overflow-auto">
-                  {JSON.stringify({
-                    apiConfig: apiConfig ? { baseURL: apiConfig.baseURL, hasSecret: !!apiConfig.secret } : null,
-                    isLoading,
-                    hasData: !!connectionsData,
-                    connectionsCount: connectionsData?.connections?.length,
-                    isPaused,
-                    loadingTimeout
-                  }, null, 2)}
-                </pre>
-              </div>
+
               
               <div className="flex space-x-2">
                 <Button onClick={() => refetch()}>重试</Button>
@@ -342,17 +330,7 @@ export const Connections: React.FC = () => {
   
   return (
     <div className="space-y-4 p-6">
-      {/* 调试信息条 - 开发环境显示 */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-          <div className="text-xs text-yellow-800 dark:text-yellow-200">
-            <strong>调试模式:</strong> API={apiConfig?.baseURL || 'N/A'} | 
-            加载中={isLoading ? '是' : '否'} | 
-            数据={connectionsData ? `${totalConnections}个连接` : '无'} | 
-            错误={error ? '有' : '无'}
-          </div>
-        </div>
-      )}
+
       
       {/* 统一的页面头部样式 */}
       <div className="flex items-center justify-between py-6 px-6 bg-gradient-to-r from-slate-500/10 to-stone-500/10 dark:from-slate-500/20 dark:to-stone-500/20 rounded-lg border border-slate-300/50 dark:border-slate-600/50">
