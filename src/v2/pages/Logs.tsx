@@ -16,10 +16,11 @@ interface LogEntry {
 }
 
 export const Logs: React.FC = () => {
-  const { logs: rawLogs, isConnected, clearLogs: clearApiLogs } = useLogs();
+  const { logs: rawLogs, isConnected, clearLogs: clearApiLogs, refreshLogs } = useLogs();
   const [filter, setFilter] = useState<LogLevel | 'all'>('all');
   const [autoScroll, setAutoScroll] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // 转换API日志格式为组件需要的格式
   const logs: LogEntry[] = rawLogs.map((log, index) => ({
@@ -87,6 +88,17 @@ export const Logs: React.FC = () => {
 
   const clearLogs = () => {
     clearApiLogs();
+  };
+
+  // 处理刷新按钮点击
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    refreshLogs();
+    
+    // 1秒后重置刷新状态，给用户一个明显的反馈
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 1000);
   };
 
   // 导出日志为JSON格式
@@ -172,11 +184,17 @@ export const Logs: React.FC = () => {
             </svg>
             清空
           </Button>
-          <Button variant="outline" size="sm" className="text-sm">
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <svg className={`w-4 h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            刷新
+            {isRefreshing ? '刷新中...' : '刷新'}
           </Button>
         </div>
       </div>

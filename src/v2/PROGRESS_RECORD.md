@@ -2,6 +2,49 @@
 
 ## 🎯 最新重大更新 (2024-06-19)
 
+### ✅ 日志页面刷新功能
+**问题**: 日志页面的刷新按钮存在但无实际功能，用户无法手动刷新日志数据
+
+**解决方案**: 
+- **🔄 添加WebSocket重连机制** - 实现`refreshLogs`方法强制重新连接WebSocket
+- **🛠️ 优化日志Hook** - 在useLogs中保存endpoint引用，支持手动刷新
+- **📊 添加UI反馈** - 实现刷新按钮加载状态和动画效果
+- **🎨 改善用户体验** - 刷新时清空旧日志，提供明确的视觉反馈
+
+**技术实现**:
+```typescript
+// Hook实现
+const refreshLogs = useCallback(() => {
+  if (wsEndpointRef.current) {
+    // 使用全局WebSocket管理器强制重连
+    const globalWsManager = GlobalWebSocketManager.getInstance();
+    globalWsManager.forceReconnect(wsEndpointRef.current);
+    
+    // 清空当前日志，给用户一个明确的刷新反馈
+    setLogs([]);
+  }
+}, []);
+
+// UI实现
+<Button 
+  variant="outline" 
+  size="sm"
+  onClick={handleRefresh}
+  disabled={isRefreshing}
+>
+  <svg className={`w-4 h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`}>
+    {/* 刷新图标 */}
+  </svg>
+  {isRefreshing ? '刷新中...' : '刷新'}
+</Button>
+```
+
+**优化成果**:
+- ✅ **功能完善** - 用户可以手动刷新日志，确保显示最新数据
+- ✅ **交互友好** - 按钮状态、加载动画和文本变化提供清晰反馈
+- ✅ **技术优化** - 使用WebSocket重连而非重新加载页面，更高效
+- ✅ **用户体验** - 刷新时清空旧日志，避免混淆新旧数据
+
 ### ✅ 规则提供者更新功能
 **问题**: 规则提供者(Rule Provider)虽然显示在界面上，但缺乏更新按钮功能，无法手动刷新规则
 

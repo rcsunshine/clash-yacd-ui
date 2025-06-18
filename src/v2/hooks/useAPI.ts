@@ -1040,6 +1040,7 @@ export function useLogs() {
   const [isConnected, setIsConnected] = useState(false);
   const mountedRef = useRef(true);
   const maxLogs = 500;
+  const wsEndpointRef = useRef<string | null>(null);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -1065,6 +1066,13 @@ export function useLogs() {
       return;
     }
 
+    // 构建带日志级别的参数
+    const extraParams = `level=${clashConfig['log-level']}`;
+    const endpoint = `/logs?${extraParams}`;
+    
+    // 保存当前的endpoint以便刷新时使用
+    wsEndpointRef.current = endpoint;
+
     // 创建订阅者函数
     const subscriber = (data: any) => {
       if (mountedRef.current) {
@@ -1075,13 +1083,10 @@ export function useLogs() {
       }
     };
 
-    // 构建带日志级别的参数
-    const extraParams = `level=${clashConfig['log-level']}`;
-
     // 使用全局管理器
     const cleanup = manageWebSocket(
       logsManager,
-      `/logs?${extraParams}`,
+      endpoint,
       apiConfig,
       subscriber,
       () => {
@@ -1106,10 +1111,25 @@ export function useLogs() {
     setLogs([]);
   }, []);
 
+  // 刷新日志 - 通过重新连接WebSocket实现
+  const refreshLogs = useCallback(() => {
+    if (wsEndpointRef.current) {
+      // 使用全局WebSocket管理器强制重连
+      const globalWsManager = GlobalWebSocketManager.getInstance();
+      globalWsManager.forceReconnect(wsEndpointRef.current);
+      
+      // 清空当前日志，给用户一个明确的刷新反馈
+      setLogs([]);
+      
+      console.log('🔄 Logs: WebSocket connection refreshed');
+    }
+  }, []);
+
   return {
     logs,
     isConnected,
     clearLogs,
+    refreshLogs
   };
 }
 
