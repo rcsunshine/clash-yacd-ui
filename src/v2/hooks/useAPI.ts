@@ -193,7 +193,18 @@ class GlobalWebSocketManager {
     try {
       // 关闭现有连接
       if (connection.ws) {
-        connection.ws.close(1000, 'Replacing');
+        try {
+          // 先移除所有事件监听器，防止旧连接的事件触发
+          connection.ws.onopen = null;
+          connection.ws.onmessage = null;
+          connection.ws.onerror = null;
+          connection.ws.onclose = null;
+          
+          // 关闭连接
+          connection.ws.close(1000, 'Replacing');
+        } catch (err) {
+          console.error('Error closing existing WebSocket:', err);
+        }
         connection.ws = null;
       }
 
@@ -319,11 +330,27 @@ class GlobalWebSocketManager {
     
     if (connection) {
       console.log(`🔄 Force reconnecting: ${connectionKey}`);
+      
+      // 关闭现有WebSocket连接
       if (connection.ws) {
         connection.ws.close(1000, 'Force reconnect');
+        connection.ws = null;
       }
+      
+      // 清除所有重连定时器
+      this.clearReconnectTimer(connectionKey);
+      
+      // 重置连接状态
       connection.status = 'idle';
-      this.ensureConnection(connectionKey, connection.endpoint, this.currentApiConfig);
+      connection.lastError = null;
+      
+      // 确保只创建一个新连接
+      if (this.currentApiConfig) {
+        setTimeout(() => {
+          // 延迟创建新连接，确保旧连接完全关闭
+          this.ensureConnection(connectionKey, connection.endpoint, this.currentApiConfig);
+        }, 100);
+      }
     }
   }
 
@@ -1128,10 +1155,12 @@ export function useLogs() {
     if (wsEndpointRef.current) {
       // 使用全局WebSocket管理器强制重连
       const globalWsManager = GlobalWebSocketManager.getInstance();
-      globalWsManager.forceReconnect(wsEndpointRef.current);
       
-      // 清空当前日志，给用户一个明确的刷新反馈
+      // 先清空当前日志，给用户一个明确的刷新反馈
       setLogs([]);
+      
+      // 强制重连WebSocket
+      globalWsManager.forceReconnect(wsEndpointRef.current);
       
       console.log('🔄 Logs: WebSocket connection refreshed');
     }
