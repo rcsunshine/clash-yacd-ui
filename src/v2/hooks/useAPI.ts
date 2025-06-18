@@ -951,14 +951,16 @@ export function useConnectionStats(connectionsData?: { connections: ConnectionIt
 export function useTraffic() {
   const apiConfig = useApiConfig();
   const maxDataPoints = 150;
-  // 初始化为40个全部为0的数据点，方便首次渲染
+  // 初始化为maxDataPoints个全部为0的数据点，方便首次渲染
+  // 这样可以避免首次渲染时的空白状态，并提供更好的用户体验
+  // 注意：这里使用maxDataPoints而不是固定值，确保与数据上限保持一致
   const [trafficData, setTrafficData] = useState<TrafficData[]>(() => {
-    // 创建一个包含40个空数据点的数组，时间戳递减
+    // 创建一个包含maxDataPoints个空数据点的数组，时间戳递减
     const now = Date.now();
     return Array.from({ length: maxDataPoints }, (_, i) => ({
       up: 0,
       down: 0,
-      timestamp: now - (39 - i) * 1000, // 递增时间戳，模拟每秒一个数据点
+      timestamp: now - (maxDataPoints - 1 - i) * 1000, // 递增时间戳，模拟每秒一个数据点
     }));
   });
   const [isConnected, setIsConnected] = useState(false);
@@ -983,8 +985,8 @@ export function useTraffic() {
     const subscriber = (data: any) => {
       if (mountedRef.current) {
         const trafficPoint: TrafficData = {
-          up: data.up || 0,
-          down: data.down || 0,
+          up: Math.max(0, data.up || 0),    // 确保非负数
+          down: Math.max(0, data.down || 0), // 确保非负数
           timestamp: Date.now(),
         };
         setTrafficData(prev => {

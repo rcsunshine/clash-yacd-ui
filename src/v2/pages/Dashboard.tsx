@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent,CardHeader } from '../components/ui/Card';
@@ -9,8 +9,22 @@ import { useClashConfig, useConnections, useConnectionStats,useSystemInfo, useTr
 import { useAppState } from '../store';
 import { v2CurrentPageAtom } from '../store/atoms';
 
-const TrafficChart: React.FC = () => {
+// 使用React.memo优化性能
+const TrafficChart: React.FC = React.memo(() => {
   const { data: trafficData, isConnected } = useTraffic();
+  
+  // 性能监控 - 开发环境
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      const renderTime = performance.now();
+      return () => {
+        const duration = performance.now() - renderTime;
+        if (duration > 5) { // 仅记录耗时超过5ms的渲染
+          console.log(`🔍 TrafficChart render: ${duration.toFixed(2)}ms (${trafficData.length} points)`);
+        }
+      };
+    }
+  });
   
   // 防抖优化：避免频繁重新计算刻度
   const [debouncedTrafficData, setDebouncedTrafficData] = React.useState(trafficData);
@@ -165,7 +179,11 @@ const TrafficChart: React.FC = () => {
                 流量趋势图
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-500">
-                {isConnected ? `最近 ${trafficData.length} 个数据点` : '等待连接...'}
+                {isConnected ? 
+                  `最近 ${trafficData.length} 个数据点` : 
+                  '等待连接...'}
+                {isConnected && trafficData.every(d => d.up === 0 && d.down === 0) && 
+                  <span className="text-yellow-500 ml-1">· 等待流量数据</span>}
               </div>
             </div>
             
@@ -198,6 +216,7 @@ const TrafficChart: React.FC = () => {
               <div className="ml-20 h-32 flex items-end justify-between bg-transparent rounded-lg p-2 overflow-hidden">
                 {trafficData.length > 0 ? (
                   // 有数据时显示真实图表
+                  // 使用虚拟列表概念 - 仅渲染最近的80个数据点以提高性能
                   trafficData.slice(-80).map((data, index) => {
                     // 使用在组件顶层计算的图表最大值
                     const chartMaxValue = generateNiceSteps.chartMax;
@@ -208,35 +227,42 @@ const TrafficChart: React.FC = () => {
                     const upHeight = (upValue / chartMaxValue) * 90; // 最大90%避免溢出
                     const downHeight = (downValue / chartMaxValue) * 90;
                     
+                    // 优化条件渲染 - 只有当高度大于0时才添加hover效果
+                    const hasTraffic = upValue > 0 || downValue > 0;
+                    
                     return (
-                      <div key={index} className="flex flex-col justify-end h-full group relative flex-1">
-                        {/* 工具提示 */}
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10">
-                          <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded px-2 py-1 whitespace-nowrap">
-                            <div>↑ {formatBytes(upValue)}/s</div>
-                            <div>↓ {formatBytes(downValue)}/s</div>
+                      <div key={index} className={`flex flex-col justify-end h-full relative flex-1 ${hasTraffic ? 'group' : ''}`}>
+                        {/* 工具提示 - 只在有流量时显示 */}
+                        {hasTraffic && (
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10">
+                            <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded px-2 py-1 whitespace-nowrap">
+                              <div>↑ {formatBytes(upValue)}/s</div>
+                              <div>↓ {formatBytes(downValue)}/s</div>
+                            </div>
                           </div>
-                        </div>
+                        )}
                         
                         {/* 上传条形图 - 固定细宽度 */}
                         <div 
-                          className="bg-gradient-to-t from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 transition-all duration-300 hover:from-blue-600 hover:to-blue-700"
+                          className={`bg-gradient-to-t from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 transition-all ${hasTraffic ? 'hover:from-blue-600 hover:to-blue-700 duration-300' : ''}`}
                           style={{ 
                             width: '4px',
                             height: `${upHeight}%`, 
                             minHeight: upValue > 0 ? '1px' : '0',
-                            borderRadius: '2px 2px 0 0'
+                            borderRadius: '2px 2px 0 0',
+                            transition: 'height 0.3s ease-out'
                           }}
                         />
                         
                         {/* 下载条形图 - 固定细宽度 */}
                         <div 
-                          className="bg-gradient-to-t from-green-500 to-green-600 dark:from-green-400 dark:to-green-500 transition-all duration-300 hover:from-green-600 hover:to-green-700"
+                          className={`bg-gradient-to-t from-green-500 to-green-600 dark:from-green-400 dark:to-green-500 transition-all ${hasTraffic ? 'hover:from-green-600 hover:to-green-700 duration-300' : ''}`}
                           style={{ 
                             width: '4px',
                             height: `${downHeight}%`, 
                             minHeight: downValue > 0 ? '1px' : '0',
-                            borderRadius: '0 0 2px 2px'
+                            borderRadius: '0 0 2px 2px',
+                            transition: 'height 0.3s ease-out'
                           }}
                         />
                       </div>
@@ -287,7 +313,7 @@ const TrafficChart: React.FC = () => {
       </CardContent>
     </Card>
   );
-};
+});
 
 const SystemInfoCard: React.FC<{ connectionsData?: any; connectionsLoading?: boolean; connectionsError?: any }> = ({ 
   connectionsData, 
