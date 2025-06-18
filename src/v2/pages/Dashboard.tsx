@@ -474,7 +474,7 @@ const ConnectionsCard: React.FC<{ connectionsData: any }> = ({ connectionsData }
   );
 };
 
-const ConfigStatusCard: React.FC = () => {
+const ConfigStatusCard: React.FC<{ onConfigChange: () => Promise<void> }> = ({ onConfigChange }) => {
   const { data: config, isLoading, error, refetch } = useClashConfig();
   const apiConfig = useApiConfig(); // 使用V2的API配置
   
@@ -492,9 +492,12 @@ const ConfigStatusCard: React.FC = () => {
       
       if (response.ok) {
         console.log('✅ Mode changed successfully to:', newMode);
-        // 成功后刷新配置数据以更新界面
-        setTimeout(() => {
-          refetch();
+        // 成功后刷新配置数据和系统信息以更新界面
+        setTimeout(async () => {
+          await Promise.all([
+            refetch(),
+            onConfigChange()
+          ]);
         }, 500); // 延迟500ms刷新，确保服务器状态已更新
       } else {
         console.error('❌ Failed to change mode:', response.statusText);
@@ -623,6 +626,15 @@ export const Dashboard: React.FC = () => {
     setCurrentPage(page);
   };
 
+  // 包装系统信息刷新函数以匹配类型
+  const handleSystemInfoRefresh = async (): Promise<void> => {
+    try {
+      await refetchSystemInfo();
+    } catch (error) {
+      console.error('Failed to refresh system info:', error);
+    }
+  };
+
   return (
     <div className="space-y-4 p-6">
       {/* 统一的页面头部样式 */}
@@ -651,13 +663,13 @@ export const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <SystemInfoCard 
-              connectionsData={connectionsData} 
-              connectionsLoading={connectionsLoading} 
-              connectionsError={connectionsError} 
-            />
+        <SystemInfoCard 
+          connectionsData={connectionsData} 
+          connectionsLoading={connectionsLoading} 
+          connectionsError={connectionsError} 
+        />
         <ConnectionsCard connectionsData={connectionsData} />
-        <ConfigStatusCard />
+        <ConfigStatusCard onConfigChange={handleSystemInfoRefresh} />
         <Card className="overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
           <CardHeader className="bg-gradient-to-r from-stone-700 to-neutral-800 text-white">
             <div className="flex items-center space-x-2">
