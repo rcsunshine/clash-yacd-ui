@@ -950,10 +950,19 @@ export function useConnectionStats(connectionsData?: { connections: ConnectionIt
 // 流量监控Hook - 使用全局单例管理器
 export function useTraffic() {
   const apiConfig = useApiConfig();
-  const [trafficData, setTrafficData] = useState<TrafficData[]>([]);
+  const maxDataPoints = 150;
+  // 初始化为40个全部为0的数据点，方便首次渲染
+  const [trafficData, setTrafficData] = useState<TrafficData[]>(() => {
+    // 创建一个包含40个空数据点的数组，时间戳递减
+    const now = Date.now();
+    return Array.from({ length: maxDataPoints }, (_, i) => ({
+      up: 0,
+      down: 0,
+      timestamp: now - (39 - i) * 1000, // 递增时间戳，模拟每秒一个数据点
+    }));
+  });
   const [isConnected, setIsConnected] = useState(false);
   const mountedRef = useRef(true);
-  const maxDataPoints = 150;
 
   useEffect(() => {
     mountedRef.current = true;

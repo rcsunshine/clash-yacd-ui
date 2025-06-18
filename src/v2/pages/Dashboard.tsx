@@ -198,7 +198,7 @@ const TrafficChart: React.FC = () => {
               <div className="ml-20 h-32 flex items-end justify-between bg-transparent rounded-lg p-2 overflow-hidden">
                 {trafficData.length > 0 ? (
                   // 有数据时显示真实图表
-                                    trafficData.slice(-80).map((data, index) => {
+                  trafficData.slice(-80).map((data, index) => {
                     // 使用在组件顶层计算的图表最大值
                     const chartMaxValue = generateNiceSteps.chartMax;
                     
@@ -243,13 +243,13 @@ const TrafficChart: React.FC = () => {
                     );
                   })
                 ) : (
-                  // 无数据时显示占位图表
-                  Array.from({ length: 40 }, (_, index) => (
-                    <div key={index} className="flex flex-col justify-end h-full flex-1">
-                      <div className="bg-gradient-to-t from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 opacity-20" style={{ width: '4px', height: '8px', borderRadius: '1px' }} />
-                      <div className="bg-gradient-to-t from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 opacity-20" style={{ width: '4px', height: '6px', borderRadius: '1px' }} />
+                  // 当没有任何数据时的空状态显示（这种情况现在应该不会发生了）
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="text-center text-gray-400 dark:text-gray-500">
+                      <div className="mb-1 text-xs">等待数据...</div>
+                      <div className="text-3xl">📊</div>
                     </div>
-                  ))
+                  </div>
                 )}
               </div>
               
