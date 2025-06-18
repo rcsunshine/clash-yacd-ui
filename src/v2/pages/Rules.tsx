@@ -36,10 +36,16 @@ const RulesContent: React.FC = () => {
   // 处理规则提供者数据
   const providers = useMemo(() => {
     if (!rulesData?.providers) return [];
-    return Object.entries(rulesData.providers).map(([name, provider]: [string, RuleProvider]) => ({
-      name,
-      ...provider,
-    }));
+    
+    try {
+      return Object.entries(rulesData.providers).map(([name, provider]: [string, RuleProvider]) => ({
+        name,
+        ...provider,
+      }));
+    } catch (error) {
+      console.warn('处理规则提供者数据失败:', error);
+      return []; // 返回空数组，避免页面崩溃
+    }
   }, [rulesData?.providers]);
 
   // 获取规则类型列表
@@ -473,8 +479,25 @@ const RulesContent: React.FC = () => {
                   暂无规则提供者
                 </h3>
                 <p className="text-theme-secondary max-w-md mx-auto">
-                  当前没有配置任何规则提供者
+                  {error && String(error).includes('404') ? 
+                    '当前Clash核心不支持规则提供者API，或API路径已更改' : 
+                    '当前没有配置任何规则提供者'}
                 </p>
+                {error && String(error).includes('404') && (
+                  <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 rounded-lg max-w-md mx-auto">
+                    <p className="text-sm">
+                      <strong>提示：</strong> 规则提供者API（/providers/rules）不可用。这可能是因为：
+                    </p>
+                    <ul className="list-disc pl-5 mt-2 text-sm">
+                      <li>您使用的Clash核心版本不支持此功能</li>
+                      <li>API路径已更改或被禁用</li>
+                      <li>服务器配置问题</li>
+                    </ul>
+                    <p className="text-sm mt-2">
+                      页面其他功能不受影响，您仍可以正常使用规则列表。
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
@@ -543,6 +566,7 @@ const RulesContent: React.FC = () => {
                               }
                             }}
                             disabled={updatingProvider === provider.name}
+                            title={provider.vehicleType === 'HTTP' ? '更新规则提供者' : '本地文件规则提供者无需更新'}
                           >
                             {updatingProvider === provider.name ? (
                               <>
@@ -564,7 +588,7 @@ const RulesContent: React.FC = () => {
                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
-                                更新
+                                {provider.vehicleType === 'HTTP' ? '更新' : '本地文件'}
                               </>
                             )}
                           </Button>

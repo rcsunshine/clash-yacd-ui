@@ -876,15 +876,22 @@ export function useRules(): RulesQueryResult {
         throw new Error(rulesResponse.error);
       }
       
-      const providersResponse = await client.get('/providers/rules');
-      if (providersResponse.error) {
-        throw new Error(providersResponse.error);
+      // 尝试获取规则提供者，但如果失败不影响整体功能
+      let providers = {};
+      try {
+        const providersResponse = await client.get('/providers/rules');
+        if (!providersResponse.error && providersResponse.data?.providers) {
+          providers = providersResponse.data.providers;
+        }
+      } catch (error) {
+        console.warn('规则提供者API不可用:', error);
+        // 不抛出错误，继续使用空的providers对象
       }
       
       // 合并规则和提供者数据
       return {
         rules: rulesResponse.data?.rules || [],
-        providers: providersResponse.data?.providers || {}
+        providers: providers
       };
     },
     {
@@ -897,17 +904,22 @@ export function useRules(): RulesQueryResult {
   const updateRuleProvider = async (providerName: string) => {
     if (!apiConfig?.baseURL) throw new Error('API配置未设置');
     
-    const client = createAPIClient(apiConfig);
-    const response = await client.put(`/providers/rules/${providerName}`);
-    
-    if (response.error) {
-      throw new Error(response.error);
+    try {
+      const client = createAPIClient(apiConfig);
+      const response = await client.put(`/providers/rules/${providerName}`);
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      // 更新缓存
+      queryClient.invalidateQueries(['rules']);
+      
+      return response.data;
+    } catch (error) {
+      console.error('更新规则提供者失败:', error);
+      throw new Error(`更新规则提供者失败: ${error instanceof Error ? error.message : String(error)}`);
     }
-    
-    // 更新缓存
-    queryClient.invalidateQueries(['rules']);
-    
-    return response.data;
   };
 
   return {

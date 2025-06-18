@@ -235,6 +235,49 @@ return sortOrder === 'asc' ? -comparison : comparison;
 - ✅ **主题适配** - 完美支持浅色/深色主题
 - ✅ **视觉层次优化** - 轮廓型按钮不会抢占视觉焦点，整体页面更加平衡 
 
+### ✅ 规则提供者API不可用处理优化
+**问题**: 某些Clash核心版本不支持规则提供者API，导致页面加载失败或显示错误
+
+**解决方案**: 
+- **🔄 优化API错误处理** - 捕获规则提供者API 404错误，不影响主要功能
+- **🛠️ 降级显示策略** - 在API不可用时提供友好的用户提示和解释
+- **📊 区分规则类型** - 区分HTTP和本地文件规则提供者，提供不同的更新选项
+- **🎨 增强用户体验** - 添加提示信息，解释可能的原因和解决方案
+
+**技术实现**:
+```typescript
+// 尝试获取规则提供者，但如果失败不影响整体功能
+let providers = {};
+try {
+  const providersResponse = await client.get('/providers/rules');
+  if (!providersResponse.error && providersResponse.data?.providers) {
+    providers = providersResponse.data.providers;
+  }
+} catch (error) {
+  console.warn('规则提供者API不可用:', error);
+  // 不抛出错误，继续使用空的providers对象
+}
+
+// UI中显示友好提示
+{error && String(error).includes('404') && (
+  <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 rounded-lg">
+    <p className="text-sm">
+      <strong>提示：</strong> 规则提供者API不可用。这可能是因为：
+    </p>
+    <ul className="list-disc pl-5 mt-2 text-sm">
+      <li>您使用的Clash核心版本不支持此功能</li>
+      <li>API路径已更改或被禁用</li>
+    </ul>
+  </div>
+)}
+```
+
+**优化成果**:
+- ✅ **容错性提升** - 即使规则提供者API不可用，页面仍能正常显示规则列表
+- ✅ **用户友好** - 提供清晰的错误提示和可能的原因解释
+- ✅ **降级体验** - 在功能不可用时提供备选UI和操作指导
+- ✅ **兼容性增强** - 支持不同版本的Clash核心和API实现
+
 ## 2023年核心功能优化记录
 
 ### 流量监控与图表优化
