@@ -13,12 +13,17 @@
     "dev:v2": "vite --config vite.v2.config.ts",
     "dev:both": "concurrently \"npm run dev\" \"npm run dev:v2\"",
     "start": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "build:v2": "vite build --config vite.v2.config.ts",
+    "build:v2:analyze": "vite build --config vite.v2.config.ts --mode analyze",
     "build:all": "npm run build && npm run build:v2",
     "serve": "vite preview",
+    "preview": "vite preview",
+    "preview:v2": "vite preview --config vite.v2.config.ts",
     "pretty": "prettier --log-level warn --write 'src/**/*.{js,scss,ts,tsx,md}'",
-    "fmt": "pnpm lint && pnpm pretty"
+    "fmt": "pnpm lint && pnpm pretty",
+    "test": "vitest",
+    "type-check": "tsc --noEmit"
   },
   "browserslist": [
     ">0.25%",

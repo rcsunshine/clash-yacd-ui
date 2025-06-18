@@ -1,4 +1,5 @@
 import './styles/globals.css';
+import './i18n';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
@@ -19,6 +20,7 @@ const Logs = React.lazy(() => import('./pages/Logs').then(m => ({ default: m.Log
 const Config = React.lazy(() => import('./pages/Config').then(m => ({ default: m.Config })));
 const APIConfig = React.lazy(() => import('./pages/APIConfig').then(m => ({ default: m.APIConfig })));
 const About = React.lazy(() => import('./pages/About').then(m => ({ default: m.About })));
+const BundleAnalysis = React.lazy(() => import('./pages/BundleAnalysis').then(m => ({ default: m.BundleAnalysis })));
 
 // 创建全局 Query Client
 const queryClient = new QueryClient({
@@ -58,6 +60,8 @@ const PageRenderer: React.FC<{ currentPage: string }> = ({ currentPage }) => {
         return <Suspense fallback={<PageLoadingFallback pageName="API配置" />}><APIConfig /></Suspense>;
       case 'about':
         return <Suspense fallback={<PageLoadingFallback pageName="关于" />}><About /></Suspense>;
+      case 'bundle-analysis':
+        return <Suspense fallback={<PageLoadingFallback pageName="Bundle分析" />}><BundleAnalysis /></Suspense>;
       default:
         return <Suspense fallback={<PageLoadingFallback pageName="概览" />}><Dashboard /></Suspense>;
     }

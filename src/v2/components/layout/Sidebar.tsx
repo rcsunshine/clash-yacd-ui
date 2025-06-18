@@ -1,9 +1,11 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { createAPIClient } from '../../api/client';
 import { useConnections } from '../../hooks/useAPI';
 import { useApiConfig } from '../../hooks/useApiConfig';
 import { cn } from '../../utils/cn';
+import { LanguageDropdown } from '../ui/LanguageDropdown';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { ThemeDropdown } from '../ui/ThemeDropdown';
 
@@ -103,7 +105,7 @@ function useConnectionStatus() {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      setConnectionState({ status: 'checking', message: '检查连接中...' });
+              setConnectionState({ status: 'checking', message: 'Checking connection...' });
     }
     
     lastApiConfigRef.current = apiConfig;
@@ -120,13 +122,13 @@ function useConnectionStatus() {
         if (response.status === 200 && response.data) {
           setConnectionState({
             status: 'connected',
-            message: '已连接',
+            message: 'Connected',
             version: response.data.version,
           });
         } else {
           setConnectionState({
             status: 'disconnected',
-            message: response.error || '连接失败',
+            message: response.error || 'Connection failed',
           });
         }
       } catch (error) {
@@ -134,7 +136,7 @@ function useConnectionStatus() {
         
         setConnectionState({
           status: 'error',
-          message: '网络错误',
+          message: 'Network error',
         });
       }
     };
@@ -160,6 +162,7 @@ function useConnectionStatus() {
 
 export function Sidebar(props: SidebarProps = {}) {
   const { className, currentPage, onPageChange } = props;
+  const { t } = useTranslation();
   const connectionState = useConnectionStatus();
   const { data: connectionsData } = useConnections();
   const totalConnections = connectionsData?.connections?.length || 0;
@@ -200,7 +203,7 @@ export function Sidebar(props: SidebarProps = {}) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6a2 2 0 01-2 2H10a2 2 0 01-2-2V5z" />
         </svg>
       ),
-      label: '概览',
+      label: t('Overview'),
       href: '#dashboard',
       active: currentPageState === 'dashboard',
       onClick: () => handlePageChange('dashboard'),
@@ -211,7 +214,7 @@ export function Sidebar(props: SidebarProps = {}) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       ),
-      label: '代理',
+      label: t('Proxies'),
       href: '#proxies',
       active: currentPageState === 'proxies',
       onClick: () => handlePageChange('proxies'),
@@ -222,7 +225,7 @@ export function Sidebar(props: SidebarProps = {}) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
         </svg>
       ),
-      label: '连接',
+      label: t('Connections'),
       href: '#connections',
       active: currentPageState === 'connections',
       badge: totalConnections.toString(),
@@ -234,7 +237,7 @@ export function Sidebar(props: SidebarProps = {}) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
-      label: '规则',
+      label: t('Rules'),
       href: '#rules',
       active: currentPageState === 'rules',
       onClick: () => handlePageChange('rules'),
@@ -245,7 +248,7 @@ export function Sidebar(props: SidebarProps = {}) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
         </svg>
       ),
-      label: '日志',
+      label: t('Logs'),
       href: '#logs',
       active: currentPageState === 'logs',
       onClick: () => handlePageChange('logs'),
@@ -257,7 +260,7 @@ export function Sidebar(props: SidebarProps = {}) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       ),
-      label: '配置',
+      label: t('Config'),
       href: '#config',
       active: currentPageState === 'config',
       onClick: () => handlePageChange('config'),
@@ -268,19 +271,31 @@ export function Sidebar(props: SidebarProps = {}) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       ),
-      label: 'API',
+      label: t('API'),
       href: '#api-config', 
       active: currentPageState === 'api-config',
       onClick: () => handlePageChange('api-config'),
       badge: connectionState.status === 'error' ? '!' : undefined,
     },
+    // Bundle分析菜单 - 仅在开发环境显示
+    ...(import.meta.env.DEV ? [{
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      ),
+      label: '分析',
+      href: '#bundle-analysis',
+      active: currentPageState === 'bundle-analysis',
+      onClick: () => handlePageChange('bundle-analysis'),
+    }] : []),
     {
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      label: '关于',
+      label: t('About'),
       href: '#about',
       active: currentPageState === 'about',
       onClick: () => handlePageChange('about'),
@@ -302,9 +317,9 @@ export function Sidebar(props: SidebarProps = {}) {
 
   const getDisplayMessage = () => {
     if (connectionState.status === 'connected' && connectionState.version) {
-      return `已连接 (${connectionState.version})`;
+      return `${t('Connected')} (${connectionState.version})`;
     }
-    return connectionState.message;
+    return t(connectionState.message);
   };
 
   return (
@@ -343,10 +358,13 @@ export function Sidebar(props: SidebarProps = {}) {
           <div className="flex items-center">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-              V2 运行中
+              {t('V2 Running')}
             </span>
           </div>
-          <ThemeDropdown />
+          <div className="flex items-center space-x-2">
+            <LanguageDropdown />
+            <ThemeDropdown />
+          </div>
         </div>
 
         {/* Connection Status */}

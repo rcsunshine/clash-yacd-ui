@@ -1,4 +1,5 @@
 import React, { useMemo, useRef,useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
@@ -15,6 +16,7 @@ import useRulesSearch from '../hooks/useRulesSearch';
 import { Rule, RuleProvider, RuleType } from '../types/api';
 
 const RulesContent: React.FC = () => {
+  const { t } = useTranslation();
   const { data: rulesData, isLoading, error, refetch, updateRuleProvider } = useRules();
   const { handleError } = useAPIErrorHandler();
   const [activeTab, setActiveTab] = useState<'rules' | 'providers'>('rules');
@@ -43,7 +45,7 @@ const RulesContent: React.FC = () => {
         ...provider,
       }));
     } catch (error) {
-      console.warn('处理规则提供者数据失败:', error);
+      console.warn('Failed to process rule provider data:', error);
       return []; // 返回空数组，避免页面崩溃
     }
   }, [rulesData?.providers]);
@@ -58,9 +60,9 @@ const RulesContent: React.FC = () => {
   // 处理API错误
   React.useEffect(() => {
     if (error) {
-      handleError(error, '规则页面数据加载失败');
+      handleError(error, t('Failed to load rules page data'));
     }
-  }, [error, handleError]);
+  }, [error, handleError, t]);
 
   // 添加键盘快捷键
   useKeyboardShortcut({
@@ -112,7 +114,7 @@ const RulesContent: React.FC = () => {
         setUpdateSuccess(null);
       }, 3000);
     } catch (error) {
-      handleError(error, `更新规则提供者 ${name} 失败`);
+      handleError(error, t('Failed to update rule provider {{name}}', { name }));
     } finally {
       setUpdatingProvider(null);
     }
@@ -142,26 +144,26 @@ const RulesContent: React.FC = () => {
     return (
       <div className="space-y-4 p-6">
         <div className="space-y-4">
-          <h1 className="text-xl font-bold text-theme hidden lg:block">规则</h1>
+          <h1 className="text-xl font-bold text-theme hidden lg:block">{t('Rules')}</h1>
           
           {isNetworkError ? (
             <NetworkErrorAlert
-              message="无法连接到 Clash API，请检查网络连接和API配置"
+              message={t('Unable to connect to Clash API, please check network connection and API configuration')}
               details={String(error)}
               onRetry={() => refetch()}
               showDetails={process.env.NODE_ENV === 'development'}
             />
           ) : isAPIError ? (
             <APIErrorAlert
-              message="API 请求失败，请检查API配置或权限"
+              message={t('API request failed, please check API configuration or permissions')}
               details={String(error)}
               onRetry={() => refetch()}
               showDetails={process.env.NODE_ENV === 'development'}
             />
           ) : (
             <ErrorAlert
-              title="规则数据加载失败"
-              message="无法获取规则信息，请稍后重试"
+              title={t('Failed to load rules data')}
+              message={t('Unable to get rules information, please try again later')}
               details={String(error)}
               onRetry={() => refetch()}
               showDetails={process.env.NODE_ENV === 'development'}
@@ -186,9 +188,9 @@ const RulesContent: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-theme hidden lg:block">规则</h1>
+            <h1 className="text-xl font-bold text-theme hidden lg:block">{t('Rules')}</h1>
             <p className="text-sm text-theme-secondary">
-              流量分流规则管理 • 共 {totalRules} 条规则
+              {t('Traffic routing rules management')} • {t('Total {{count}} rules', { count: totalRules })}
             </p>
           </div>
         </div>
@@ -198,7 +200,7 @@ const RulesContent: React.FC = () => {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            刷新 (R)
+            {t('Refresh')} (R)
           </Button>
         </div>
       </div>
@@ -218,7 +220,7 @@ const RulesContent: React.FC = () => {
               <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              规则列表 ({totalRules})
+              {t('Rules List')} ({totalRules})
             </button>
             <button
               onClick={() => setActiveTab('providers')}
@@ -231,7 +233,7 @@ const RulesContent: React.FC = () => {
               <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
-              规则提供者 ({totalProviders})
+              {t('Rule Providers')} ({totalProviders})
             </button>
           </div>
         </CardContent>
@@ -246,7 +248,7 @@ const RulesContent: React.FC = () => {
                 <div className="flex-1 relative">
                   <SearchInput
                     ref={searchInputRef}
-                    placeholder="搜索规则内容或代理... (按F聚焦)"
+                    placeholder={t('Search rule content or proxy... (Press F to focus)')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -262,30 +264,30 @@ const RulesContent: React.FC = () => {
                   )}
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                     <HelpTooltip
-                      title="规则搜索语法"
+                      title={t('Rule Search Syntax')}
                       content={
-                        <div className="space-y-2">
-                          <div>
-                            <div className="font-medium mb-1">基本搜索:</div>
-                            <div className="pl-2">直接输入关键词搜索规则内容和代理</div>
-                          </div>
-                          
-                          <div>
-                            <div className="font-medium mb-1">高级语法:</div>
-                            <div className="pl-2 space-y-1">
-                              <div><code>type:DOMAIN</code> - 搜索特定类型</div>
-                              <div><code>proxy:DIRECT</code> - 搜索特定代理</div>
-                              <div><code>payload:&quot;google.com&quot;</code> - 精确匹配内容</div>
+                                                  <div className="space-y-2">
+                            <div>
+                              <div className="font-medium mb-1">{t('Basic Search')}:</div>
+                              <div className="pl-2">{t('Enter keywords directly to search rule content and proxy')}</div>
+                            </div>
+                            
+                            <div>
+                              <div className="font-medium mb-1">{t('Advanced Syntax')}:</div>
+                              <div className="pl-2 space-y-1">
+                                <div><code>type:DOMAIN</code> - {t('Search specific type')}</div>
+                                <div><code>proxy:DIRECT</code> - {t('Search specific proxy')}</div>
+                                <div><code>payload:&quot;google.com&quot;</code> - {t('Exact match content')}</div>
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <div className="font-medium mb-1">{t('Combined Search')}:</div>
+                              <div className="pl-2">
+                                <code>type:DOMAIN proxy:DIRECT google</code>
+                              </div>
                             </div>
                           </div>
-                          
-                          <div>
-                            <div className="font-medium mb-1">组合搜索:</div>
-                            <div className="pl-2">
-                              <code>type:DOMAIN proxy:DIRECT google</code>
-                            </div>
-                          </div>
-                        </div>
                       }
                       position="bottom"
                       width={280}
@@ -305,7 +307,7 @@ const RulesContent: React.FC = () => {
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value as RuleType)}
                     options={[
-                      { value: 'all', label: '所有类型' },
+                      { value: 'all', label: t('All Types') },
                       ...ruleTypes.map(type => ({ value: type, label: type }))
                     ]}
                     size="sm"
@@ -343,7 +345,7 @@ const RulesContent: React.FC = () => {
                     <div className="text-2xl font-bold text-slate-700 dark:text-slate-300">
                       {totalRules}
                     </div>
-                    <div className="text-xs text-theme-secondary font-medium">总规则数</div>
+                    <div className="text-xs text-theme-secondary font-medium">{t('Total Rules')}</div>
                   </div>
                 </div>
               </CardContent>
@@ -361,7 +363,7 @@ const RulesContent: React.FC = () => {
                     <div className="text-2xl font-bold text-zinc-700 dark:text-zinc-300">
                       {totalProviders}
                     </div>
-                    <div className="text-xs text-theme-secondary font-medium">规则提供者</div>
+                    <div className="text-xs text-theme-secondary font-medium">{t('Rule Providers')}</div>
                   </div>
                 </div>
               </CardContent>
@@ -379,7 +381,7 @@ const RulesContent: React.FC = () => {
                     <div className="text-2xl font-bold text-stone-700 dark:text-stone-300">
                       {ruleTypes.length}
                     </div>
-                    <div className="text-xs text-theme-secondary font-medium">规则类型</div>
+                    <div className="text-xs text-theme-secondary font-medium">{t('Rule Types')}</div>
                   </div>
                 </div>
               </CardContent>
@@ -397,12 +399,12 @@ const RulesContent: React.FC = () => {
                     </svg>
                   </div>
                   <h3 className="text-xl font-semibold text-theme mb-3">
-                    {searchQuery || typeFilter !== 'all' ? '没有找到匹配的规则' : '暂无规则'}
+                    {searchQuery || typeFilter !== 'all' ? t('No matching rules found') : t('No rules')}
                   </h3>
                   <p className="text-theme-secondary max-w-md mx-auto">
                     {searchQuery || typeFilter !== 'all' 
-                      ? '尝试调整搜索条件或筛选器'
-                      : '当前没有配置任何规则'
+                      ? t('Try adjusting search criteria or filters')
+                      : t('No rules configured currently')
                     }
                   </p>
                   {(searchQuery || typeFilter !== 'all') && (
@@ -412,15 +414,15 @@ const RulesContent: React.FC = () => {
                       onClick={resetFilters}
                       className="mt-4"
                     >
-                      清除过滤器
+                      {t('Clear filters')}
                     </Button>
                   )}
                 </div>
               ) : (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 mb-2 border-b border-gray-200 dark:border-gray-600/50">
-                    <span>显示 {rules.length} / {totalRules} 条规则</span>
-                    <span>按优先级排序</span>
+                    <span>{t('Showing {{current}} / {{total}} rules', { current: rules.length, total: totalRules })}</span>
+                    <span>{t('Sorted by priority')}</span>
                   </div>
                   <div className="space-y-2 max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar pb-32">
                     <FixedVirtualList<Rule>
@@ -445,7 +447,7 @@ const RulesContent: React.FC = () => {
                                 </span>
                               </div>
                               <div className="text-xs text-theme-secondary">
-                                <span className="font-medium">代理: </span>
+                                <span className="font-medium">{t('Proxy')}: </span>
                                 <span className="text-theme-secondary">{rule.proxy}</span>
                               </div>
                             </div>
@@ -476,25 +478,25 @@ const RulesContent: React.FC = () => {
                   </svg>
                 </div>
                 <h3 className="text-xl font-semibold text-theme mb-3">
-                  暂无规则提供者
+                  {t('No rule providers')}
                 </h3>
                 <p className="text-theme-secondary max-w-md mx-auto">
-                  {error && String(error).includes('404') ? 
-                    '当前Clash核心不支持规则提供者API，或API路径已更改' : 
-                    '当前没有配置任何规则提供者'}
+                                      {error && String(error).includes('404') ? 
+                      t('Current Clash core does not support rule provider API, or API path has changed') : 
+                      t('No rule providers configured currently')}
                 </p>
                 {error && String(error).includes('404') && (
                   <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 rounded-lg max-w-md mx-auto">
                     <p className="text-sm">
-                      <strong>提示：</strong> 规则提供者API（/providers/rules）不可用。这可能是因为：
+                      <strong>{t('Tip')}:</strong> {t('Rule provider API (/providers/rules) is not available. This may be because')}:
                     </p>
                     <ul className="list-disc pl-5 mt-2 text-sm">
-                      <li>您使用的Clash核心版本不支持此功能</li>
-                      <li>API路径已更改或被禁用</li>
-                      <li>服务器配置问题</li>
+                                              <li>{t('The Clash core version you are using does not support this feature')}</li>
+                        <li>{t('API path has been changed or disabled')}</li>
+                        <li>{t('Server configuration issue')}</li>
                     </ul>
                     <p className="text-sm mt-2">
-                      页面其他功能不受影响，您仍可以正常使用规则列表。
+                                              {t('Other page functions are not affected, you can still use the rules list normally.')}
                     </p>
                   </div>
                 )}
@@ -502,8 +504,8 @@ const RulesContent: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm text-theme-secondary pb-2 border-b border-gray-200 dark:border-gray-600/50">
-                  <span>共 {providers.length} 个规则提供者</span>
-                  <span>实时状态</span>
+                  <span>{t('Total {{count}} rule providers', { count: providers.length })}</span>
+                  <span>{t('Real-time status')}</span>
                 </div>
                 <div className="grid gap-4">
                   <FixedVirtualList<{ name: string } & RuleProvider>
@@ -527,27 +529,27 @@ const RulesContent: React.FC = () => {
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                               <div>
-                                <span className="text-theme-secondary">行为:</span>
+                                <span className="text-theme-secondary">{t('Behavior')}:</span>
                                 <div className="font-medium text-theme">
                                   {provider.behavior || 'domain'}
                                 </div>
                               </div>
                               <div>
-                                <span className="text-theme-secondary">规则数:</span>
+                                <span className="text-theme-secondary">{t('Rule Count')}:</span>
                                 <div className="font-medium text-theme">
                                   {provider.ruleCount || 0}
                                 </div>
                               </div>
                               <div>
-                                <span className="text-theme-secondary">载体:</span>
+                                <span className="text-theme-secondary">{t('Vehicle')}:</span>
                                 <div className="font-medium text-theme">
                                   {provider.vehicleType || 'HTTP'}
                                 </div>
                               </div>
                               <div>
-                                <span className="text-theme-secondary">更新时间:</span>
+                                <span className="text-theme-secondary">{t('Updated At')}:</span>
                                 <div className="font-medium text-theme">
-                                  {provider.updatedAt ? new Date(provider.updatedAt).toLocaleString() : '未知'}
+                                  {provider.updatedAt ? new Date(provider.updatedAt).toLocaleString() : t('Unknown')}
                                 </div>
                               </div>
                             </div>
@@ -562,11 +564,11 @@ const RulesContent: React.FC = () => {
                                 // 提示更新成功
                               } catch (error) {
                                 // 处理错误
-                                handleError(error, `更新规则提供者 ${provider.name} 失败`);
+                                handleError(error, t('Failed to update rule provider {{name}}', { name: provider.name }));
                               }
                             }}
                             disabled={updatingProvider === provider.name}
-                            title={provider.vehicleType === 'HTTP' ? '更新规则提供者' : '本地文件规则提供者无需更新'}
+                            title={provider.vehicleType === 'HTTP' ? t('Update rule provider') : t('Local file rule provider does not need to be updated')}
                           >
                             {updatingProvider === provider.name ? (
                               <>
@@ -574,21 +576,21 @@ const RulesContent: React.FC = () => {
                                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                更新中...
+                                {t('Updating...')}
                               </>
                             ) : updateSuccess === provider.name ? (
                               <>
                                 <svg className="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
-                                已更新
+                                {t('Updated')}
                               </>
                             ) : (
                               <>
                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
-                                {provider.vehicleType === 'HTTP' ? '更新' : '本地文件'}
+                                {provider.vehicleType === 'HTTP' ? t('Update') : t('Local File')}
                               </>
                             )}
                           </Button>

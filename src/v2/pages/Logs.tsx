@@ -1,4 +1,4 @@
-import React, {useState } from 'react';
+import React, {useMemo,useState } from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
@@ -15,12 +15,21 @@ interface LogEntry {
   source?: string;
 }
 
+interface LogStats {
+  totalLogs: number;
+  levelCounts: Record<LogLevel, number>;
+  timeDistribution: { hour: number; count: number }[];
+  topKeywords: { keyword: string; count: number }[];
+  recentActivity: { time: string; count: number }[];
+}
+
 export const Logs: React.FC = () => {
   const { logs: rawLogs, isConnected, clearLogs: clearApiLogs, refreshLogs } = useLogs();
   const [filter, setFilter] = useState<LogLevel | 'all'>('all');
   const [autoScroll, setAutoScroll] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showStats, setShowStats] = useState(false);
 
   // 转换API日志格式为组件需要的格式
   const logs: LogEntry[] = rawLogs.map((log, index) => ({
@@ -30,6 +39,61 @@ export const Logs: React.FC = () => {
     message: log.payload,
     source: undefined // API日志没有source字段
   }));
+
+  // 计算日志统计信息
+  const logStats: LogStats = useMemo(() => {
+    const levelCounts: Record<LogLevel, number> = {
+      info: 0,
+      warning: 0,
+      error: 0,
+      debug: 0,
+      silent: 0
+    };
+
+    const timeDistribution: Record<number, number> = {};
+    const keywordCounts: Record<string, number> = {};
+    const recentActivity: Record<string, number> = {};
+
+    logs.forEach(log => {
+      // 统计级别
+      levelCounts[log.level]++;
+
+      // 统计时间分布（按小时）
+      const hour = new Date(log.time).getHours();
+      timeDistribution[hour] = (timeDistribution[hour] || 0) + 1;
+
+      // 统计关键词（提取日志消息中的关键词）
+      const words = log.message
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .split(/\s+/)
+        .filter(word => word.length > 3);
+      
+      words.forEach(word => {
+        keywordCounts[word] = (keywordCounts[word] || 0) + 1;
+      });
+
+      // 统计最近活动（按分钟）
+      const timeKey = log.time.slice(0, 16); // YYYY-MM-DD HH:MM
+      recentActivity[timeKey] = (recentActivity[timeKey] || 0) + 1;
+    });
+
+    return {
+      totalLogs: logs.length,
+      levelCounts,
+      timeDistribution: Object.entries(timeDistribution)
+        .map(([hour, count]) => ({ hour: parseInt(hour), count }))
+        .sort((a, b) => a.hour - b.hour),
+      topKeywords: Object.entries(keywordCounts)
+        .map(([keyword, count]) => ({ keyword, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10),
+      recentActivity: Object.entries(recentActivity)
+        .map(([time, count]) => ({ time, count }))
+        .sort((a, b) => b.time.localeCompare(a.time))
+        .slice(0, 20)
+    };
+  }, [logs]);
 
   const filteredLogs = logs.filter(log => {
     const matchesLevel = filter === 'all' || log.level === filter;
@@ -131,6 +195,33 @@ export const Logs: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  // 导出统计报告
+  const exportStatsReport = () => {
+    const report = {
+      timestamp: new Date().toISOString(),
+      summary: {
+        totalLogs: logStats.totalLogs,
+        errorRate: ((logStats.levelCounts.error / logStats.totalLogs) * 100).toFixed(2) + '%',
+        warningRate: ((logStats.levelCounts.warning / logStats.totalLogs) * 100).toFixed(2) + '%'
+      },
+      levelDistribution: logStats.levelCounts,
+      timeDistribution: logStats.timeDistribution,
+      topKeywords: logStats.topKeywords,
+      recentActivity: logStats.recentActivity
+    };
+    
+    const dataStr = JSON.stringify(report, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `clash-logs-stats-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-4 p-6">
       {/* 统一的页面头部样式 */}
@@ -149,6 +240,29 @@ export const Logs: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-sm"
+            onClick={() => setShowStats(!showStats)}
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            {showStats ? '隐藏统计' : '显示统计'}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-sm"
+            onClick={exportStatsReport}
+            disabled={logs.length === 0}
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            导出统计
+          </Button>
           <Button 
             variant="outline" 
             size="sm" 
@@ -198,6 +312,127 @@ export const Logs: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {/* 高级统计分析面板 */}
+      {showStats && (
+        <div className="space-y-4">
+          {/* 统计概览 */}
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-theme mb-4 flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                日志统计分析
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* 级别分布饼图 */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-theme-secondary">级别分布</h4>
+                  <div className="space-y-2">
+                    {Object.entries(logStats.levelCounts).map(([level, count]) => {
+                      const percentage = logStats.totalLogs > 0 ? (count / logStats.totalLogs * 100).toFixed(1) : '0';
+                      return (
+                        <div key={level} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-3 h-3 rounded-full ${
+                              level === 'error' ? 'bg-red-500' :
+                              level === 'warning' ? 'bg-yellow-500' :
+                              level === 'info' ? 'bg-blue-500' : 'bg-gray-500'
+                            }`}></div>
+                            <span className="text-sm text-theme-secondary capitalize">{level}</span>
+                          </div>
+                          <div className="text-sm font-medium text-theme">
+                            {count} ({percentage}%)
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 时间分布 */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-theme-secondary">时间分布 (24小时)</h4>
+                  <div className="space-y-1">
+                    {logStats.timeDistribution.slice(0, 8).map(({ hour, count }) => (
+                      <div key={hour} className="flex items-center space-x-2">
+                        <span className="text-xs text-theme-secondary w-8">{hour}:00</span>
+                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div 
+                            className="bg-slate-500 h-2 rounded-full transition-all duration-300"
+                            style={{ 
+                              width: `${Math.max(5, (count / Math.max(...logStats.timeDistribution.map(d => d.count))) * 100)}%` 
+                            }}
+                          ></div>
+                        </div>
+                        <span className="text-xs text-theme-secondary w-8">{count}</span>
+                      </div>
+                    ))}
+                    {logStats.timeDistribution.length > 8 && (
+                      <div className="text-xs text-theme-tertiary text-center pt-1">
+                        +{logStats.timeDistribution.length - 8} 更多时段
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 关键词统计 */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-theme-secondary">热门关键词</h4>
+                  <div className="space-y-1">
+                    {logStats.topKeywords.slice(0, 8).map(({ keyword, count }) => (
+                      <div key={keyword} className="flex items-center justify-between">
+                        <span className="text-sm text-theme truncate flex-1 mr-2">{keyword}</span>
+                        <span className="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full text-theme-secondary">
+                          {count}
+                        </span>
+                      </div>
+                    ))}
+                    {logStats.topKeywords.length > 8 && (
+                      <div className="text-xs text-theme-tertiary text-center pt-1">
+                        +{logStats.topKeywords.length - 8} 更多关键词
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 健康度指标 */}
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
+                <h4 className="font-medium text-theme-secondary mb-3">系统健康度</h4>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {logStats.totalLogs > 0 ? (100 - (logStats.levelCounts.error / logStats.totalLogs * 100)).toFixed(1) : '100'}%
+                    </div>
+                    <div className="text-xs text-theme-secondary">系统稳定性</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {logStats.levelCounts.error}
+                    </div>
+                    <div className="text-xs text-theme-secondary">错误总数</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                      {logStats.levelCounts.warning}
+                    </div>
+                    <div className="text-xs text-theme-secondary">警告总数</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-theme">
+                      {logStats.recentActivity.length}
+                    </div>
+                    <div className="text-xs text-theme-secondary">活跃时段</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* 统计和控制 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

@@ -1,4 +1,5 @@
 import React, { useMemo,useRef,useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent,CardHeader } from '../components/ui/Card';
@@ -26,6 +27,7 @@ const ProxyGroupCard: React.FC<{
   sortBy: string;
   hideUnavailable: boolean;
 }> = ({ group, proxiesData, onSwitchProxy, onTestGroupDelay, onTestSingleProxy, testingProxies, testingSingleProxies, testingAllProxiesNodes, testingGroupProxiesNodes, sortBy, hideUnavailable }) => {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   const getProxyDelay = (proxyName: string) => {
@@ -164,14 +166,14 @@ const ProxyGroupCard: React.FC<{
                 className={`w-2 h-2 rounded-full transition-all duration-200 ${dotColor} ${
                   isSelected ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-white dark:ring-offset-gray-800 scale-125' : ''
                 }`}
-                title={`${proxyName}: ${isTesting ? '测试中...' : delay === 0 ? '未测试' : `${delay}ms`}`}
+                title={`${proxyName}: ${isTesting ? t('Testing...') : delay === 0 ? t('Untested') : `${delay}ms`}`}
               />
             );
           })}
         </div>
         {remainingCount > 0 && (
           <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-            +{remainingCount} more
+            {t('+{{count}} more', { count: remainingCount })}
           </span>
         )}
       </div>
@@ -196,9 +198,9 @@ const ProxyGroupCard: React.FC<{
                     ? 'bg-blue-100 dark:bg-blue-800/50 text-blue-700 dark:text-blue-300' 
                     : 'bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300'
                 }`}>
-                  {group.type === 'Selector' ? '手动选择' : 
-                   group.type === 'URLTest' ? '自动选择' : 
-                   group.type === 'Fallback' ? '故障转移' : group.type}
+                                  {group.type === 'Selector' ? t('Manual') : 
+                 group.type === 'URLTest' ? t('Auto Select') : 
+                 group.type === 'Fallback' ? t('Fallback') : group.type}
                 </span>
                 <span className="text-theme-tertiary">•</span>
                 <span className="text-theme-secondary">
@@ -258,7 +260,7 @@ const ProxyGroupCard: React.FC<{
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  <span>测速</span>
+                  <span>{t('Test Latency')}</span>
                 </>
               )}
             </Button>
@@ -276,7 +278,7 @@ const ProxyGroupCard: React.FC<{
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
-              <span className="ml-1">{expanded ? '收起' : '展开'}</span>
+                              <span className="ml-1">{expanded ? t('Collapse') : t('Expand')}</span>
             </Button>
           </div>
         </div>
@@ -352,10 +354,10 @@ const ProxyGroupCard: React.FC<{
                       role="button"
                       tabIndex={0}
                       title={
-                        testingSingleProxies.has(proxyName) ? '测试中...' :
-                        testingAllProxiesNodes.has(proxyName) ? '全部测速中...' :
-                        testingGroupProxiesNodes.has(proxyName) ? '组测速中...' :
-                        '测试延迟'
+                                        testingSingleProxies.has(proxyName) ? t('Testing...') :
+                testingAllProxiesNodes.has(proxyName) ? t('Testing All...') :
+                                                 testingGroupProxiesNodes.has(proxyName) ? t('Testing...') :
+                         t('Test Latency')
                       }
                     >
                       <svg 
@@ -411,10 +413,10 @@ const ProxyGroupCard: React.FC<{
                           delay < 300 ? 'bg-yellow-500' : 'bg-red-500'
                         }`}></div>
                         <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
-                          {isSelected ? '使用中' : 
-                           (testingSingleProxies.has(proxyName) || testingAllProxiesNodes.has(proxyName) || testingGroupProxiesNodes.has(proxyName)) ? '测试中' :
-                           !canSwitch ? '自动' : 
-                           delay === 0 ? '未测试' : '可用'}
+                                                      {isSelected ? t('In Use') : 
+                                                        (testingSingleProxies.has(proxyName) || testingAllProxiesNodes.has(proxyName) || testingGroupProxiesNodes.has(proxyName)) ? t('Testing') :
+                             !canSwitch ? t('Auto') : 
+                           delay === 0 ? t('Untested') : t('Available')}
                         </span>
                       </div>
                       
@@ -503,6 +505,7 @@ const ErrorContent = ({ error }: { error: unknown }) => (
 );
 
 export const Proxies: React.FC = () => {
+  const { t } = useTranslation();
   const { data: proxiesData, isLoading, error, refetch, switchProxy, testDelay } = useProxies();
   const { data: config } = useClashConfig();
   const [searchQuery, setSearchQuery] = useState('');
@@ -671,7 +674,7 @@ export const Proxies: React.FC = () => {
       setTestingAllProxies(false);
       setTestingAllProxiesNodes(new Set()); // 清空所有测试节点状态
       setShowTestingProgress(false);
-      showNotification('info', '已取消全部测速');
+      showNotification('info', t('Cancelled all proxy tests'));
       return;
     }
     
@@ -825,7 +828,7 @@ export const Proxies: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-theme hidden lg:block">代理</h1>
+        <h1 className="text-2xl font-bold text-theme hidden lg:block">{t('Proxies')}</h1>
         <Card>
           <CardContent>
             <div className="animate-pulse space-y-4">
@@ -841,15 +844,15 @@ export const Proxies: React.FC = () => {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-theme hidden lg:block">代理</h1>
+        <h1 className="text-2xl font-bold text-theme hidden lg:block">{t('Proxies')}</h1>
         <Card>
           <CardContent>
             <div className="text-center py-8">
               <h3 className="text-lg font-medium text-theme mb-2">
-                加载失败
+                {t('Failed to load proxies')}
               </h3>
               <p className="text-theme-secondary mb-4">{String(error)}</p>
-              <Button onClick={() => refetch()}>重试</Button>
+              <Button onClick={() => refetch()}>{t('Retry')}</Button>
             </div>
           </CardContent>
         </Card>
@@ -872,9 +875,9 @@ export const Proxies: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-theme hidden lg:block">代理</h1>
+              <h1 className="text-xl font-bold text-theme hidden lg:block">{t('Proxies')}</h1>
               <p className="text-sm text-theme-secondary">
-                {proxyGroups.length} 组 • {proxyCount} 节点 • {config?.mode || 'N/A'} 模式
+                {proxyGroups.length} {t('groups')} • {proxyCount} {t('nodes')} • {config?.mode || 'N/A'} {t('mode')}
               </p>
             </div>
           </div>
@@ -901,7 +904,7 @@ export const Proxies: React.FC = () => {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  取消
+                  {t('Cancel')}
                 </>
               ) : (
                 <>
@@ -913,7 +916,7 @@ export const Proxies: React.FC = () => {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  全部测速
+                  {t('Test All')}
                 </>
               )}
             </Button>
@@ -921,7 +924,7 @@ export const Proxies: React.FC = () => {
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              刷新
+              {t('Refresh')}
             </Button>
           </div>
         </div>
@@ -930,7 +933,7 @@ export const Proxies: React.FC = () => {
         <div className="flex items-center space-x-3 flex-wrap gap-2 mt-2 py-3 px-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-none">
           <div className="flex-1 min-w-[180px]">
             <SearchInput
-              placeholder="搜索代理组..."
+              placeholder={t('Search proxies...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="!h-10 !text-base !font-medium !text-gray-900 dark:!text-gray-100 !bg-white/90 dark:!bg-gray-800/60 !border-gray-200 dark:!border-gray-600 !shadow-sm"
@@ -940,10 +943,10 @@ export const Proxies: React.FC = () => {
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
             options={[
-              { value: 'all', label: '所有类型' },
-              { value: 'Selector', label: '手动选择' },
-              { value: 'URLTest', label: '自动选择' },
-              { value: 'Fallback', label: '故障转移' },
+              { value: 'all', label: t('All Types') },
+              { value: 'Selector', label: t('Manual') },
+              { value: 'URLTest', label: t('Auto Select') },
+              { value: 'Fallback', label: t('Fallback') },
             ]}
             size="md"
             className="min-w-[120px] !font-bold !text-gray-900 dark:!text-gray-100 !bg-white/90 dark:!bg-gray-800/60 !border !border-gray-200 dark:!border-gray-600 !shadow-sm"
@@ -952,11 +955,11 @@ export const Proxies: React.FC = () => {
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             options={[
-              { value: 'Natural', label: '原始顺序' },
-              { value: 'LatencyAsc', label: '延迟升序' },
-              { value: 'LatencyDesc', label: '延迟降序' },
-              { value: 'NameAsc', label: '名称 A-Z' },
-              { value: 'NameDesc', label: '名称 Z-A' },
+              { value: 'Natural', label: t('Original Order') },
+              { value: 'LatencyAsc', label: t('Latency Ascending') },
+              { value: 'LatencyDesc', label: t('Latency Descending') },
+              { value: 'NameAsc', label: t('Name A-Z') },
+              { value: 'NameDesc', label: t('Name Z-A') },
             ]}
             size="md"
             className="min-w-[120px] !font-bold !text-gray-900 dark:!text-gray-100 !bg-white/90 dark:!bg-gray-800/60 !border !border-gray-200 dark:!border-gray-600 !shadow-sm"
@@ -969,7 +972,7 @@ export const Proxies: React.FC = () => {
               onChange={(e) => setHideUnavailable(e.target.checked)}
             />
             <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 select-none">
-              隐藏未测试
+              {t('Hide Untested')}
             </span>
           </label>
         </div>
@@ -983,7 +986,7 @@ export const Proxies: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                  {testingAllProxies ? '延迟测试中...' : '测试完成'}
+                  {testingAllProxies ? t('Testing progress...') : t('Test completed')}
                 </span>
               </div>
               <div className="text-xs text-blue-700 dark:text-blue-300 font-mono bg-blue-100/50 dark:bg-blue-800/30 px-2 py-0.5 rounded">

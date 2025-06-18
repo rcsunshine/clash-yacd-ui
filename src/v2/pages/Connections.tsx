@@ -1,4 +1,5 @@
 import React, { useEffect,useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import ConnectionDetail from '../components/ConnectionDetail';
 import { Button } from '../components/ui/Button';
@@ -35,6 +36,7 @@ interface Connection {
 }
 
 export const Connections: React.FC = () => {
+  const { t } = useTranslation();
   const apiConfig = useApiConfig();
   const { data: connectionsData, isLoading, error, refetch, isPaused, togglePause } = useConnections();
   const closeConnection = useCloseConnection();
@@ -224,15 +226,15 @@ export const Connections: React.FC = () => {
     console.log('⚠️ Connections: No API config');
     return (
       <div className="space-y-6 p-6">
-        <h1 className="text-2xl font-bold text-theme">连接</h1>
+        <h1 className="text-2xl font-bold text-theme">{t('Connections')}</h1>
         <Card>
           <CardContent>
             <div className="text-center py-8">
               <h3 className="text-lg font-medium text-theme mb-2">
-                API 配置未设置
+                {t('API Configuration Not Set')}
               </h3>
               <p className="text-theme-secondary mb-4">
-                请先设置 Clash API 配置
+                {t('Please set up Clash API configuration first')}
               </p>
             </div>
           </CardContent>
@@ -245,7 +247,7 @@ export const Connections: React.FC = () => {
     console.log('🔄 Connections: Showing loading state');
     return (
       <div className="space-y-6 p-6">
-        <h1 className="text-2xl font-bold text-theme">连接</h1>
+        <h1 className="text-2xl font-bold text-theme">{t('Connections')}</h1>
         <Card>
           <CardContent>
             <div className="animate-pulse space-y-4">
@@ -253,7 +255,7 @@ export const Connections: React.FC = () => {
               <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
             </div>
             <div className="mt-4 text-sm text-theme-secondary">
-              正在加载连接数据...
+              {t('Loading connection data...')}
             </div>
             <div className="mt-2">
               <Button 
@@ -276,14 +278,14 @@ export const Connections: React.FC = () => {
     console.log('⚠️ Connections: Showing timeout/error state with debug info');
     return (
       <div className="space-y-6 p-6">
-        <h1 className="text-2xl font-bold text-theme">连接</h1>
+        <h1 className="text-2xl font-bold text-theme">{t('Connections')}</h1>
         <Card>
           <CardContent>
             <div className="space-y-4">
               {error && (
                 <div className="text-center py-4">
                   <h3 className="text-lg font-medium text-theme mb-2">
-                    加载失败
+                    {t('Failed to load data')}
                   </h3>
                   <p className="text-theme-secondary mb-4">{String(error)}</p>
                 </div>
@@ -292,10 +294,10 @@ export const Connections: React.FC = () => {
               {loadingTimeout && !error && (
                 <div className="text-center py-4">
                   <h3 className="text-lg font-medium text-theme mb-2">
-                    加载超时
+                    {t('Loading timeout')}
                   </h3>
                   <p className="text-theme-secondary mb-4">
-                    连接数据加载时间过长，可能是网络问题或API配置错误
+                    {t('Connection data loading is taking too long, may be network issue or API configuration error')}
                   </p>
                 </div>
               )}
@@ -303,7 +305,7 @@ export const Connections: React.FC = () => {
 
               
               <div className="flex space-x-2">
-                <Button onClick={() => refetch()}>重试</Button>
+                <Button onClick={() => refetch()}>{t('Retry')}</Button>
                 <Button 
                   variant="outline" 
                   onClick={() => {
@@ -341,9 +343,9 @@ export const Connections: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-theme hidden lg:block">连接</h1>
+            <h1 className="text-xl font-bold text-theme hidden lg:block">{t('Connections')}</h1>
             <p className="text-sm text-theme-secondary">
-              {isPaused ? '已暂停刷新' : '实时网络连接监控'} • 共 {totalConnections} 个连接
+              {isPaused ? t('Paused refresh') : t('Real-time network connection monitoring')} • {t('Total')} {totalConnections} {t('connections')}
             </p>
           </div>
         </div>
@@ -359,7 +361,7 @@ export const Connections: React.FC = () => {
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-              关闭选中 ({selectedConnections.size})
+              {t('Close Selected')} ({selectedConnections.size})
             </Button>
           )}
           
@@ -380,14 +382,14 @@ export const Connections: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                恢复
+                {t('Resume')}
               </>
             ) : (
               <>
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                暂停
+                {t('Pause')}
               </>
             )}
           </Button>
@@ -403,14 +405,14 @@ export const Connections: React.FC = () => {
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-              {closeAllConnections.isLoading ? '关闭中...' : '关闭所有'}
+              {closeAllConnections.isLoading ? t('Closing...') : t('Close All')}
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={() => refetch()} className="text-sm">
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            刷新
+            {t('Refresh')}
           </Button>
         </div>
       </div>
@@ -429,7 +431,7 @@ export const Connections: React.FC = () => {
                 <div className="text-2xl font-bold text-slate-700 dark:text-slate-300">
                   {totalConnections}
                 </div>
-                <div className="text-xs text-theme-secondary font-medium">总连接数</div>
+                <div className="text-xs text-theme-secondary font-medium">{t('Total Connections')}</div>
               </div>
             </div>
           </CardContent>
@@ -447,7 +449,7 @@ export const Connections: React.FC = () => {
                 <div className="text-2xl font-bold text-zinc-700 dark:text-zinc-300">
                   {tcpConnections}
                 </div>
-                <div className="text-xs text-theme-secondary font-medium">TCP 连接</div>
+                <div className="text-xs text-theme-secondary font-medium">{t('TCP Connections')}</div>
               </div>
             </div>
           </CardContent>
@@ -465,7 +467,7 @@ export const Connections: React.FC = () => {
                 <div className="text-2xl font-bold text-stone-700 dark:text-stone-300">
                   {udpConnections}
                 </div>
-                <div className="text-xs text-theme-secondary font-medium">UDP 连接</div>
+                <div className="text-xs text-theme-secondary font-medium">{t('UDP Connections')}</div>
               </div>
             </div>
           </CardContent>
@@ -483,7 +485,7 @@ export const Connections: React.FC = () => {
                 <div className="text-lg font-bold text-neutral-700 dark:text-neutral-300">
                   {formatBytes(totalTraffic)}
                 </div>
-                <div className="text-xs text-theme-secondary font-medium">总流量</div>
+                <div className="text-xs text-theme-secondary font-medium">{t('Total Traffic')}</div>
               </div>
             </div>
           </CardContent>
@@ -543,11 +545,11 @@ export const Connections: React.FC = () => {
               value={sortKey}
               onChange={(e) => setSortKey(e.target.value as ConnectionSortKey)}
               options={[
-                { value: 'time', label: '时间' },
-                { value: 'host', label: '主机' },
-                { value: 'upload', label: '上传' },
-                { value: 'download', label: '下载' },
-                { value: 'total', label: '总流量' },
+                { value: 'time', label: t('Start Time') },
+                { value: 'host', label: t('Host') },
+                { value: 'upload', label: t('Upload') },
+                { value: 'download', label: t('Download') },
+                { value: 'total', label: t('Total Traffic') },
               ]}
               size="sm"
               className="min-w-[120px]"
@@ -573,7 +575,7 @@ export const Connections: React.FC = () => {
         <div className="mt-3 flex flex-col sm:flex-row items-center justify-between">
           <div className="flex items-center space-x-2 mb-2 sm:mb-0">
             <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              状态:
+              {t('Status:')}
             </div>
             <div className="flex items-center space-x-1">
               <button
@@ -585,7 +587,7 @@ export const Connections: React.FC = () => {
                     : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                 )}
               >
-                全部 ({connectionsData?.connections?.length || 0})
+                {t('All')} ({connectionsData?.connections?.length || 0})
               </button>
               <button
                 onClick={() => setStatusFilter('active')}
@@ -596,7 +598,7 @@ export const Connections: React.FC = () => {
                     : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                 )}
               >
-                活跃 ({activeConnectionsCount})
+                {t('Active')} ({activeConnectionsCount})
               </button>
               <button
                 onClick={() => setStatusFilter('closed')}
@@ -607,14 +609,14 @@ export const Connections: React.FC = () => {
                     : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                 )}
               >
-                已关闭 ({closedConnectionsCount})
+                {t('Closed')} ({closedConnectionsCount})
               </button>
             </div>
           </div>
           {searchQuery && (
             <div className="flex items-center">
               <div className="text-xs text-gray-500 dark:text-gray-400 font-medium mr-2">
-                找到 {filteredConnections.length} 个匹配的连接
+                {t('Found {{count}} matching connections', { count: filteredConnections.length })}
               </div>
               <Button
                 variant="ghost"
@@ -622,7 +624,7 @@ export const Connections: React.FC = () => {
                 onClick={resetFilters}
                 className="text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
               >
-                清除过滤器
+                {t('Clear filters')}
               </Button>
             </div>
           )}
@@ -641,18 +643,18 @@ export const Connections: React.FC = () => {
               </div>
               <h3 className="text-xl font-semibold text-theme mb-3">
                 {searchQuery || networkFilter !== 'all' || statusFilter !== 'all' 
-                  ? '没有找到匹配的连接' 
-                  : '暂无活跃连接'
+                  ? t('No matching connections found')
+                  : t('No active connections')
                 }
               </h3>
               <p className="text-theme-secondary max-w-md mx-auto">
                 {searchQuery || networkFilter !== 'all' 
-                  ? '尝试调整搜索条件或筛选器'
+                  ? t('Try adjusting search criteria or filters')
                   : statusFilter === 'closed' 
-                    ? '当前没有已关闭的连接记录'
+                    ? t('No closed connections recorded')
                     : statusFilter === 'active'
-                      ? '当前没有活跃的网络连接'
-                      : '当前没有任何连接记录'
+                      ? t('No active network connections')
+                      : t('No connection records')
                 }
               </p>
             </div>
@@ -666,9 +668,9 @@ export const Connections: React.FC = () => {
                     onChange={toggleAllConnections}
                     className="rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
                   />
-                  <span className="font-medium">显示 {filteredConnections.length} 个连接</span>
+                  <span className="font-medium">{t('Showing {{count}} connections', { count: filteredConnections.length })}</span>
                 </div>
-                <span>实时更新</span>
+                <span>{t('Real-time updates')}</span>
               </div>
               <div className="space-y-2 max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar">
                 <FixedVirtualList
@@ -728,7 +730,7 @@ export const Connections: React.FC = () => {
                                   </span>
                                   {'closed' in connection && connection.closed === true && (
                                     <span className="text-xs px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full">
-                                      已关闭
+                                      {t('Closed')}
                                     </span>
                                   )}
                                 </div>
@@ -737,21 +739,21 @@ export const Connections: React.FC = () => {
                               {/* 连接详情 - 使用表格式布局 */}
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 text-xs">
                                 <div className="flex">
-                                  <div className="w-16 text-gray-500 dark:text-gray-400">代理链:</div>
+                                  <div className="w-16 text-gray-500 dark:text-gray-400">{t('Proxy Chain')}:</div>
                                   <div className="flex-1 font-medium truncate text-theme-secondary">
                                     {connection.chains?.join(' → ') || 'Direct'}
                                   </div>
                                 </div>
                                 
                                 <div className="flex">
-                                  <div className="w-16 text-gray-500 dark:text-gray-400">规则:</div>
+                                  <div className="w-16 text-gray-500 dark:text-gray-400">{t('Rule')}:</div>
                                   <div className="flex-1 font-medium truncate text-theme-secondary">
                                     {connection.rule || 'Unknown'}
                                   </div>
                                 </div>
                                 
                                 <div className="flex">
-                                  <div className="w-16 text-gray-500 dark:text-gray-400">流量:</div>
+                                  <div className="w-16 text-gray-500 dark:text-gray-400">{t('Traffic')}:</div>
                                   <div className="flex-1 font-medium">
                                     <span className="text-green-600 dark:text-green-400 inline-block w-24">↑{formatBytes(connection.upload)}</span>
                                     <span className="text-blue-600 dark:text-blue-400 inline-block w-24">↓{formatBytes(connection.download)}</span>
@@ -759,7 +761,7 @@ export const Connections: React.FC = () => {
                                 </div>
                                 
                                 <div className="flex">
-                                  <div className="w-16 text-gray-500 dark:text-gray-400">时长:</div>
+                                  <div className="w-16 text-gray-500 dark:text-gray-400">{t('Duration')}:</div>
                                   <div className="flex-1 font-medium text-theme-secondary">
                                     {formatDuration(connection.start)}
                                   </div>
@@ -786,7 +788,7 @@ export const Connections: React.FC = () => {
                               <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                               </svg>
-                              关闭
+                              {t('Close')}
                             </Button>
                           </div>
                         </div>
@@ -805,7 +807,7 @@ export const Connections: React.FC = () => {
       <Drawer
         open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        title="连接详情"
+        title={t('Connection Details')}
         size="lg"
       >
         <ConnectionDetail connection={selectedConnection} />
