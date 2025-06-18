@@ -24,8 +24,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, className }) => 
         connections: '连接',
         rules: '规则',
         logs: '日志',
-        configs: '配置',
+        config: '配置',
         'api-config': 'API',
+        about: '关于',
       };
       setCurrentPageTitle(titleMap[hash] || '概览');
     };

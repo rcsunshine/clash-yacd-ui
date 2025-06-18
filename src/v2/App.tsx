@@ -18,6 +18,7 @@ const Rules = React.lazy(() => import('./pages/Rules').then(m => ({ default: m.R
 const Logs = React.lazy(() => import('./pages/Logs').then(m => ({ default: m.Logs })));
 const Config = React.lazy(() => import('./pages/Config').then(m => ({ default: m.Config })));
 const APIConfig = React.lazy(() => import('./pages/APIConfig').then(m => ({ default: m.APIConfig })));
+const About = React.lazy(() => import('./pages/About').then(m => ({ default: m.About })));
 
 // 创建全局 Query Client
 const queryClient = new QueryClient({
@@ -55,6 +56,8 @@ const PageRenderer: React.FC<{ currentPage: string }> = ({ currentPage }) => {
         return <Suspense fallback={<PageLoadingFallback pageName="配置" />}><Config /></Suspense>;
       case 'api-config':
         return <Suspense fallback={<PageLoadingFallback pageName="API配置" />}><APIConfig /></Suspense>;
+      case 'about':
+        return <Suspense fallback={<PageLoadingFallback pageName="关于" />}><About /></Suspense>;
       default:
         return <Suspense fallback={<PageLoadingFallback pageName="概览" />}><Dashboard /></Suspense>;
     }

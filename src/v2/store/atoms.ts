@@ -73,7 +73,7 @@ function getInitialPage(): string {
     const saved = localStorage.getItem('v2-current-page');
     if (saved && typeof saved === 'string') {
       // 验证页面名称有效性
-      const validPages = ['dashboard', 'proxies', 'connections', 'rules', 'logs', 'config', 'api-config'];
+      const validPages = ['dashboard', 'proxies', 'connections', 'rules', 'logs', 'config', 'api-config', 'about'];
       if (validPages.includes(saved)) {
         return saved;
       }
