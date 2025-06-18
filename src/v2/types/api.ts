@@ -188,6 +188,11 @@ export interface UseQueryResult<T> {
   isSuccess?: boolean;
 }
 
+// 规则Hook特有的返回类型
+export interface RulesQueryResult extends UseQueryResult<RulesResponse> {
+  updateRuleProvider: (providerName: string) => Promise<any>;
+}
+
 // WebSocket 连接状态
 export interface WebSocketState {
   isConnected: boolean;

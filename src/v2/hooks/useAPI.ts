@@ -9,6 +9,7 @@ import {
   LogItem,
   ProxyItem,
   QueryOptions,
+  RulesQueryResult,
   RulesResponse,
   SystemInfo,
   TrafficData,
@@ -858,56 +859,61 @@ export function useConnections() {
 }
 
 // 规则Hook - 移除重复的useApiConfigEffect调用
-export function useRules(): UseQueryResult<RulesResponse> {
+export function useRules(): RulesQueryResult {
   const apiConfig = useApiConfig();
-  
-  return useQuery2<RulesResponse>(
+  const queryClient = useQueryClient();
+
+  // 使用useQuery2获取规则
+  const rulesQuery = useQuery2<RulesResponse>(
     'rules',
     async () => {
+      if (!apiConfig?.baseURL) throw new Error('API配置未设置');
+      
       const client = createAPIClient(apiConfig);
-      
-      // 获取规则
       const rulesResponse = await client.get('/rules');
-      const rulesData = rulesResponse.data || [];
       
-      // 获取规则提供者
-      let providersData = {};
-      try {
-        // 首先尝试获取规则提供者列表
-        const providersResponse = await client.get('/providers/rules');
-        if (providersResponse.data) {
-          // 如果成功获取到提供者列表，则获取每个提供者的详细信息
-          const providers = providersResponse.data;
-          const providersDetails = {};
-          
-          // 并行获取所有提供者的详细信息
-          await Promise.all(
-            Object.keys(providers).map(async (name) => {
-              try {
-                const detailResponse = await client.get(`/providers/rules/${encodeURIComponent(name)}`);
-                if (detailResponse.data) {
-                  providersDetails[name] = detailResponse.data;
-                }
-              } catch (error) {
-                console.warn(`Failed to fetch details for rule provider ${name}:`, error);
-              }
-            })
-          );
-          
-          providersData = providersDetails;
-        }
-      } catch (error) {
-        console.log('No rule providers found:', error);
-        providersData = {};
+      if (rulesResponse.error) {
+        throw new Error(rulesResponse.error);
       }
       
+      const providersResponse = await client.get('/providers/rules');
+      if (providersResponse.error) {
+        throw new Error(providersResponse.error);
+      }
+      
+      // 合并规则和提供者数据
       return {
-        rules: Array.isArray(rulesData) ? rulesData : (rulesData?.rules || []),
-        providers: providersData || {}
+        rules: rulesResponse.data?.rules || [],
+        providers: providersResponse.data?.providers || {}
       };
     },
-    { staleTime: 30000 }
+    {
+      staleTime: 30000, // 30秒缓存
+      retry: 1
+    }
   );
+
+  // 添加更新规则提供者的方法
+  const updateRuleProvider = async (providerName: string) => {
+    if (!apiConfig?.baseURL) throw new Error('API配置未设置');
+    
+    const client = createAPIClient(apiConfig);
+    const response = await client.put(`/providers/rules/${providerName}`);
+    
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    
+    // 更新缓存
+    queryClient.invalidateQueries(['rules']);
+    
+    return response.data;
+  };
+
+  return {
+    ...rulesQuery,
+    updateRuleProvider
+  } as RulesQueryResult;
 }
 
 // 连接统计Hook - 接收连接数据避免重复WebSocket连接

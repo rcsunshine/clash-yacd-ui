@@ -2,6 +2,56 @@
 
 ## 🎯 最新重大更新 (2024-06-19)
 
+### ✅ 规则提供者更新功能
+**问题**: 规则提供者(Rule Provider)虽然显示在界面上，但缺乏更新按钮功能，无法手动刷新规则
+
+**解决方案**: 
+- **🔄 添加规则提供者API** - 实现`updateRuleProvider`方法更新单个规则提供者
+- **🛠️ 扩展规则Hook** - 在useRules中添加更新功能，并使用typescript扩展类型确保类型安全
+- **📊 添加UI交互** - 实现更新按钮，包括加载状态和成功提示
+- **🎨 完善用户体验** - 加入动画和反馈消息，操作过程清晰可见
+
+**技术实现**:
+```typescript
+// 类型定义
+export interface RulesQueryResult extends UseQueryResult<RulesResponse> {
+  updateRuleProvider: (providerName: string) => Promise<any>;
+}
+
+// API实现
+const updateRuleProvider = async (providerName: string) => {
+  if (!apiConfig?.baseURL) throw new Error('API配置未设置');
+  
+  const client = createAPIClient(apiConfig);
+  const response = await client.put(`/providers/rules/${providerName}`);
+  
+  if (response.error) {
+    throw new Error(response.error);
+  }
+  
+  // 更新缓存
+  queryClient.invalidateQueries(['rules']);
+  
+  return response.data;
+};
+
+// UI实现
+<Button 
+  variant="outline" 
+  size="sm"
+  disabled={updatingProvider === provider.name}
+  onClick={() => handleUpdateProvider(provider.name)}
+>
+  {updatingProvider === provider.name ? "更新中..." : "更新"}
+</Button>
+```
+
+**优化成果**:
+- ✅ **功能完善** - 用户可以手动刷新规则提供者，确保规则最新
+- ✅ **交互友好** - 按钮状态、加载动画和反馈提示清晰明了
+- ✅ **错误处理** - 完善的错误捕获和展示机制
+- ✅ **类型安全** - 使用TypeScript扩展类型，确保API类型安全
+
 ### ✅ 修复连接时长排序逻辑
 **问题**: 连接时长排序与其他字段的升序/降序行为不一致，导致用户困惑
 
