@@ -1211,9 +1211,6 @@ export function useLogs() {
       // 先清空当前日志，给用户一个明确的刷新反馈
       setLogs([]);
       
-      // 使用全局WebSocket管理器强制重连
-      const globalWsManager = GlobalWebSocketManager.getInstance();
-      
       // 使用延迟确保UI更新后再重连WebSocket
       setTimeout(() => {
         // 强制重连WebSocket

@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai';
-import React, { useState, useEffect } from 'react';
+import React, {useState } from 'react';
 
 import { createAPIClient } from '../api/client';
 import { v2ApiConfigsAtom, v2SelectedApiConfigIndexAtom } from '../store/atoms';

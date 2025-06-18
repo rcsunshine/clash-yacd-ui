@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 import ConnectionDetail from '../components/ConnectionDetail';
 import { Button } from '../components/ui/Button';
@@ -9,6 +9,7 @@ import { SearchInput } from '../components/ui/SearchInput';
 import { Select } from '../components/ui/Select';
 import { FixedVirtualList } from '../components/ui/VirtualList';
 import { useCloseAllConnections, useCloseConnection, useConnections } from '../hooks/useAPI';
+import { useApiConfig } from '../hooks/useApiConfig';
 import { ConnectionSortKey,NetworkType, useConnectionsSearch } from '../hooks/useConnectionsSearch';
 import useKeyboardShortcut from '../hooks/useKeyboardShortcut';
 import { cn } from '../utils/cn';
@@ -34,10 +35,39 @@ interface Connection {
 }
 
 export const Connections: React.FC = () => {
+  const apiConfig = useApiConfig();
   const { data: connectionsData, isLoading, error, refetch, isPaused, togglePause } = useConnections();
   const closeConnection = useCloseConnection();
   const closeAllConnections = useCloseAllConnections();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // 加载超时处理
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  
+  useEffect(() => {
+    if (isLoading && apiConfig?.baseURL) {
+      // 10秒后如果还在加载，显示超时提示
+      const timer = setTimeout(() => {
+        setLoadingTimeout(true);
+      }, 10000);
+      
+      return () => clearTimeout(timer);
+    } else {
+      setLoadingTimeout(false);
+    }
+  }, [isLoading, apiConfig?.baseURL]);
+  
+  // 添加调试信息
+  console.log('🔍 Connections Debug:', {
+    apiConfig: apiConfig ? { baseURL: apiConfig.baseURL, hasSecret: !!apiConfig.secret } : null,
+    isLoading,
+    error: error?.message,
+    hasData: !!connectionsData,
+    dataKeys: connectionsData ? Object.keys(connectionsData) : null,
+    connectionsCount: connectionsData?.connections?.length,
+    isPaused,
+    loadingTimeout
+  });
   
   // 连接详情抽屉
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
@@ -189,15 +219,21 @@ export const Connections: React.FC = () => {
     ? connectionsData?.connections?.find(c => c.id === selectedConnectionId) || null
     : null;
   
-  if (isLoading) {
+  // 检查API配置
+  if (!apiConfig?.baseURL) {
+    console.log('⚠️ Connections: No API config');
     return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-theme hidden lg:block">连接</h1>
+      <div className="space-y-6 p-6">
+        <h1 className="text-2xl font-bold text-theme">连接</h1>
         <Card>
           <CardContent>
-            <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+            <div className="text-center py-8">
+              <h3 className="text-lg font-medium text-theme mb-2">
+                API 配置未设置
+              </h3>
+              <p className="text-theme-secondary mb-4">
+                请先设置 Clash API 配置
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -205,24 +241,99 @@ export const Connections: React.FC = () => {
     );
   }
   
-  if (error) {
+  if (isLoading && !loadingTimeout) {
+    console.log('🔄 Connections: Showing loading state');
     return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-theme hidden lg:block">连接</h1>
+      <div className="space-y-6 p-6">
+        <h1 className="text-2xl font-bold text-theme">连接</h1>
         <Card>
           <CardContent>
-            <div className="text-center py-8">
-              <h3 className="text-lg font-medium text-theme mb-2">
-                加载失败
-              </h3>
-              <p className="text-theme-secondary mb-4">{String(error)}</p>
-              <Button onClick={() => refetch()}>重试</Button>
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+            </div>
+            <div className="mt-4 text-sm text-theme-secondary">
+              正在加载连接数据...
+            </div>
+            <div className="mt-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setLoadingTimeout(true)}
+                className="text-xs"
+              >
+                强制显示页面
+              </Button>
             </div>
           </CardContent>
         </Card>
       </div>
     );
   }
+  
+  // 加载超时或有错误时，显示带有调试信息的页面
+  if (loadingTimeout || error) {
+    console.log('⚠️ Connections: Showing timeout/error state with debug info');
+    return (
+      <div className="space-y-6 p-6">
+        <h1 className="text-2xl font-bold text-theme">连接</h1>
+        <Card>
+          <CardContent>
+            <div className="space-y-4">
+              {error && (
+                <div className="text-center py-4">
+                  <h3 className="text-lg font-medium text-theme mb-2">
+                    加载失败
+                  </h3>
+                  <p className="text-theme-secondary mb-4">{String(error)}</p>
+                </div>
+              )}
+              
+              {loadingTimeout && !error && (
+                <div className="text-center py-4">
+                  <h3 className="text-lg font-medium text-theme mb-2">
+                    加载超时
+                  </h3>
+                  <p className="text-theme-secondary mb-4">
+                    连接数据加载时间过长，可能是网络问题或API配置错误
+                  </p>
+                </div>
+              )}
+              
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">调试信息：</h4>
+                <pre className="text-xs text-theme-secondary overflow-auto">
+                  {JSON.stringify({
+                    apiConfig: apiConfig ? { baseURL: apiConfig.baseURL, hasSecret: !!apiConfig.secret } : null,
+                    isLoading,
+                    hasData: !!connectionsData,
+                    connectionsCount: connectionsData?.connections?.length,
+                    isPaused,
+                    loadingTimeout
+                  }, null, 2)}
+                </pre>
+              </div>
+              
+              <div className="flex space-x-2">
+                <Button onClick={() => refetch()}>重试</Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setLoadingTimeout(false);
+                    // 强制显示页面内容，即使没有数据
+                  }}
+                >
+                  继续显示页面
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
+  console.log('✅ Connections: Showing main content');
   
   const totalConnections = connectionsData?.connections?.length || 0;
   const tcpConnections = connectionsData?.connections?.filter(c => c.metadata.network === 'tcp')?.length || 0;
@@ -231,6 +342,18 @@ export const Connections: React.FC = () => {
   
   return (
     <div className="space-y-4 p-6">
+      {/* 调试信息条 - 开发环境显示 */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+          <div className="text-xs text-yellow-800 dark:text-yellow-200">
+            <strong>调试模式:</strong> API={apiConfig?.baseURL || 'N/A'} | 
+            加载中={isLoading ? '是' : '否'} | 
+            数据={connectionsData ? `${totalConnections}个连接` : '无'} | 
+            错误={error ? '有' : '无'}
+          </div>
+        </div>
+      )}
+      
       {/* 统一的页面头部样式 */}
       <div className="flex items-center justify-between py-6 px-6 bg-gradient-to-r from-slate-500/10 to-stone-500/10 dark:from-slate-500/20 dark:to-stone-500/20 rounded-lg border border-slate-300/50 dark:border-slate-600/50">
         <div className="flex items-center space-x-4">
