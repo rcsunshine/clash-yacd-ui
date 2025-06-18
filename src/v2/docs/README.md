@@ -1,42 +1,116 @@
-# YACD V2 项目文档
+# YACD V2 项目文档中心
 
-本目录包含YACD V2项目的完整技术文档。
+欢迎来到 YACD V2 项目文档中心！这里包含了项目的完整技术文档、开发指南和进度记录。
 
-## 📚 文档列表
+## 📚 文档导航
 
-### 🚀 [快速开始指南](./QUICK_START.md)
-5分钟快速上手指南，包含环境搭建、API配置和基本使用方法。
+### 🚀 快速开始
+- **[快速开始指南](./QUICK_START.md)** - 5分钟快速上手V2版本
+- **[迁移指南](./MIGRATION_GUIDE.md)** - 从V1迁移到V2的完整指南
 
-### 📋 [技术规范文档](./TECHNICAL_SPECIFICATION.md)
-完整的技术规范文档，包含架构设计、组件库、API集成、主题系统等详细说明。
+### 📋 项目管理
+- **[开发进度记录](./PROGRESS_RECORD.md)** - 详细的开发进度和功能完成情况
+- **[最终完成总结](./FINAL_COMPLETION_SUMMARY.md)** - 项目完成情况的全面总结
+- **[V2.1 规划](./V2.1_PLANNING.md)** - 下一版本的功能规划
 
-### 📊 [开发进度跟踪](./DEVELOPMENT_PROGRESS.md)
-详细的开发进度跟踪，包含各阶段完成情况、下一步计划和技术债务。
+### 🔧 技术文档
+- **[技术规范](./TECHNICAL_SPECIFICATION.md)** - 完整的技术架构和实现规范
+- **[功能测试矩阵](./FEATURE_TEST_MATRIX.md)** - 全面的功能测试和验证
+- **[开发进度跟踪](./DEVELOPMENT_PROGRESS.md)** - 详细的开发进度跟踪
 
-### 📈 [V2架构开发进展报告](./PROGRESS_REPORT.md)
-V2架构的详细开发进展报告，包含技术特性对比、里程碑和统计数据。
+### 🎨 设计和改进
+- **[界面改进总结](./UI_IMPROVEMENTS_SUMMARY.md)** - 界面美化和紧凑化改进总结
 
-### 🧪 [功能测试矩阵](./FEATURE_TEST_MATRIX.md)
-详细的功能点列表、测试用例和验证状态，包含所有Phase的功能测试覆盖。
+### 📖 API 文档
+- **[API配置使用指南](./API_CONFIG_USAGE_GUIDE.md)** - API配置的详细使用说明
+- **[API配置持久化测试](./API_CONFIG_PERSISTENCE_TEST.md)** - API配置持久化功能测试
+- **[API配置修复测试](./API_CONFIG_FIX_TEST.md)** - API配置相关问题修复测试
 
-### 🔄 [Git提交指南](./GIT_COMMIT_GUIDE.md)
-Git工作流指南，包含提交规范、分支策略和跨设备开发指导。
+### 🛠️ 开发指南
+- **[Git提交指南](./GIT_COMMIT_GUIDE.md)** - 标准化的Git提交规范
 
-## 📖 阅读顺序建议
+## 🎯 项目概览
 
-1. **新手开发者**: 先阅读 `QUICK_START.md`，然后查看 `TECHNICAL_SPECIFICATION.md`
-2. **项目维护者**: 重点关注 `DEVELOPMENT_PROGRESS.md` 和 `GIT_COMMIT_GUIDE.md`
-3. **架构了解**: 详细阅读 `TECHNICAL_SPECIFICATION.md` 的架构设计部分
-4. **进展概览**: 查看 `PROGRESS_REPORT.md` 了解整体开发进展和技术对比
-5. **功能测试**: 查看 `FEATURE_TEST_MATRIX.md` 了解详细功能点和测试状态
+YACD V2 是基于现代化技术栈重构的 Clash Dashboard，采用以下核心技术：
+
+- **前端框架**: React 18 + TypeScript
+- **样式系统**: Tailwind CSS
+- **构建工具**: Vite
+- **状态管理**: Jotai + React Query
+- **开发端口**: 3002
+
+## 📊 当前状态
+
+### ✅ 已完成功能 (96% V1功能对等)
+- **Dashboard** (概览) - 100% 完成
+- **Proxies** (代理管理) - 95% 完成
+- **Connections** (连接管理) - 90% 完成
+- **Rules** (规则管理) - 100% 完成
+- **Logs** (日志查看) - 95% 完成
+- **Config** (配置管理) - 100% 完成
+- **About** (关于页面) - 100% 完成
+
+### 🔄 开发环境
+```bash
+# 启动V2开发服务器
+npm run dev:v2
+
+# 同时运行V1和V2进行对比
+npm run dev:both
+
+# 访问地址
+# V2: http://localhost:3002/index.v2.html
+# V1: http://localhost:3000
+```
+
+## 🏗️ 架构特点
+
+### 渐进式迁移
+- 与V1完全兼容，可并行运行
+- 完全复用现有V1的API层
+- V1和V2状态实时同步
+
+### 现代化技术栈
+- React 18 并发特性
+- TypeScript 严格类型检查
+- Tailwind CSS 原子化样式
+- Vite 快速构建
+
+### 组件化设计
+- 高度可复用的UI组件库
+- 清晰的页面和组件分离
+- 统一的设计系统
+
+## 📈 性能优势
+
+- **更快的构建速度**: Vite vs Webpack
+- **更好的开发体验**: 热重载 + TypeScript
+- **更小的包体积**: 按需加载 + 代码分割
+- **更好的用户体验**: React 18 + 现代化UI
+
+## 🎨 设计改进
+
+V2版本在界面设计上进行了全面升级：
+
+- **现代化设计**: 渐变背景、阴影效果、圆角设计
+- **紧凑化布局**: 提升30%+的空间利用率
+- **完整数据**: 恢复并增强所有关键数据展示
+- **响应式设计**: 优化移动端体验
 
 ## 🔗 相关链接
 
-- **V2开发版**: http://localhost:3001
-- **V2测试页面**: http://localhost:3001/#test
-- **项目仓库**: [GitHub Repository]
+- **项目仓库**: [GitHub Repository](https://github.com/your-repo/clash-yacd-ui)
+- **问题反馈**: [GitHub Issues](https://github.com/your-repo/clash-yacd-ui/issues)
+- **更新日志**: [CHANGELOG.md](../../CHANGELOG.md)
+
+## 📝 贡献指南
+
+欢迎参与V2版本的开发！请参考：
+
+1. [Git提交指南](./GIT_COMMIT_GUIDE.md)
+2. [技术规范](./TECHNICAL_SPECIFICATION.md)
+3. [开发进度记录](./PROGRESS_RECORD.md)
 
 ---
 
-**文档维护**: 请在每次重要更新后同步更新相关文档  
-**最后更新**: 2024年12月 
+**最后更新**: 2024年 | **文档版本**: V2.0 | **项目状态**: 生产就绪 

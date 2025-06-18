@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useEffect,useRef, useState } from 'react';
 
 import ConnectionDetail from '../components/ConnectionDetail';
 import { Button } from '../components/ui/Button';
