@@ -1,4 +1,5 @@
 import React, {useMemo,useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
@@ -24,6 +25,7 @@ interface LogStats {
 }
 
 export const Logs: React.FC = () => {
+  const { t } = useTranslation();
   const { logs: rawLogs, isConnected, clearLogs: clearApiLogs, refreshLogs } = useLogs();
   const [filter, setFilter] = useState<LogLevel | 'all'>('all');
   const [autoScroll, setAutoScroll] = useState(true);
@@ -233,9 +235,9 @@ export const Logs: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-theme hidden lg:block">日志</h1>
+            <h1 className="text-xl font-bold text-theme hidden lg:block">{t('Logs')}</h1>
             <p className="text-sm text-theme-secondary">
-              系统运行日志 • 共 {logs.length} 条记录 • {isConnected ? '✅ 已连接' : '❌ 未连接'}
+              {t('System runtime logs')} • {t('Total {{count}} records', { count: logs.length })} • {isConnected ? t('Connected') : t('Disconnected')}
             </p>
           </div>
         </div>
@@ -249,7 +251,7 @@ export const Logs: React.FC = () => {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
-            {showStats ? '隐藏统计' : '显示统计'}
+            {showStats ? t('Hide Statistics') : t('Show Statistics')}
           </Button>
           <Button 
             variant="outline" 
@@ -261,7 +263,7 @@ export const Logs: React.FC = () => {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
-            导出统计
+            {t('Export Statistics')}
           </Button>
           <Button 
             variant="outline" 
@@ -273,7 +275,7 @@ export const Logs: React.FC = () => {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            导出 JSON
+            {t('Export JSON')}
           </Button>
           <Button 
             variant="outline" 
@@ -285,7 +287,7 @@ export const Logs: React.FC = () => {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            导出 TXT
+            {t('Export TXT')}
           </Button>
           <Button 
             variant="outline" 
@@ -296,7 +298,7 @@ export const Logs: React.FC = () => {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
-            清空
+            {t('Clear')}
           </Button>
           <Button 
             variant="outline" 
@@ -308,7 +310,7 @@ export const Logs: React.FC = () => {
             <svg className={`w-4 h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            {isRefreshing ? '刷新中...' : '刷新'}
+            {isRefreshing ? t('Refreshing...') : t('Refresh')}
           </Button>
         </div>
       </div>
@@ -323,13 +325,13 @@ export const Logs: React.FC = () => {
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
-                日志统计分析
+                {t('Log Statistics Analysis')}
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* 级别分布饼图 */}
                 <div className="space-y-3">
-                  <h4 className="font-medium text-theme-secondary">级别分布</h4>
+                  <h4 className="font-medium text-theme-secondary">{t('Level Distribution')}</h4>
                   <div className="space-y-2">
                     {Object.entries(logStats.levelCounts).map(([level, count]) => {
                       const percentage = logStats.totalLogs > 0 ? (count / logStats.totalLogs * 100).toFixed(1) : '0';
@@ -354,7 +356,7 @@ export const Logs: React.FC = () => {
 
                 {/* 时间分布 */}
                 <div className="space-y-3">
-                  <h4 className="font-medium text-theme-secondary">时间分布 (24小时)</h4>
+                  <h4 className="font-medium text-theme-secondary">{t('Time Distribution (24 hours)')}</h4>
                   <div className="space-y-1">
                     {logStats.timeDistribution.slice(0, 8).map(({ hour, count }) => (
                       <div key={hour} className="flex items-center space-x-2">
@@ -372,7 +374,7 @@ export const Logs: React.FC = () => {
                     ))}
                     {logStats.timeDistribution.length > 8 && (
                       <div className="text-xs text-theme-tertiary text-center pt-1">
-                        +{logStats.timeDistribution.length - 8} 更多时段
+                        {t('+{count} more time periods', { count: logStats.timeDistribution.length - 8 })}
                       </div>
                     )}
                   </div>
@@ -380,7 +382,7 @@ export const Logs: React.FC = () => {
 
                 {/* 关键词统计 */}
                 <div className="space-y-3">
-                  <h4 className="font-medium text-theme-secondary">热门关键词</h4>
+                  <h4 className="font-medium text-theme-secondary">{t('Top Keywords')}</h4>
                   <div className="space-y-1">
                     {logStats.topKeywords.slice(0, 8).map(({ keyword, count }) => (
                       <div key={keyword} className="flex items-center justify-between">
@@ -392,7 +394,7 @@ export const Logs: React.FC = () => {
                     ))}
                     {logStats.topKeywords.length > 8 && (
                       <div className="text-xs text-theme-tertiary text-center pt-1">
-                        +{logStats.topKeywords.length - 8} 更多关键词
+                        {t('+{count} more keywords', { count: logStats.topKeywords.length - 8 })}
                       </div>
                     )}
                   </div>
@@ -401,31 +403,31 @@ export const Logs: React.FC = () => {
 
               {/* 健康度指标 */}
               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
-                <h4 className="font-medium text-theme-secondary mb-3">系统健康度</h4>
+                <h4 className="font-medium text-theme-secondary mb-3">{t('System Health')}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                       {logStats.totalLogs > 0 ? (100 - (logStats.levelCounts.error / logStats.totalLogs * 100)).toFixed(1) : '100'}%
                     </div>
-                    <div className="text-xs text-theme-secondary">系统稳定性</div>
+                    <div className="text-xs text-theme-secondary">{t('System Stability')}</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {logStats.levelCounts.error}
                     </div>
-                    <div className="text-xs text-theme-secondary">错误总数</div>
+                    <div className="text-xs text-theme-secondary">{t('Total Errors')}</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                       {logStats.levelCounts.warning}
                     </div>
-                    <div className="text-xs text-theme-secondary">警告总数</div>
+                    <div className="text-xs text-theme-secondary">{t('Total Warnings')}</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-theme">
                       {logStats.recentActivity.length}
                     </div>
-                    <div className="text-xs text-theme-secondary">活跃时段</div>
+                    <div className="text-xs text-theme-secondary">{t('Active Hours')}</div>
                   </div>
                 </div>
               </div>
@@ -448,7 +450,7 @@ export const Logs: React.FC = () => {
                 <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
                   {logs.filter(log => log.level === 'info').length}
                 </div>
-                <div className="text-xs text-theme-secondary font-medium">信息</div>
+                <div className="text-xs text-theme-secondary font-medium">{t('Info')}</div>
               </div>
             </div>
           </CardContent>
@@ -466,7 +468,7 @@ export const Logs: React.FC = () => {
                 <div className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">
                   {logs.filter(log => log.level === 'warning').length}
                 </div>
-                <div className="text-xs text-theme-secondary font-medium">警告</div>
+                <div className="text-xs text-theme-secondary font-medium">{t('Warning')}</div>
               </div>
             </div>
           </CardContent>
@@ -484,7 +486,7 @@ export const Logs: React.FC = () => {
                 <div className="text-2xl font-bold text-red-700 dark:text-red-300">
                   {logs.filter(log => log.level === 'error').length}
                 </div>
-                <div className="text-xs text-theme-secondary font-medium">错误</div>
+                <div className="text-xs text-theme-secondary font-medium">{t('Error')}</div>
               </div>
             </div>
           </CardContent>
@@ -503,7 +505,7 @@ export const Logs: React.FC = () => {
                 <div className="text-2xl font-bold text-theme-secondary">
                   {logs.filter(log => log.level === 'debug').length}
                 </div>
-                <div className="text-xs text-theme-secondary font-medium">调试</div>
+                <div className="text-xs text-theme-secondary font-medium">{t('Debug')}</div>
               </div>
             </div>
           </CardContent>
@@ -518,7 +520,7 @@ export const Logs: React.FC = () => {
             <div className="flex flex-col md:flex-row gap-3">
               <div className="flex-1">
                 <SearchInput
-                  placeholder="搜索日志内容或来源..."
+                  placeholder={t('Search log content or source...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -531,14 +533,14 @@ export const Logs: React.FC = () => {
                     onChange={(e) => setAutoScroll(e.target.checked)}
                     className="w-4 h-4 text-slate-600 bg-gray-100 border-gray-300 rounded focus:ring-slate-500 dark:focus:ring-slate-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                   />
-                  <span>自动滚动</span>
+                  <span>{t('Auto Scroll')}</span>
                 </label>
               </div>
             </div>
             
             {/* 级别过滤 */}
             <div className="flex items-center space-x-3">
-              <span className="text-sm font-medium text-theme-secondary">过滤级别:</span>
+              <span className="text-sm font-medium text-theme-secondary">{t('Filter Level:')}</span>
               <div className="flex space-x-2">
                 {(['all', 'info', 'warning', 'error', 'debug'] as const).map((level) => (
                   <button
@@ -550,7 +552,7 @@ export const Logs: React.FC = () => {
                         : 'bg-theme-tertiary text-theme-secondary hover:bg-gray-200 dark:hover:bg-gray-700'
                     }`}
                   >
-                    {level === 'all' ? '全部' : level}
+                    {level === 'all' ? t('All') : t(level)}
                   </button>
                 ))}
               </div>
@@ -571,10 +573,10 @@ export const Logs: React.FC = () => {
                   </svg>
                 </div>
                 <h3 className="text-xl font-semibold text-theme mb-3">
-                  暂无日志记录
+                  {t('No log records')}
                 </h3>
                 <p className="text-theme-secondary max-w-md mx-auto">
-                  当前没有符合过滤条件的日志记录
+                  {t('No log records match the current filter criteria')}
                 </p>
               </div>
             ) : (

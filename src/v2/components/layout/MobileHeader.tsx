@@ -2,6 +2,7 @@ import React from 'react';
 
 import { cn } from '../../utils/cn';
 import { StatusIndicator } from '../ui/StatusIndicator';
+import { useTranslation } from '../../i18n';
 
 export interface MobileHeaderProps {
   title: string;
@@ -19,6 +20,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   className,
   connectionStatus,
 }) => {
+  const { t } = useTranslation();
   return (
     <header className={cn(
       'lg:!hidden max-lg:flex hidden flex items-center justify-between',
@@ -38,7 +40,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           'focus:outline-none focus:ring-2 focus:ring-blue-500',
           'transition-colors duration-200'
         )}
-        aria-label="打开菜单"
+        aria-label={t('Open menu')}
       >
         <svg 
           className="w-6 h-6" 

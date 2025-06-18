@@ -204,13 +204,13 @@ const ProxyGroupCard: React.FC<{
                 </span>
                 <span className="text-theme-tertiary">•</span>
                 <span className="text-theme-secondary">
-                  当前: <span className="font-medium text-theme-secondary">{group.now}</span>
+                  {t('Current')}: <span className="font-medium text-theme-secondary">{group.now}</span>
                 </span>
                 {group.type !== 'Selector' && (
                   <>
                     <span className="text-theme-tertiary">•</span>
                     <span className="text-xs text-amber-600 dark:text-amber-400">
-                      自动管理
+                      {t('Auto Managed')}
                     </span>
                   </>
                 )}
@@ -226,7 +226,7 @@ const ProxyGroupCard: React.FC<{
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" />
               </svg>
-              <span>{group.all.length} 个节点</span>
+              <span>{group.all.length} {t('nodes')}</span>
             </div>
             <Button
               variant="outline"
@@ -248,7 +248,7 @@ const ProxyGroupCard: React.FC<{
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  <span>取消</span>
+                  <span>{t('Cancel')}</span>
                 </>
               ) : (
                 <>
@@ -464,45 +464,51 @@ const sortProxyGroupsByGlobal = (proxiesData: any) => {
     .map((group: any) => group[1]);
 };
 
-const LoadingContent = () => (
-  <Card className="overflow-hidden border-0 shadow-lg">
-    <CardContent className="p-12">
-      <div className="text-center">
-        <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center animate-pulse">
-          <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
+const LoadingContent = () => {
+  const { t } = useTranslation();
+  return (
+    <Card className="overflow-hidden border-0 shadow-lg">
+      <CardContent className="p-12">
+        <div className="text-center">
+          <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center animate-pulse">
+            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-theme mb-3">
+            {t('Loading...')}
+          </h3>
+          <p className="text-theme-secondary">
+            {t('Loading proxy group information')}
+          </p>
         </div>
-        <h3 className="text-xl font-semibold text-theme mb-3">
-          加载中...
-        </h3>
-        <p className="text-theme-secondary">
-          正在获取代理组信息
-        </p>
-      </div>
-    </CardContent>
-  </Card>
-);
+      </CardContent>
+    </Card>
+  );
+};
 
-const ErrorContent = ({ error }: { error: unknown }) => (
-  <Card className="overflow-hidden border-0 shadow-lg">
-    <CardContent className="p-12">
-      <div className="text-center">
-        <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/50 dark:to-red-800/50 rounded-full flex items-center justify-center">
-          <svg className="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
+const ErrorContent = ({ error }: { error: unknown }) => {
+  const { t } = useTranslation();
+  return (
+    <Card className="overflow-hidden border-0 shadow-lg">
+      <CardContent className="p-12">
+        <div className="text-center">
+          <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/50 dark:to-red-800/50 rounded-full flex items-center justify-center">
+            <svg className="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-theme mb-3">
+            {t('Load Failed')}
+          </h3>
+          <p className="text-theme-secondary max-w-md mx-auto">
+            {error instanceof Error ? error.message : t('Error occurred while getting proxy group information')}
+          </p>
         </div>
-        <h3 className="text-xl font-semibold text-theme mb-3">
-          加载失败
-        </h3>
-        <p className="text-theme-secondary max-w-md mx-auto">
-          {error instanceof Error ? error.message : '获取代理组信息时发生错误'}
-        </p>
-      </div>
-    </CardContent>
-  </Card>
-);
+      </CardContent>
+    </Card>
+  );
+};
 
 export const Proxies: React.FC = () => {
   const { t } = useTranslation();
@@ -571,15 +577,15 @@ export const Proxies: React.FC = () => {
       const result = await switchProxy(groupName, proxyName);
       if (result.error) {
         console.error('Failed to switch proxy:', result.error);
-        showNotification('error', `切换到 "${proxyName}" 失败，请重试`);
+        showNotification('error', t('Switched to "{proxyName}" failed, please retry', { proxyName }));
       } else {
         console.log(`Successfully switched ${groupName} to ${proxyName}`);
-        showNotification('success', `已切换到 "${proxyName}"`);
+        showNotification('success', t('Switched to "{proxyName}"', { proxyName }));
         refetch();
       }
     } catch (error) {
       console.error('Failed to switch proxy:', error);
-      showNotification('error', `切换代理失败，请检查网络连接`);
+      showNotification('error', t('Failed to switch proxy, please check network connection'));
     }
   };
 
@@ -598,7 +604,7 @@ export const Proxies: React.FC = () => {
         group.all.forEach(proxyName => next.delete(proxyName));
         return next;
       });
-      showNotification('info', `已取消代理组 "${group.name}" 的测试`);
+      showNotification('info', t('Cancelled proxy group "{groupName}" test', { groupName: group.name }));
       return;
     }
     
@@ -625,10 +631,10 @@ export const Proxies: React.FC = () => {
       }
       
       refetch(); // 刷新数据以获取最新的延迟结果
-      showNotification('success', `代理组 "${group.name}" 测试完成！共测试 ${group.all.length} 个节点`);
+      showNotification('success', t('Proxy group "{groupName}" test completed! Tested {count} nodes', { groupName: group.name, count: group.all.length }));
     } catch (error) {
       console.error('Failed to test group delay:', error);
-      showNotification('error', `代理组 "${group.name}" 测试失败，请重试`);
+      showNotification('error', t('Proxy group "{groupName}" test failed, please retry', { groupName: group.name }));
     } finally {
       setTestingProxies(prev => {
         const next = new Set(prev);
@@ -653,10 +659,10 @@ export const Proxies: React.FC = () => {
     try {
       await testDelay(proxyName);
       refetch(); // 刷新数据以获取最新的延迟结果
-      showNotification('success', `代理 "${proxyName}" 延迟测试完成`);
+      showNotification('success', t('Proxy "{proxyName}" latency test completed', { proxyName }));
     } catch (error) {
       console.error(`Failed to test delay for ${proxyName}:`, error);
-      showNotification('error', `代理 "${proxyName}" 测试失败，请重试`);
+      showNotification('error', t('Proxy "{proxyName}" test failed, please retry', { proxyName }));
     } finally {
       setTestingSingleProxies(prev => {
         const next = new Set(prev);
@@ -742,7 +748,7 @@ export const Proxies: React.FC = () => {
         refetch(); // 刷新数据以获取最新的延迟结果
         
         // 显示完成提示，3秒后隐藏进度条
-        showNotification('success', `测试完成！成功 ${success} 个，失败 ${failed} 个，共 ${total} 个代理节点`);
+        showNotification('success', t('Test completed! Success {success}, Failed {failed}, Total {total} proxy nodes', { success, failed, total }));
         setTimeout(() => {
           setShowTestingProgress(false);
         }, 3000);
@@ -753,7 +759,7 @@ export const Proxies: React.FC = () => {
       
     } catch (error) {
       console.error('Failed to test all proxies delay:', error);
-      showNotification('error', '测试失败，请检查网络连接或代理配置');
+      showNotification('error', t('Test failed, please check network connection or proxy configuration'));
       setTimeout(() => {
         setShowTestingProgress(false);
       }, 3000);

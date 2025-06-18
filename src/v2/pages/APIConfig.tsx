@@ -6,6 +6,7 @@ import { Input } from '../components/ui/Input';
 import { LoadingState } from '../components/ui/LoadingState';
 import { useV2ApiConfig } from '../hooks/useApiConfig';
 import type { ClashAPIConfig } from '../types/api';
+import { useTranslation } from '../i18n';
 
 interface APITestResult {
   success: boolean;
@@ -29,6 +30,8 @@ export const APIConfig: React.FC = () => {
     updateConfig,
     switchConfig,
   } = useV2ApiConfig();
+
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState<ConfigFormData>({
     baseURL: '',
@@ -245,7 +248,7 @@ export const APIConfig: React.FC = () => {
   }, [switchConfig]);
 
   if (!currentConfig) {
-    return <LoadingState text="正在加载API配置..." />;
+    return <LoadingState text={t('Loading API configuration...')} />;
   }
 
   return (
@@ -298,7 +301,7 @@ export const APIConfig: React.FC = () => {
             }`}>
               <div className="font-medium">{currentTestResult.message}</div>
               {currentTestResult.version && (
-                <div className="text-sm mt-1">Clash 版本: {currentTestResult.version}</div>
+                <div className="text-sm mt-1">{t('Clash Version')}: {currentTestResult.version}</div>
               )}
               {currentTestResult.error && (
                 <div className="text-sm mt-1 opacity-75">{currentTestResult.error}</div>
@@ -313,10 +316,10 @@ export const APIConfig: React.FC = () => {
         <div className="p-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-              配置列表
+              {t('Configuration List')}
             </h2>
             <Button variant="primary" onClick={handleStartAdd}>
-              添加配置
+              {t('Add Configuration')}
             </Button>
           </div>
 
@@ -337,7 +340,7 @@ export const APIConfig: React.FC = () => {
                     </div>
                     {config.secret && (
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Secret: ••••••••
+                        {t('Secret')}: ••••••••
                       </div>
                     )}
                   </div>
@@ -345,7 +348,7 @@ export const APIConfig: React.FC = () => {
                   <div className="flex items-center space-x-2">
                     {index === selectedIndex && (
                       <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded">
-                        当前
+                        {t('Current')}
                       </span>
                     )}
                     
@@ -355,7 +358,7 @@ export const APIConfig: React.FC = () => {
                         size="sm"
                         onClick={() => handleSwitch(index)}
                       >
-                        切换
+                        {t('Switch')}
                       </Button>
                     )}
                     
@@ -365,7 +368,7 @@ export const APIConfig: React.FC = () => {
                       onClick={() => handleTestConfig(index)}
                       disabled={testingConfigs.has(index)}
                     >
-                      {testingConfigs.has(index) ? '测试中...' : '测试'}
+                      {testingConfigs.has(index) ? t('Testing...') : t('Test')}
                     </Button>
                     
                     <Button
@@ -373,7 +376,7 @@ export const APIConfig: React.FC = () => {
                       size="sm"
                       onClick={() => handleStartEdit(index)}
                     >
-                      编辑
+                      {t('Edit')}
                     </Button>
                     
                     {index !== 0 && (
@@ -383,7 +386,7 @@ export const APIConfig: React.FC = () => {
                         onClick={() => handleDelete(index)}
                         className="text-red-600 hover:text-red-700"
                       >
-                        删除
+                        {t('Delete')}
                       </Button>
                     )}
                   </div>
@@ -398,7 +401,7 @@ export const APIConfig: React.FC = () => {
                   }`}>
                     <div className="font-medium">{configTestResults.get(index)?.message}</div>
                     {configTestResults.get(index)?.version && (
-                      <div className="text-xs mt-1">版本: {configTestResults.get(index)?.version}</div>
+                      <div className="text-xs mt-1">{t('Version')}: {configTestResults.get(index)?.version}</div>
                     )}
                     {configTestResults.get(index)?.error && (
                       <div className="text-xs mt-1 opacity-75">{configTestResults.get(index)?.error}</div>
@@ -416,13 +419,13 @@ export const APIConfig: React.FC = () => {
         <Card>
           <div className="p-4">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-              {isAdding ? '添加新配置' : '编辑配置'}
+              {isAdding ? t('Add New Configuration') : t('Edit Configuration')}
             </h2>
             
             <div className="space-y-4">
               <div>
                 <label htmlFor="baseURL" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  API 地址 *
+                  {t('API Address')} *
                 </label>
                 <Input
                   id="baseURL"
@@ -435,12 +438,12 @@ export const APIConfig: React.FC = () => {
 
               <div>
                 <label htmlFor="secret" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Secret
+                  {t('Secret')}
                 </label>
                 <Input
                   id="secret"
                   type="password"
-                  placeholder="留空表示无密码"
+                  placeholder={t('Leave empty for no password')}
                   value={formData.secret}
                   onChange={(e) => setFormData(prev => ({ ...prev, secret: e.target.value }))}
                 />
@@ -455,7 +458,7 @@ export const APIConfig: React.FC = () => {
                 }`}>
                   <div className="font-medium">{formTestResult.message}</div>
                   {formTestResult.version && (
-                    <div className="text-sm mt-1">Clash 版本: {formTestResult.version}</div>
+                    <div className="text-sm mt-1">{t('Clash Version')}: {formTestResult.version}</div>
                   )}
                   {formTestResult.error && (
                     <div className="text-sm mt-1 opacity-75">{formTestResult.error}</div>
@@ -469,15 +472,15 @@ export const APIConfig: React.FC = () => {
                   onClick={handleTestForm}
                   disabled={testingForm || !formData.baseURL.trim()}
                 >
-                  {testingForm ? '测试中...' : '测试连接'}
+                  {testingForm ? t('Testing...') : t('Test Connection')}
                 </Button>
                 
                 <Button variant="primary" onClick={handleSave}>
-                  保存
+                  {t('Save')}
                 </Button>
                 
                 <Button variant="outline" onClick={handleCancel}>
-                  取消
+                  {t('Cancel')}
                 </Button>
               </div>
             </div>

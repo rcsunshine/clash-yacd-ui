@@ -4,17 +4,18 @@ import React, { useEffect,useRef, useState } from 'react';
 import { v2ThemeAtom } from '../../store/atoms';
 import { cn } from '../../utils/cn';
 import { getCurrentAppliedTheme, setTheme, type Theme } from '../../utils/theme';
+import { useTranslation } from '../../i18n';
 
 interface ThemeOption {
   value: Theme;
-  label: string;
+  labelKey: string;
   icon: React.ReactNode;
 }
 
 const themeOptions: ThemeOption[] = [
   {
     value: 'light',
-    label: '浅色主题',
+    labelKey: 'Light Theme',
     icon: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -23,7 +24,7 @@ const themeOptions: ThemeOption[] = [
   },
   {
     value: 'dark',
-    label: '深色主题',
+    labelKey: 'Dark Theme',
     icon: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
@@ -32,7 +33,7 @@ const themeOptions: ThemeOption[] = [
   },
   {
     value: 'auto',
-    label: '自动主题',
+    labelKey: 'Auto Theme',
     icon: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -42,6 +43,7 @@ const themeOptions: ThemeOption[] = [
 ];
 
 export const ThemeDropdown: React.FC = () => {
+  const { t } = useTranslation();
   const [currentTheme, setCurrentTheme] = useAtom(v2ThemeAtom);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -118,7 +120,7 @@ export const ThemeDropdown: React.FC = () => {
           isOpen && 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
         )}
         onClick={toggleDropdown}
-        aria-label="切换主题"
+        aria-label={t('Switch theme')}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
@@ -140,7 +142,7 @@ export const ThemeDropdown: React.FC = () => {
             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z" />
             </svg>
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">主题设置</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('Theme Settings')}</span>
           </div>
 
           {/* 主题选项 */}
@@ -164,7 +166,7 @@ export const ThemeDropdown: React.FC = () => {
                   <span className="mr-3 flex-shrink-0">
                     {option.icon}
                   </span>
-                  <span className="flex-1 text-left">{option.label}</span>
+                  <span className="flex-1 text-left">{t(option.labelKey)}</span>
                   {isSelected && (
                     <svg className="w-4 h-4 ml-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -180,7 +182,7 @@ export const ThemeDropdown: React.FC = () => {
             <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
               <span>
-                当前: {getCurrentAppliedTheme() === 'dark' ? '深色模式' : '浅色模式'}
+                {t('Current')}: {getCurrentAppliedTheme() === 'dark' ? t('Dark Mode') : t('Light Mode')}
               </span>
             </div>
           </div>

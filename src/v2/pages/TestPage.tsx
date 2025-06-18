@@ -1,5 +1,6 @@
 import { useAtom } from 'jotai';
-import React from 'react';
+import React, { useEffect,useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { APIConfig } from '../components/APIConfig';
 import { Button } from '../components/ui/Button';
@@ -9,12 +10,13 @@ import { v2ThemeAtom } from '../store/atoms';
 import { getCurrentAppliedTheme } from '../utils/theme';
 
 export const TestPage: React.FC = () => {
-  const [count, setCount] = React.useState(0);
+  const { t } = useTranslation();
+  const [count, setCount] = useState(0);
   const [currentTheme] = useAtom(v2ThemeAtom);
-  const [isDarkMode, setIsDarkMode] = React.useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
 
   // 检测DOM中的实际主题状态
-  React.useEffect(() => {
+  useEffect(() => {
     const checkTheme = () => {
       const htmlElement = document.documentElement;
       const hasDarkClass = htmlElement.classList.contains('dark');
@@ -37,48 +39,48 @@ export const TestPage: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          V2 测试页面
+          {t('V2 Test Page')}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          验证所有组件是否正常工作，主题切换功能请使用侧边栏底部的主题下拉菜单
+          {t('Verify that all components are working properly, use the theme dropdown at the bottom of the sidebar for theme switching')}
         </p>
       </div>
 
       {/* 主题调试信息 */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold">🎨 主题调试信息</h3>
+          <h3 className="text-lg font-semibold">🎨 {t('Theme Debug Information')}</h3>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <strong>Jotai 状态:</strong> {currentTheme}
+              <strong>{t('Jotai State')}:</strong> {currentTheme}
             </div>
             <div>
-              <strong>DOM 类名:</strong> {isDarkMode ? 'dark' : 'light'}
+              <strong>{t('DOM Class')}:</strong> {isDarkMode ? 'dark' : 'light'}
             </div>
             <div>
               <strong>getCurrentAppliedTheme():</strong> {getCurrentAppliedTheme()}
             </div>
             <div>
-              <strong>系统偏好:</strong> {window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'}
+              <strong>{t('System Preference')}:</strong> {window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'}
             </div>
             <div>
-              <strong>localStorage:</strong> {localStorage.getItem('v2-theme') || '未设置'}
+              <strong>localStorage:</strong> {localStorage.getItem('v2-theme') || t('Not Set')}
             </div>
             <div>
-              <strong>HTML data-theme:</strong> {document.documentElement.getAttribute('data-theme') || '未设置'}
+              <strong>{t('HTML data-theme')}:</strong> {document.documentElement.getAttribute('data-theme') || t('Not Set')}
             </div>
           </div>
           <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              如果主题切换不工作，请检查：
+              {t('If theme switching is not working, please check')}
               <br />
-              1. Jotai状态和DOM类名是否一致
+              1. {t('Whether Jotai state and DOM class are consistent')}
               <br />
-              2. localStorage中的v2-theme值是否正确
+              2. {t('Whether v2-theme value in localStorage is correct')}
               <br />
-              3. 控制台是否有错误信息
+              3. {t('Whether there are error messages in the console')}
             </p>
           </div>
         </CardContent>
@@ -87,7 +89,7 @@ export const TestPage: React.FC = () => {
       {/* API Configuration Section */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          API 配置
+          {t('API Configuration')}
         </h2>
         <APIConfig />
       </div>
@@ -95,26 +97,26 @@ export const TestPage: React.FC = () => {
       {/* Button Tests */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          按钮组件测试
+          {t('Button Component Test')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Button variant="primary">Primary 按钮</Button>
-          <Button variant="secondary">Secondary 按钮</Button>
-          <Button variant="outline">Outline 按钮</Button>
-          <Button variant="ghost">Ghost 按钮</Button>
-          <Button variant="danger">Danger 按钮</Button>
-          <Button loading>加载中...</Button>
+          <Button variant="primary">{t('Primary Button')}</Button>
+          <Button variant="secondary">{t('Secondary Button')}</Button>
+          <Button variant="outline">{t('Outline Button')}</Button>
+          <Button variant="ghost">{t('Ghost Button')}</Button>
+          <Button variant="danger">{t('Danger Button')}</Button>
+          <Button loading>{t('Loading...')}</Button>
         </div>
       </div>
 
       {/* Interactive Test */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          交互测试
+          {t('Interactive Test')}
         </h2>
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">计数器</h3>
+            <h3 className="text-lg font-semibold">{t('Counter')}</h3>
           </CardHeader>
           <CardContent>
             <div className="text-center">
@@ -122,13 +124,13 @@ export const TestPage: React.FC = () => {
                 {count}
               </div>
               <Button onClick={() => setCount(count + 1)}>
-                点击 +1
+                {t('Click +1')}
               </Button>
             </div>
           </CardContent>
           <CardFooter>
             <Button variant="outline" onClick={() => setCount(0)} fullWidth>
-              重置
+              {t('Reset')}
             </Button>
           </CardFooter>
         </Card>
@@ -137,24 +139,24 @@ export const TestPage: React.FC = () => {
       {/* Status Indicators */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          状态测试
+          {t('Status Test')}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
-            <StatusIndicator status="success" label="成功状态" />
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">成功状态</p>
+            <StatusIndicator status="success" label={t('Success Status')} />
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t('Success Status')}</p>
           </div>
           <div className="text-center">
-            <StatusIndicator status="warning" label="警告状态" />
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">警告状态</p>
+            <StatusIndicator status="warning" label={t('Warning Status')} />
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t('Warning Status')}</p>
           </div>
           <div className="text-center">
-            <StatusIndicator status="error" label="错误状态" />
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">错误状态</p>
+            <StatusIndicator status="error" label={t('Error Status')} />
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t('Error Status')}</p>
           </div>
           <div className="text-center">
-            <StatusIndicator status="info" label="信息状态" />
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">信息状态</p>
+            <StatusIndicator status="info" label={t('Info Status')} />
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t('Info Status')}</p>
           </div>
         </div>
       </div>
@@ -162,33 +164,33 @@ export const TestPage: React.FC = () => {
       {/* Card Variants */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          卡片测试
+          {t('Card Test')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card variant="default">
             <CardHeader>
-              <h3 className="font-semibold">默认卡片</h3>
+              <h3 className="font-semibold">{t('Default Card')}</h3>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 dark:text-gray-400">这是默认样式的卡片</p>
+              <p className="text-gray-600 dark:text-gray-400">{t('This is a default style card')}</p>
             </CardContent>
           </Card>
 
           <Card variant="outlined">
             <CardHeader>
-              <h3 className="font-semibold">边框卡片</h3>
+              <h3 className="font-semibold">{t('Outlined Card')}</h3>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 dark:text-gray-400">这是带边框的卡片</p>
+              <p className="text-gray-600 dark:text-gray-400">{t('This is a card with border')}</p>
             </CardContent>
           </Card>
 
           <Card variant="elevated">
             <CardHeader>
-              <h3 className="font-semibold">阴影卡片</h3>
+              <h3 className="font-semibold">{t('Elevated Card')}</h3>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 dark:text-gray-400">这是带阴影和悬停效果的卡片</p>
+              <p className="text-gray-600 dark:text-gray-400">{t('This is a card with shadow and hover effect')}</p>
             </CardContent>
           </Card>
         </div>
@@ -196,7 +198,7 @@ export const TestPage: React.FC = () => {
 
       {/* 响应式测试 */}
       <Card>
-        <CardHeader title="响应式测试" />
+        <CardHeader title={t('Responsive Test')} />
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {Array.from({ length: 12 }, (_, i) => (
@@ -213,17 +215,17 @@ export const TestPage: React.FC = () => {
 
       {/* 系统信息 */}
       <Card>
-        <CardHeader title="系统信息" />
+        <CardHeader title={t('System Information')} />
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <strong>版本:</strong> V2.0.0
+              <strong>{t('Version')}:</strong> V2.0.0
             </div>
             <div>
-              <strong>浏览器:</strong> {navigator.userAgent.split(' ')[0]}
+              <strong>{t('Browser')}:</strong> {navigator.userAgent.split(' ')[0]}
             </div>
             <div>
-              <strong>屏幕尺寸:</strong> {window.innerWidth} x {window.innerHeight}
+              <strong>{t('Screen Size')}:</strong> {window.innerWidth} x {window.innerHeight}
             </div>
           </div>
         </CardContent>

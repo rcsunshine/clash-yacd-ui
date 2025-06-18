@@ -10,6 +10,7 @@ import { LoadingState } from './components/ui/LoadingState';
 import { useApiConfigEffect } from './hooks/useAPI';
 import { v2CurrentPageAtom,v2ThemeAtom } from './store/atoms';
 import { applyTheme, initializeTheme, watchSystemTheme } from './utils/theme';
+import { useTranslation } from './i18n';
 
 // 页面级代码分割 - 懒加载页面组件
 const Dashboard = React.lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -34,36 +35,41 @@ const queryClient = new QueryClient({
 });
 
 // 页面加载占位符
-const PageLoadingFallback: React.FC<{ pageName: string }> = ({ pageName }) => (
-  <div className="flex items-center justify-center min-h-[400px]">
-    <LoadingState text={`正在加载${pageName}...`} />
-  </div>
-);
+const PageLoadingFallback: React.FC<{ pageName: string }> = ({ pageName }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <LoadingState text={t('Loading {{pageName}}...', { pageName })} />
+    </div>
+  );
+};
 
 // 页面渲染组件
 const PageRenderer: React.FC<{ currentPage: string }> = ({ currentPage }) => {
+  const { t } = useTranslation();
+  
   const getPageComponent = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Suspense fallback={<PageLoadingFallback pageName="概览" />}><Dashboard /></Suspense>;
+        return <Suspense fallback={<PageLoadingFallback pageName={t('Overview')} />}><Dashboard /></Suspense>;
       case 'proxies':
-        return <Suspense fallback={<PageLoadingFallback pageName="代理" />}><Proxies /></Suspense>;
+        return <Suspense fallback={<PageLoadingFallback pageName={t('Proxies')} />}><Proxies /></Suspense>;
       case 'connections':
-        return <Suspense fallback={<PageLoadingFallback pageName="连接" />}><Connections /></Suspense>;
+        return <Suspense fallback={<PageLoadingFallback pageName={t('Connections')} />}><Connections /></Suspense>;
       case 'rules':
-        return <Suspense fallback={<PageLoadingFallback pageName="规则" />}><Rules /></Suspense>;
+        return <Suspense fallback={<PageLoadingFallback pageName={t('Rules')} />}><Rules /></Suspense>;
       case 'logs':
-        return <Suspense fallback={<PageLoadingFallback pageName="日志" />}><Logs /></Suspense>;
+        return <Suspense fallback={<PageLoadingFallback pageName={t('Logs')} />}><Logs /></Suspense>;
       case 'config':
-        return <Suspense fallback={<PageLoadingFallback pageName="配置" />}><Config /></Suspense>;
+        return <Suspense fallback={<PageLoadingFallback pageName={t('Config')} />}><Config /></Suspense>;
       case 'api-config':
-        return <Suspense fallback={<PageLoadingFallback pageName="API配置" />}><APIConfig /></Suspense>;
+        return <Suspense fallback={<PageLoadingFallback pageName={t('API Configuration')} />}><APIConfig /></Suspense>;
       case 'about':
-        return <Suspense fallback={<PageLoadingFallback pageName="关于" />}><About /></Suspense>;
+        return <Suspense fallback={<PageLoadingFallback pageName={t('About')} />}><About /></Suspense>;
       case 'bundle-analysis':
-        return <Suspense fallback={<PageLoadingFallback pageName="Bundle分析" />}><BundleAnalysis /></Suspense>;
+        return <Suspense fallback={<PageLoadingFallback pageName={t('Bundle Analysis')} />}><BundleAnalysis /></Suspense>;
       default:
-        return <Suspense fallback={<PageLoadingFallback pageName="概览" />}><Dashboard /></Suspense>;
+        return <Suspense fallback={<PageLoadingFallback pageName={t('Overview')} />}><Dashboard /></Suspense>;
     }
   };
 

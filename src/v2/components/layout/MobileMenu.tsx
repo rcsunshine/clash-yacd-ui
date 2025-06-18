@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { cn } from '../../utils/cn';
+import { useTranslation } from '../../i18n';
 
 export interface MobileMenuProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   children,
   className,
 }) => {
+  const { t } = useTranslation();
   // 防止背景滚动
   React.useEffect(() => {
     if (isOpen) {
@@ -94,7 +96,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
               'focus:outline-none focus:ring-2 focus:ring-blue-500',
               'transition-colors duration-200'
             )}
-            aria-label="关闭菜单"
+            aria-label={t('Close menu')}
           >
             <svg 
               className="w-6 h-6" 

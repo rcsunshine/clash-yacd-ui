@@ -313,7 +313,7 @@ export const Connections: React.FC = () => {
                     // 强制显示页面内容，即使没有数据
                   }}
                 >
-                  继续显示页面
+                  {t('Continue Show Page')}
                 </Button>
               </div>
             </div>
@@ -498,24 +498,24 @@ export const Connections: React.FC = () => {
           <div className="flex-1 relative">
             <SearchInput
               ref={searchInputRef}
-              placeholder="搜索主机名、IP地址或代理链..."
+              placeholder={t('Search hostname, IP address or proxy chain...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
               <HelpTooltip
-                title="搜索语法帮助"
+                title={t('Search Syntax Help')}
                 content={
                   <div className="space-y-2">
-                    <p>支持高级搜索语法:</p>
+                    <p>{t('Advanced search syntax supported:')}</p>
                     <ul className="list-disc list-inside space-y-1">
-                      <li><code>host:google.com</code> - 搜索主机名</li>
-                      <li><code>ip:192.168.1.1</code> - 搜索IP地址</li>
-                      <li><code>network:tcp</code> - 搜索网络类型</li>
-                      <li><code>rule:DIRECT</code> - 搜索规则</li>
-                      <li><code>proxy:PROXY</code> - 搜索代理链</li>
+                      <li><code>host:google.com</code> - {t('Search hostname')}</li>
+                      <li><code>ip:192.168.1.1</code> - {t('Search IP address')}</li>
+                      <li><code>network:tcp</code> - {t('Search network type')}</li>
+                      <li><code>rule:DIRECT</code> - {t('Search rule')}</li>
+                      <li><code>proxy:PROXY</code> - {t('Search proxy chain')}</li>
                     </ul>
-                    <p className="text-xs mt-2 text-gray-300">快捷键: F(聚焦搜索), R(刷新), P(暂停/恢复), ESC(清除过滤器), C(关闭选中)</p>
+                    <p className="text-xs mt-2 text-gray-300">{t('Shortcuts: F(focus search), R(refresh), P(pause/resume), ESC(clear filters), C(close selected)')}</p>
                   </div>
                 }
                 position="bottom"
@@ -534,7 +534,7 @@ export const Connections: React.FC = () => {
               value={networkFilter}
               onChange={(e) => setNetworkFilter(e.target.value as NetworkType)}
               options={[
-                { value: 'all', label: '所有协议' },
+                { value: 'all', label: t('All Protocols') },
                 { value: 'tcp', label: 'TCP' },
                 { value: 'udp', label: 'UDP' },
               ]}

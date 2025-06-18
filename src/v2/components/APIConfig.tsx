@@ -1,22 +1,14 @@
-import { useAtom } from 'jotai';
-import React, {useState } from 'react';
-
-import { createAPIClient } from '../api/client';
-import { v2ApiConfigsAtom, v2SelectedApiConfigIndexAtom } from '../store/atoms';
-import { ClashAPIConfig } from '../types/api';
+import React, { useState } from 'react';
+import { Card, CardHeader, CardContent } from './ui/Card';
 import { Button } from './ui/Button';
-import { Card, CardContent,CardHeader } from './ui/Card';
+import { useApiConfig } from '../hooks/useApiConfig';
+import { createAPIClient } from '../api/client';
+import { useTranslation } from '../i18n';
 
 export function APIConfig() {
-  const [apiConfigs, setApiConfigs] = useAtom(v2ApiConfigsAtom);
-  const [selectedIndex] = useAtom(v2SelectedApiConfigIndexAtom);
-  
-  const currentConfig = apiConfigs[selectedIndex] || {
-    baseURL: 'http://127.0.0.1:9090',
-    secret: '',
-  };
-  
-  const [tempConfig, setTempConfig] = useState<ClashAPIConfig>(currentConfig);
+  const { t } = useTranslation();
+  const { apiConfigs, setApiConfigs, selectedIndex } = useApiConfig();
+  const [tempConfig, setTempConfig] = useState(apiConfigs[selectedIndex]);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<{
     type: 'success' | 'error' | null;
@@ -34,18 +26,18 @@ export function APIConfig() {
       if (response.status === 200 && response.data) {
         setConnectionStatus({
           type: 'success',
-          message: `连接成功！Clash 版本: ${response.data.version || 'Unknown'}`
+          message: `${t('Connection successful! Clash version')}: ${response.data.version || 'Unknown'}`
         });
       } else {
         setConnectionStatus({
           type: 'error',
-          message: response.error || '连接失败'
+          message: response.error || t('Connection failed')
         });
       }
     } catch (error) {
       setConnectionStatus({
         type: 'error',
-        message: '网络错误，请检查 API 地址和端口'
+        message: t('Network error, please check API address and port')
       });
     } finally {
       setIsConnecting(false);
@@ -60,7 +52,7 @@ export function APIConfig() {
     
     setConnectionStatus({
       type: 'success',
-      message: 'API 配置已保存'
+      message: t('API configuration saved')
     });
   };
 
@@ -88,7 +80,7 @@ export function APIConfig() {
     
     setConnectionStatus({
       type: 'success',
-      message: 'V2配置缓存已清除，请刷新页面'
+      message: t('V2 configuration cache cleared, please refresh page')
     });
   };
 
@@ -96,16 +88,16 @@ export function APIConfig() {
     <Card>
       <CardHeader>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          API 配置
+          {t('API Configuration')}
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          配置 Clash API 连接设置
+          {t('Configure Clash API connection settings')}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
           <label htmlFor="apiConfigBaseURL" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            API 地址 *
+            {t('API Address')} *
           </label>
           <input
             id="apiConfigBaseURL"
@@ -118,26 +110,26 @@ export function APIConfig() {
                      focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Clash API 的完整地址，包括协议和端口
+            {t('Complete Clash API address including protocol and port')}
           </p>
         </div>
 
         <div>
           <label htmlFor="apiConfigSecret" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            密钥 (可选)
+            {t('Secret')} ({t('Optional')})
           </label>
           <input
             id="apiConfigSecret"
             type="password"
             value={tempConfig.secret}
             onChange={(e) => setTempConfig({ ...tempConfig, secret: e.target.value })}
-            placeholder="API 访问密钥"
+            placeholder={t('API access secret')}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
                      bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                      focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            如果 Clash 配置了 secret，请在此输入
+            {t('If Clash is configured with secret, please enter it here')}
           </p>
         </div>
 
@@ -173,7 +165,7 @@ export function APIConfig() {
             variant="outline"
             className="flex-1"
           >
-            测试连接
+            {t('Test Connection')}
           </Button>
           <Button
             onClick={handleSave}
@@ -181,14 +173,14 @@ export function APIConfig() {
             className="flex-1"
             disabled={isConnecting}
           >
-            保存配置
+            {t('Save Configuration')}
           </Button>
           <Button
             onClick={handleReset}
             variant="ghost"
             disabled={isConnecting}
           >
-            重置
+            {t('Reset')}
           </Button>
         </div>
 
@@ -199,22 +191,22 @@ export function APIConfig() {
             disabled={isConnecting}
             className="w-full text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
           >
-            清除V2配置缓存
+            {t('Clear V2 Configuration Cache')}
           </Button>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
-            如果配置显示异常，可以清除缓存后刷新页面
+            {t('If configuration display is abnormal, you can clear cache and refresh page')}
           </p>
         </div>
 
         <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
           <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
-            常见问题
+            {t('Common Issues')}
           </h4>
           <ul className="text-xs text-blue-700 dark:text-blue-400 space-y-1">
-            <li>• 确保 Clash 正在运行并启用了 RESTful API</li>
-            <li>• 检查 Clash 配置文件中的 external-controller 设置</li>
-            <li>• 默认端口通常是 9090，如有不同请修改地址</li>
-            <li>• 如果使用了 secret，请确保输入正确</li>
+            <li>• {t('Ensure Clash is running and RESTful API is enabled')}</li>
+            <li>• {t('Check external-controller setting in Clash configuration file')}</li>
+            <li>• {t('Default port is usually 9090, modify address if different')}</li>
+            <li>• {t('If using secret, please ensure correct input')}</li>
           </ul>
         </div>
       </CardContent>

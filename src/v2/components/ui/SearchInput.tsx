@@ -1,6 +1,7 @@
 import React, { forwardRef, InputHTMLAttributes } from 'react';
 
 import { cn } from '../../utils/cn';
+import { useTranslation } from '../../i18n';
 
 export interface SearchInputProps extends InputHTMLAttributes<HTMLInputElement> {
   className?: string;
@@ -8,7 +9,9 @@ export interface SearchInputProps extends InputHTMLAttributes<HTMLInputElement> 
 }
 
 export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
-  ({ className, iconClassName, placeholder = "搜索...", ...props }, ref) => {
+  ({ className, iconClassName, placeholder, ...props }, ref) => {
+    const { t } = useTranslation();
+    const defaultPlaceholder = placeholder || t('Search...');
     return (
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -24,7 +27,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         <input
           ref={ref}
           type="text"
-          placeholder={placeholder}
+          placeholder={defaultPlaceholder}
           className={cn(
             'w-full pl-10 pr-4 py-2 border transition-all duration-200',
             // 深色主题优化的边框和背景

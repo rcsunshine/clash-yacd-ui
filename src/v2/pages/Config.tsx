@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent,CardHeader } from '../components/ui/Card';
@@ -45,6 +46,7 @@ const ConfigItem: React.FC<{
 );
 
 export const Config: React.FC = () => {
+  const { t } = useTranslation();
   const { data: config, isLoading, error, updateConfig } = useClashConfig();
   const { data: systemInfo, isLoading: systemLoading } = useSystemInfo();
   const { state, dispatch } = useAppState();
@@ -96,16 +98,16 @@ export const Config: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-theme hidden lg:block">配置</h1>
+              <h1 className="text-xl font-bold text-theme hidden lg:block">{t('Config')}</h1>
               <p className="text-sm text-theme-secondary">
-                管理 Clash 核心配置和应用设置
+                {t('Configuration Management')}
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
             <StatusIndicator 
               status={'info'} 
-              label={'加载中...'} 
+              label={t('Loading...')} 
             />
           </div>
         </div>
@@ -134,16 +136,16 @@ export const Config: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-theme hidden lg:block">配置</h1>
+              <h1 className="text-xl font-bold text-theme hidden lg:block">{t('Config')}</h1>
               <p className="text-sm text-theme-secondary">
-                管理 Clash 核心配置和应用设置
+                {t('Configuration Management')}
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
             <StatusIndicator 
               status={'error'} 
-              label={'加载失败'} 
+              label={t('Load Failed')} 
             />
           </div>
         </div>
@@ -151,10 +153,10 @@ export const Config: React.FC = () => {
           <CardContent>
             <div className="text-center py-8">
               <h3 className="text-lg font-medium text-theme mb-2">
-                加载失败
+                {t('Load Failed')}
               </h3>
               <p className="text-theme-secondary mb-4">{String(error)}</p>
-              <Button onClick={() => window.location.reload()}>重试</Button>
+              <Button onClick={() => window.location.reload()}>{t('Retry')}</Button>
             </div>
           </CardContent>
         </Card>
@@ -174,35 +176,35 @@ export const Config: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-theme hidden lg:block">配置</h1>
+              <h1 className="text-xl font-bold text-theme hidden lg:block">{t('Config')}</h1>
               <p className="text-sm text-theme-secondary">
-                管理 Clash 核心配置和应用设置
+                {t('Configuration Management')}
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
             <StatusIndicator 
               status={saving ? 'info' : 'success'} 
-              label={saving ? '保存中...' : '已同步'} 
+              label={saving ? t('Saving...') : t('Synced')} 
             />
             <Button variant="outline" size="sm" className="text-sm" onClick={() => window.location.reload()}>
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              刷新
+              {t('Refresh')}
             </Button>
           </div>
         </div>
 
       {/* 系统信息 */}
       <ConfigSection 
-        title="系统信息" 
-        description="Clash 核心版本和运行状态信息"
+        title={t('System Information')}
+        description={t('Clash core version and runtime status information')}
       >
         <div className="space-y-0">
           <ConfigItem 
-            label="Clash 版本" 
-            description="当前运行的 Clash 核心版本"
+            label={t('Clash Version')}
+            description={t('Current running Clash core version')}
           >
             {systemLoading ? (
               <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
@@ -214,8 +216,8 @@ export const Config: React.FC = () => {
           </ConfigItem>
 
           <ConfigItem 
-            label="版本类型" 
-            description="是否为高级版本"
+            label={t('Version Type')}
+            description={t('Whether it supports premium features')}
           >
             {systemLoading ? (
               <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
@@ -225,15 +227,15 @@ export const Config: React.FC = () => {
                   ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
                   : 'bg-gray-100 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400'
               }`}>
-                {systemInfo?.premium ? '高级版' : '开源版'}
+                {systemInfo?.premium ? t('Premium') : t('Open Source')}
               </span>
             )}
           </ConfigItem>
 
           {systemInfo?.platform && (
             <ConfigItem 
-              label="平台" 
-              description="系统平台信息"
+              label={t('Platform')}
+              description={t('System platform information')}
             >
               <span className="text-theme font-mono">
                 {systemInfo.platform} {systemInfo.arch && `(${systemInfo.arch})`}
@@ -243,8 +245,8 @@ export const Config: React.FC = () => {
 
           {systemInfo?.stack && (
             <ConfigItem 
-              label="网络栈" 
-              description="TCP/IP 栈类型"
+              label={t('Network Stack')}
+              description={t('TCP/IP stack type')}
             >
               <span className="text-theme font-mono">
                 {systemInfo.stack}
@@ -256,22 +258,22 @@ export const Config: React.FC = () => {
 
       {/* Clash 核心配置 */}
       <ConfigSection 
-        title="Clash 核心配置" 
-        description="这些设置会直接影响 Clash 核心的行为"
+        title={t('Clash Core Configuration')}
+        description={t('These settings will directly affect Clash core behavior')}
       >
         <div className="space-y-0">
           <ConfigItem 
-            label="代理模式" 
-            description="选择流量处理方式"
+            label={t('Proxy Mode')}
+            description={t('Select traffic processing method')}
           >
             <Select
               value={config?.mode || 'rule'}
               onChange={(e) => handleModeChange(e.target.value)}
               disabled={saving}
               options={[
-                { value: 'rule', label: '规则模式' },
-                { value: 'global', label: '全局模式' },
-                { value: 'direct', label: '直连模式' },
+                { value: 'rule', label: t('Rule Mode') },
+                { value: 'global', label: t('Global Mode') },
+                { value: 'direct', label: t('Direct Mode') },
               ]}
               size="sm"
               className="min-w-[120px]"
@@ -279,19 +281,19 @@ export const Config: React.FC = () => {
           </ConfigItem>
 
           <ConfigItem 
-            label="日志级别" 
-            description="控制日志输出的详细程度"
+            label={t('Log Level')}
+            description={t('Control the verbosity of log output')}
           >
             <Select
               value={config?.['log-level'] || 'info'}
               onChange={(e) => handleLogLevelChange(e.target.value)}
               disabled={saving}
               options={[
-                { value: 'silent', label: '静默' },
-                { value: 'error', label: '错误' },
-                { value: 'warning', label: '警告' },
-                { value: 'info', label: '信息' },
-                { value: 'debug', label: '调试' },
+                { value: 'silent', label: t('Silent') },
+                { value: 'error', label: t('Error') },
+                { value: 'warning', label: t('Warning') },
+                { value: 'info', label: t('Info') },
+                { value: 'debug', label: t('Debug') },
               ]}
               size="sm"
               className="min-w-[100px]"
@@ -299,8 +301,8 @@ export const Config: React.FC = () => {
           </ConfigItem>
 
           <ConfigItem 
-            label="允许局域网连接" 
-            description="允许其他设备通过局域网使用代理"
+            label={t('Allow LAN')}
+            description={t('Allow other devices to use proxy through LAN')}
           >
             <label className="flex items-center">
               <input
@@ -310,13 +312,13 @@ export const Config: React.FC = () => {
                 disabled={saving}
                 className="rounded disabled:opacity-50"
               />
-              <span className="ml-2 text-sm">启用</span>
+              <span className="ml-2 text-sm">{t('Enable')}</span>
             </label>
           </ConfigItem>
 
           <ConfigItem 
-            label="HTTP 端口" 
-            description="HTTP 代理服务端口"
+            label={t('HTTP Port')}
+            description={t('HTTP proxy service port')}
           >
             <span className="text-theme font-mono">
               {config?.port || 'N/A'}
@@ -324,8 +326,8 @@ export const Config: React.FC = () => {
           </ConfigItem>
 
           <ConfigItem 
-            label="SOCKS 端口" 
-            description="SOCKS5 代理服务端口"
+            label={t('SOCKS Port')}
+            description={t('SOCKS5 proxy service port')}
           >
             <span className="text-theme font-mono">
               {config?.['socks-port'] || 'N/A'}
@@ -333,8 +335,8 @@ export const Config: React.FC = () => {
           </ConfigItem>
 
           <ConfigItem 
-            label="混合端口" 
-            description="HTTP 和 SOCKS5 混合端口"
+            label={t('Mixed Port')}
+            description={t('HTTP and SOCKS5 mixed port')}
           >
             <span className="text-theme font-mono">
               {config?.['mixed-port'] || 'N/A'}
@@ -345,13 +347,13 @@ export const Config: React.FC = () => {
 
       {/* 应用设置 */}
       <ConfigSection 
-        title="应用设置" 
-        description="YACD V2 界面和行为设置"
+        title={t('App Settings')}
+        description={t('YACD V2 interface and behavior settings')}
       >
         <div className="space-y-0">
           <ConfigItem 
-            label="自动刷新" 
-            description="自动刷新数据和状态"
+            label={t('Auto Refresh')}
+            description={t('Automatically refresh data and status')}
           >
             <label className="flex items-center">
               <input
@@ -363,13 +365,13 @@ export const Config: React.FC = () => {
                 })}
                 className="rounded"
               />
-              <span className="ml-2 text-sm">启用</span>
+              <span className="ml-2 text-sm">{t('Enable')}</span>
             </label>
           </ConfigItem>
 
           <ConfigItem 
-            label="刷新间隔" 
-            description="数据自动刷新的时间间隔（毫秒）"
+            label={t('Refresh Interval')}
+            description={t('Time interval for automatic data refresh (milliseconds)')}
           >
             <Select
               value={state.preferences.refreshInterval.toString()}
@@ -378,10 +380,10 @@ export const Config: React.FC = () => {
                 payload: { refreshInterval: parseInt(e.target.value) }
               })}
               options={[
-                { value: '1000', label: '1 秒' },
-                { value: '3000', label: '3 秒' },
-                { value: '5000', label: '5 秒' },
-                { value: '10000', label: '10 秒' },
+                { value: '1000', label: t('1 Second') },
+                { value: '3000', label: t('3 Seconds') },
+                { value: '5000', label: t('5 Seconds') },
+                { value: '10000', label: t('10 Seconds') },
               ]}
               size="sm"
               className="min-w-[100px]"
@@ -389,8 +391,8 @@ export const Config: React.FC = () => {
           </ConfigItem>
 
           <ConfigItem 
-            label="显示通知" 
-            description="显示系统通知和提醒"
+            label={t('Show Notifications')}
+            description={t('Show system notifications and reminders')}
           >
             <label className="flex items-center">
               <input
@@ -402,13 +404,13 @@ export const Config: React.FC = () => {
                 })}
                 className="rounded"
               />
-              <span className="ml-2 text-sm">启用</span>
+              <span className="ml-2 text-sm">{t('Enable')}</span>
             </label>
           </ConfigItem>
 
           <ConfigItem 
-            label="紧凑模式" 
-            description="使用更紧凑的界面布局"
+            label={t('Compact Mode')}
+            description={t('Use more compact interface layout')}
           >
             <label className="flex items-center">
               <input
@@ -420,7 +422,7 @@ export const Config: React.FC = () => {
                 })}
                 className="rounded"
               />
-              <span className="ml-2 text-sm">启用</span>
+              <span className="ml-2 text-sm">{t('Enable')}</span>
             </label>
           </ConfigItem>
         </div>
@@ -428,13 +430,13 @@ export const Config: React.FC = () => {
 
       {/* API 连接信息 */}
       <ConfigSection 
-        title="API 连接信息" 
-        description="当前连接的 Clash API 信息"
+        title={t('API Connection Information')}
+        description={t('Current connected Clash API information')}
       >
         <div className="space-y-0">
           <ConfigItem 
-            label="API 地址" 
-            description="Clash API 服务地址"
+            label={t('API Address')}
+            description={t('Clash API service address')}
           >
             <span className="text-theme font-mono">
               {state.apiConfig.baseURL}
@@ -442,21 +444,21 @@ export const Config: React.FC = () => {
           </ConfigItem>
 
           <ConfigItem 
-            label="认证密钥" 
-            description="API 访问密钥"
+            label={t('Authentication Key')}
+            description={t('API access key')}
           >
             <span className="text-theme font-mono">
-              {state.apiConfig.secret ? '••••••••' : '未设置'}
+              {state.apiConfig.secret ? '••••••••' : t('Not Set')}
             </span>
           </ConfigItem>
 
           <ConfigItem 
-            label="连接状态" 
-            description="与 Clash API 的连接状态"
+            label={t('Connection Status')}
+            description={t('Connection status with Clash API')}
           >
             <StatusIndicator 
               status={config ? 'success' : 'error'} 
-              label={config ? '已连接' : '连接失败'} 
+              label={config ? t('Connected') : t('Connection Failed')} 
             />
           </ConfigItem>
         </div>
@@ -464,13 +466,13 @@ export const Config: React.FC = () => {
 
       {/* 版本信息 */}
       <ConfigSection 
-        title="版本信息" 
-        description="Clash 核心和应用版本信息"
+        title={t('Version Information')}
+        description={t('Clash core and application version information')}
       >
         <div className="space-y-0">
           <ConfigItem 
-            label="Clash 版本" 
-            description="当前运行的 Clash 核心版本"
+            label={t('Clash Version')}
+            description={t('Current running Clash core version')}
           >
             {systemLoading ? (
               <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
@@ -482,8 +484,8 @@ export const Config: React.FC = () => {
           </ConfigItem>
 
           <ConfigItem 
-            label="YACD 版本" 
-            description="当前 YACD V2 版本"
+            label={t('YACD Version')}
+            description={t('Current YACD V2 version')}
           >
             <span className="text-theme font-mono">
               v2.0.0-dev
@@ -491,15 +493,15 @@ export const Config: React.FC = () => {
           </ConfigItem>
 
           <ConfigItem 
-            label="Premium 功能" 
-            description="是否支持 Premium 功能"
+            label={t('Premium Features')}
+            description={t('Whether premium features are supported')}
           >
             {systemLoading ? (
               <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
             ) : (
               <StatusIndicator 
                 status={systemInfo?.premium ? 'success' : 'warning'} 
-                label={systemInfo?.premium ? '支持' : '不支持'} 
+                label={systemInfo?.premium ? t('Supported') : t('Not Supported')} 
               />
             )}
           </ConfigItem>
@@ -511,9 +513,9 @@ export const Config: React.FC = () => {
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium text-theme">危险操作</h3>
+              <h3 className="font-medium text-theme">{t('Dangerous Operations')}</h3>
               <p className="text-sm text-theme-secondary">
-                这些操作可能会影响系统运行，请谨慎使用
+                {t('These operations may affect system operation, please use with caution')}
               </p>
             </div>
             <div className="flex space-x-2">
@@ -521,25 +523,25 @@ export const Config: React.FC = () => {
                 variant="outline" 
                 size="sm"
                 onClick={() => {
-                  if (confirm('确定要重置所有 V2 设置吗？')) {
+                  if (confirm(t('Are you sure you want to reset all V2 settings?'))) {
                     localStorage.removeItem('v2-preferences');
                     window.location.reload();
                   }
                 }}
               >
-                重置设置
+                {t('Reset Settings')}
               </Button>
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => {
-                  if (confirm('确定要重启 Clash 核心吗？')) {
+                  if (confirm(t('Are you sure you want to restart Clash core?'))) {
                     // 这里应该调用重启 API
                     console.log('Restart Clash core');
                   }
                 }}
               >
-                重启核心
+                {t('Restart Core')}
               </Button>
             </div>
           </div>
