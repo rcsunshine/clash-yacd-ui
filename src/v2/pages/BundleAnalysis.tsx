@@ -1,4 +1,5 @@
 import React, { useMemo,useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
@@ -15,6 +16,7 @@ interface BundleStats {
 }
 
 export const BundleAnalysis: React.FC = () => {
+  const { t } = useTranslation();
   const [showDetails, setShowDetails] = useState(false);
 
   // 基于实际构建结果的统计数据
@@ -91,64 +93,69 @@ export const BundleAnalysis: React.FC = () => {
 
   const optimizationSuggestions = [
     {
-      title: '代码分割优化',
-      description: '主包 (index.v2.js) 较大，可以进一步分离第三方库',
-      priority: 'high',
-      impact: '减少 50-100KB',
-      action: '将 React、React-DOM 等库分离到 vendor chunk',
-      status: '建议实施'
+      title: t('Code Splitting Optimization'),
+      description: t('Main bundle (index.v2.js) is large, consider separating third-party libraries'),
+      priority: t('High Priority'),
+      impact: t('Reduce 50-100KB'),
+      action: t('Separate React, React-DOM and other libraries to vendor chunk'),
+      status: t('Recommended')
     },
     {
-      title: 'Tree Shaking 优化',
-      description: '检查并移除未使用的代码和依赖',
-      priority: 'medium',
-      impact: '减少 20-40KB',
-      action: '使用 webpack-bundle-analyzer 分析未使用代码',
-      status: '进行中'
+      title: t('Tree Shaking Optimization'),
+      description: t('Check and remove unused code and dependencies'),
+      priority: t('Medium Priority'),
+      impact: t('Reduce 20-40KB'),
+      action: t('Use webpack-bundle-analyzer to analyze unused code'),
+      status: t('In Progress')
     },
     {
-      title: 'CSS 优化',
-      description: 'CSS 包大小适中，但可以进一步优化',
-      priority: 'medium',
-      impact: '减少 10-20KB',
-      action: '移除未使用的 Tailwind CSS 类，启用 PurgeCSS',
-      status: '计划中'
+      title: t('CSS Optimization'),
+      description: t('CSS bundle size is moderate, but can be further optimized'),
+      priority: t('Medium Priority'),
+      impact: t('Reduce 10-20KB'),
+      action: t('Remove unused Tailwind CSS classes, enable PurgeCSS'),
+      status: t('Planned')
     },
     {
-      title: '动态导入优化',
-      description: '页面组件已经实现了良好的代码分割',
-      priority: 'low',
-      impact: '已优化',
-      action: '继续保持当前的懒加载策略',
-      status: '已完成'
+      title: t('Dynamic Import Optimization'),
+      description: t('Page components already implement good code splitting'),
+      priority: t('Low Priority'),
+      impact: t('Already optimized'),
+      action: t('Continue maintaining current lazy loading strategy'),
+      status: t('Completed')
     },
     {
-      title: '压缩优化',
-      description: '当前压缩率74.1%，可以进一步提升',
-      priority: 'medium',
-      impact: '减少 10-30KB',
-      action: '启用 Brotli 压缩，优化 Terser 配置',
-      status: '建议实施'
+      title: t('Compression Optimization'),
+      description: t('Current compression rate 74.1%, can be further improved'),
+      priority: t('Medium Priority'),
+      impact: t('Reduce 10-30KB'),
+      action: t('Enable Brotli compression, optimize Terser configuration'),
+      status: t('Recommended')
     }
   ];
 
   const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20';
-      case 'medium': return 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/20';
-      case 'low': return 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/20';
-      default: return 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-900/20';
+    if (priority === t('High Priority')) {
+      return 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20';
+    } else if (priority === t('Medium Priority')) {
+      return 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/20';
+    } else if (priority === t('Low Priority')) {
+      return 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/20';
     }
+    return 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-900/20';
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case '已完成': return 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/20';
-      case '进行中': return 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20';
-      case '计划中': return 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/20';
-      case '建议实施': return 'text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/20';
-      default: return 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-900/20';
+    if (status === t('Completed')) {
+      return 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/20';
+    } else if (status === t('In Progress')) {
+      return 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20';
+    } else if (status === t('Planned')) {
+      return 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/20';
+    } else if (status === t('Recommended')) {
+      return 'text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/20';
     }
+    return 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-900/20';
   };
 
   const exportBundleReport = () => {
@@ -214,9 +221,9 @@ export const BundleAnalysis: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-theme hidden lg:block">Bundle 分析</h1>
+            <h1 className="text-xl font-bold text-theme hidden lg:block">{t('Bundle Analysis')}</h1>
             <p className="text-sm text-theme-secondary">
-              构建产物分析 • 总大小 {formatBytes(bundleStats.totalSize)} • 压缩后 {formatBytes(bundleStats.gzipSize)}
+              {t('Build artifact analysis')} • {t('Total size')} {formatBytes(bundleStats.totalSize)} • {t('Compressed size')} {formatBytes(bundleStats.gzipSize)}
             </p>
           </div>
         </div>
@@ -230,7 +237,7 @@ export const BundleAnalysis: React.FC = () => {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {showDetails ? '隐藏详情' : '显示详情'}
+            {showDetails ? t('Hide Details') : t('Show Details')}
           </Button>
           <Button 
             variant="outline" 
@@ -241,7 +248,7 @@ export const BundleAnalysis: React.FC = () => {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            导出报告
+            {t('Export Report')}
           </Button>
         </div>
       </div>
@@ -260,7 +267,7 @@ export const BundleAnalysis: React.FC = () => {
                 <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
                   {formatBytes(bundleStats.totalSize)}
                 </div>
-                <div className="text-xs text-theme-secondary font-medium">总大小</div>
+                <div className="text-xs text-theme-secondary font-medium">{t('Total size')}</div>
               </div>
             </div>
           </CardContent>
@@ -278,7 +285,7 @@ export const BundleAnalysis: React.FC = () => {
                 <div className="text-2xl font-bold text-green-700 dark:text-green-300">
                   {formatBytes(bundleStats.gzipSize)}
                 </div>
-                <div className="text-xs text-theme-secondary font-medium">Gzip 大小</div>
+                <div className="text-xs text-theme-secondary font-medium">{t('Gzip Size')}</div>
               </div>
             </div>
           </CardContent>
@@ -296,7 +303,7 @@ export const BundleAnalysis: React.FC = () => {
                 <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
                   {getCompressionRatio(bundleStats.totalSize, bundleStats.gzipSize).toFixed(1)}%
                 </div>
-                <div className="text-xs text-theme-secondary font-medium">压缩率</div>
+                <div className="text-xs text-theme-secondary font-medium">{t('Compression Rate')}</div>
               </div>
             </div>
           </CardContent>
@@ -314,7 +321,7 @@ export const BundleAnalysis: React.FC = () => {
                 <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
                   {bundleStats.chunks.length}
                 </div>
-                <div className="text-xs text-theme-secondary font-medium">文件数量</div>
+                <div className="text-xs text-theme-secondary font-medium">{t('File Count')}</div>
               </div>
             </div>
           </CardContent>
@@ -328,7 +335,7 @@ export const BundleAnalysis: React.FC = () => {
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            性能评分
+            {t('Performance Score')}
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -336,24 +343,24 @@ export const BundleAnalysis: React.FC = () => {
               <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
                 <span className="text-2xl font-bold text-white">B+</span>
               </div>
-              <div className="font-semibold text-theme">整体评分</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">压缩后 &lt; 200KB 为优秀</div>
+              <div className="font-semibold text-theme">{t('Overall Score')}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">{t('Compressed < 200KB is excellent')}</div>
             </div>
             
             <div className="text-center">
               <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                 <span className="text-xl font-bold text-white">1.2s</span>
               </div>
-              <div className="font-semibold text-theme">加载时间</div>
-              <div className="text-sm text-theme-secondary">10Mbps 网络环境</div>
+              <div className="font-semibold text-theme">{t('Load Time')}</div>
+              <div className="text-sm text-theme-secondary">{t('10Mbps network environment')}</div>
             </div>
             
             <div className="text-center">
               <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
                 <span className="text-xl font-bold text-white">74%</span>
               </div>
-              <div className="font-semibold text-theme">压缩效率</div>
-              <div className="text-sm text-theme-secondary">Gzip 压缩率</div>
+              <div className="font-semibold text-theme">{t('Compression Efficiency')}</div>
+              <div className="text-sm text-theme-secondary">{t('Gzip compression rate')}</div>
             </div>
           </div>
         </CardContent>
@@ -367,7 +374,7 @@ export const BundleAnalysis: React.FC = () => {
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              文件详细分析
+              {t('File Detail Analysis')}
             </h3>
             
             <div className="space-y-3">
@@ -407,7 +414,7 @@ export const BundleAnalysis: React.FC = () => {
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
-            优化建议
+            {t('Optimization Suggestions')}
           </h3>
           
           <div className="space-y-4">
@@ -427,10 +434,10 @@ export const BundleAnalysis: React.FC = () => {
                 <p className="text-sm text-theme-secondary mb-2">{suggestion.description}</p>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-green-600 dark:text-green-400 font-medium">
-                    预计影响: {suggestion.impact}
+                    {t('Expected Impact')}: {suggestion.impact}
                   </span>
                   <span className="text-theme-tertiary">
-                    建议: {suggestion.action}
+                    {t('Suggestion')}: {suggestion.action}
                   </span>
                 </div>
               </div>
