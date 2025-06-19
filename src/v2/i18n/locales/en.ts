@@ -1,6 +1,7 @@
 export default {
   // Navigation
   'Overview': 'Overview',
+  'Dashboard': 'Dashboard',
   'Proxies': 'Proxies',
   'Connections': 'Connections',
   'Rules': 'Rules',
@@ -106,6 +107,7 @@ export default {
   'TCP Connections': 'TCP Connections',
   'UDP Connections': 'UDP Connections',
   'Total Traffic': 'Total Traffic',
+  'Traffic': 'Traffic',
   'Search connections...': 'Search connections...',
   'All Protocols': 'All Protocols',
   'All Chains': 'All Chains',
@@ -255,6 +257,7 @@ export default {
   'Technology Stack': 'Technology Stack',
 
   // Status and Messages
+  'Status': 'Status',
   'Loading data...': 'Loading data...',
   'No data available': 'No data available',
   'Failed to load data': 'Failed to load data',

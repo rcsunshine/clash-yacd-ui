@@ -1,6 +1,7 @@
 export default {
   // Navigation
   'Overview': '概览',
+  'Dashboard': '仪表盘',
   'Proxies': '代理',
   'Connections': '连接',
   'Rules': '规则',
@@ -64,6 +65,7 @@ export default {
   'Download': '下载',
   'Total': '总计',
   'Speed': '速度',
+  'Traffic': '流量',
 
   // Proxies
   'Proxy Groups': '代理组',
@@ -256,6 +258,7 @@ export default {
   'Technology Stack': '技术栈',
 
   // Status and Messages
+  'Status': '状态',
   'Loading data...': '正在加载数据...',
   'No data available': '暂无数据',
   'Failed to load data': '数据加载失败',
