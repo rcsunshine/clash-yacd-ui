@@ -1,7 +1,7 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Connection } from '../hooks/useConnectionsSearch';
-import { useTranslation } from '../i18n';
 import { cn } from '../utils/cn';
 import { Card, CardContent } from './ui/Card';
 

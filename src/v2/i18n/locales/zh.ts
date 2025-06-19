@@ -7,6 +7,7 @@ export default {
   'Logs': '日志',
   'Config': '配置',
   'API': 'API',
+  'API Config': 'API配置',
   'About': '关于',
 
   // Common
@@ -520,6 +521,8 @@ export default {
   'Theme Debug Information': '主题调试信息',
   'Jotai State': 'Jotai 状态',
   'DOM Class': 'DOM 类名',
+  'getCurrentAppliedTheme()': 'getCurrentAppliedTheme()',
+  'localStorage': 'localStorage',
   'System Preference': '系统偏好',
   'HTML data-theme': 'HTML data-theme',
   'If theme switching is not working, please check': '如果主题切换不工作，请检查：',
@@ -606,6 +609,7 @@ export default {
   'Refresh Page': '刷新页面',
 
   // 连接详情组件
+  'Connection Details': '连接详情',
   'Please select a connection to view details': '请选择一个连接查看详情',
   'Basic Information': '基本信息',
   'Connection ID': '连接ID',
@@ -648,5 +652,33 @@ export default {
   'Auto Theme': '自动主题',
   'Light Mode': '浅色模式',
   'Dark Mode': '深色模式',
+
+  // HelpTooltip 组件
+  'Keyboard Shortcuts': '键盘快捷键',
+  'Focus search box': '聚焦搜索框',
+  'Refresh data': '刷新数据',
+  'Clear filters': '清除过滤器',
+  'Switch to rules list': '切换到规则列表',
+  'Switch to rule providers': '切换到规则提供者',
+
+  // 规则类型（Rules页面）
+  'Domain': '域名',
+  'Domain Suffix': '域名后缀',
+  'Domain Keyword': '域名关键词',
+  'IP CIDR': 'IP CIDR',
+  'IP CIDR6': 'IP CIDR6',
+  'GeoIP': 'GeoIP',
+  'Source IP CIDR': '源IP CIDR',
+  'Source Port': '源端口',
+  'Destination Port': '目标端口',
+  'Process Name': '进程名',
+  'Match': '匹配',
+  'Final': '最终',
+  
+  // 提供者类型和行为（Rules页面）
+  'HTTP': 'HTTP',
+  'File': '文件',
+  'Classical': '经典',
+  'Compatible': '兼容',
 
 }; 

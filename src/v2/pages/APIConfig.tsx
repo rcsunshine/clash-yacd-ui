@@ -1,11 +1,11 @@
 import React, { useCallback,useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { LoadingState } from '../components/ui/LoadingState';
 import { useV2ApiConfig } from '../hooks/useApiConfig';
-import { useTranslation } from '../i18n';
 import type { ClashAPIConfig } from '../types/api';
 
 interface APITestResult {

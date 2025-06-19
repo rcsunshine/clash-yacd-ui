@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { cn } from '../../utils/cn';
 
@@ -208,27 +209,29 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
  * 规则搜索帮助提示组件
  */
 export const RulesSearchHelpTooltip: React.FC = () => {
+  const { t } = useTranslation();
+  
   return (
     <HelpTooltip
-      title="规则搜索语法"
+      title={t('Rule Search Syntax')}
       content={
         <div className="space-y-2">
           <div>
-            <div className="font-medium mb-1">基本搜索:</div>
-            <div className="pl-2">直接输入关键词搜索规则内容和代理</div>
+            <div className="font-medium mb-1">{t('Basic Search')}:</div>
+            <div className="pl-2">{t('Enter keywords directly to search rule content and proxy')}</div>
           </div>
           
           <div>
-            <div className="font-medium mb-1">高级语法:</div>
+            <div className="font-medium mb-1">{t('Advanced Syntax')}:</div>
             <div className="pl-2 space-y-1">
-              <div><code>type:DOMAIN</code> - 搜索特定类型</div>
-              <div><code>proxy:DIRECT</code> - 搜索特定代理</div>
-              <div><code>payload:&quot;google.com&quot;</code> - 精确匹配内容</div>
+              <div><code>type:DOMAIN</code> - {t('Search specific type')}</div>
+              <div><code>proxy:DIRECT</code> - {t('Search specific proxy')}</div>
+              <div><code>payload:&quot;google.com&quot;</code> - {t('Exact match content')}</div>
             </div>
           </div>
           
           <div>
-            <div className="font-medium mb-1">组合搜索:</div>
+            <div className="font-medium mb-1">{t('Combined Search')}:</div>
             <div className="pl-2">
               <code>type:DOMAIN proxy:DIRECT google</code>
             </div>
@@ -253,25 +256,27 @@ export const RulesSearchHelpTooltip: React.FC = () => {
  * 键盘快捷键帮助提示组件
  */
 export const KeyboardShortcutsTooltip: React.FC = () => {
+  const { t } = useTranslation();
+  
   return (
     <HelpTooltip
-      title="键盘快捷键"
+      title={t('Keyboard Shortcuts')}
       content={
         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
           <div className="font-medium">F</div>
-          <div>聚焦搜索框</div>
+          <div>{t('Focus search box')}</div>
           
           <div className="font-medium">R</div>
-          <div>刷新数据</div>
+          <div>{t('Refresh data')}</div>
           
           <div className="font-medium">ESC</div>
-          <div>清除过滤器</div>
+          <div>{t('Clear filters')}</div>
           
           <div className="font-medium">1</div>
-          <div>切换到规则列表</div>
+          <div>{t('Switch to rules list')}</div>
           
           <div className="font-medium">2</div>
-          <div>切换到规则提供者</div>
+          <div>{t('Switch to rule providers')}</div>
         </div>
       }
       position="bottom"

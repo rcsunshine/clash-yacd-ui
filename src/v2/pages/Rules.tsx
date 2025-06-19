@@ -120,6 +120,56 @@ const RulesContent: React.FC = () => {
     }
   };
 
+  // 规则类型翻译
+  const translateRuleType = (type: string): string => {
+    const typeMap: Record<string, string> = {
+      'DOMAIN': t('Domain'),
+      'DOMAIN-SUFFIX': t('Domain Suffix'),
+      'DOMAIN-KEYWORD': t('Domain Keyword'),
+      'IP-CIDR': t('IP CIDR'),
+      'IP-CIDR6': t('IP CIDR6'),
+      'GEOIP': t('GeoIP'),
+      'SRC-IP-CIDR': t('Source IP CIDR'),
+      'SRC-PORT': t('Source Port'),
+      'DST-PORT': t('Destination Port'),
+      'PROCESS-NAME': t('Process Name'),
+      'PROCESS-PATH': t('Process Path'),
+      'MATCH': t('Match'),
+      'FINAL': t('Final'),
+    };
+    return typeMap[type] || type;
+  };
+  
+  // 提供者类型翻译
+  const translateProviderType = (type: string): string => {
+    const typeMap: Record<string, string> = {
+      'Rule': t('Rule'),
+      'http': t('HTTP'),
+      'file': t('File'),
+    };
+    return typeMap[type] || type;
+  };
+  
+  // 提供者行为翻译
+  const translateProviderBehavior = (behavior: string): string => {
+    const behaviorMap: Record<string, string> = {
+      'domain': t('Domain'),
+      'ipcidr': t('IP CIDR'),
+      'classical': t('Classical'),
+    };
+    return behaviorMap[behavior] || behavior;
+  };
+  
+  // 载体类型翻译
+  const translateVehicleType = (type: string): string => {
+    const vehicleMap: Record<string, string> = {
+      'HTTP': t('HTTP'),
+      'File': t('File'),
+      'Compatible': t('Compatible'),
+    };
+    return vehicleMap[type] || type;
+  };
+
   // 加载状态
   if (isLoading) {
     return (
@@ -308,7 +358,7 @@ const RulesContent: React.FC = () => {
                     onChange={(e) => setTypeFilter(e.target.value as RuleType)}
                     options={[
                       { value: 'all', label: t('All Types') },
-                      ...ruleTypes.map(type => ({ value: type, label: type }))
+                      ...ruleTypes.map(type => ({ value: type, label: translateRuleType(type) }))
                     ]}
                     size="sm"
                     className="min-w-[120px]"
@@ -440,7 +490,7 @@ const RulesContent: React.FC = () => {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center space-x-2 mb-1">
                                 <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full font-medium">
-                                  {rule.type}
+                                  {translateRuleType(rule.type)}
                                 </span>
                                 <span className="text-sm font-medium text-theme truncate">
                                   {rule.payload}
@@ -524,14 +574,14 @@ const RulesContent: React.FC = () => {
                                 {provider.name}
                               </h3>
                               <span className="text-xs px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full">
-                                {provider.type}
+                                {translateProviderType(provider.type)}
                               </span>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                               <div>
                                 <span className="text-theme-secondary">{t('Behavior')}:</span>
                                 <div className="font-medium text-theme">
-                                  {provider.behavior || 'domain'}
+                                  {translateProviderBehavior(provider.behavior || 'domain')}
                                 </div>
                               </div>
                               <div>
@@ -543,7 +593,7 @@ const RulesContent: React.FC = () => {
                               <div>
                                 <span className="text-theme-secondary">{t('Vehicle')}:</span>
                                 <div className="font-medium text-theme">
-                                  {provider.vehicleType || 'HTTP'}
+                                  {translateVehicleType(provider.vehicleType || 'HTTP')}
                                 </div>
                               </div>
                               <div>

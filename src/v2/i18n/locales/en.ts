@@ -520,6 +520,8 @@ export default {
   'Theme Debug Information': 'Theme Debug Information',
   'Jotai State': 'Jotai State',
   'DOM Class': 'DOM Class',
+  'getCurrentAppliedTheme()': 'getCurrentAppliedTheme()',
+  'localStorage': 'localStorage',
   'System Preference': 'System Preference',
   'HTML data-theme': 'HTML data-theme',
   'If theme switching is not working, please check': 'If theme switching is not working, please check',
@@ -606,6 +608,7 @@ export default {
   'Refresh Page': 'Refresh Page',
 
   // Connection Detail Component
+  'Connection Details': 'Connection Details',
   'Please select a connection to view details': 'Please select a connection to view details',
   'Basic Information': 'Basic Information',
   'Connection ID': 'Connection ID',
@@ -648,5 +651,33 @@ export default {
   'Auto Theme': 'Auto Theme',
   'Light Mode': 'Light Mode',
   'Dark Mode': 'Dark Mode',
+  
+  // HelpTooltip Component
+  'Keyboard Shortcuts': 'Keyboard Shortcuts',
+  'Focus search box': 'Focus search box',
+  'Refresh data': 'Refresh data',
+  'Clear filters': 'Clear filters',
+  'Switch to rules list': 'Switch to rules list',
+  'Switch to rule providers': 'Switch to rule providers',
+  
+  // Rule Types (for Rules page)
+  'Domain': 'Domain',
+  'Domain Suffix': 'Domain Suffix',
+  'Domain Keyword': 'Domain Keyword',
+  'IP CIDR': 'IP CIDR',
+  'IP CIDR6': 'IP CIDR6',
+  'GeoIP': 'GeoIP',
+  'Source IP CIDR': 'Source IP CIDR',
+  'Source Port': 'Source Port',
+  'Destination Port': 'Destination Port',
+  'Process Name': 'Process Name',
+  'Match': 'Match',
+  'Final': 'Final',
+  
+  // Provider Types and Behaviors (for Rules page)
+  'HTTP': 'HTTP',
+  'File': 'File',
+  'Classical': 'Classical',
+  'Compatible': 'Compatible',
   
 }; 

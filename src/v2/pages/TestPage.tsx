@@ -59,13 +59,13 @@ export const TestPage: React.FC = () => {
               <strong>{t('DOM Class')}:</strong> {isDarkMode ? 'dark' : 'light'}
             </div>
             <div>
-              <strong>getCurrentAppliedTheme():</strong> {getCurrentAppliedTheme()}
+                              <strong>{t('getCurrentAppliedTheme()')}:</strong> {getCurrentAppliedTheme()}
             </div>
             <div>
               <strong>{t('System Preference')}:</strong> {window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'}
             </div>
             <div>
-              <strong>localStorage:</strong> {localStorage.getItem('v2-theme') || t('Not Set')}
+                              <strong>{t('localStorage')}:</strong> {localStorage.getItem('v2-theme') || t('Not Set')}
             </div>
             <div>
               <strong>{t('HTML data-theme')}:</strong> {document.documentElement.getAttribute('data-theme') || t('Not Set')}

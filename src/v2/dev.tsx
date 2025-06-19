@@ -1,9 +1,9 @@
 import { Provider as JotaiProvider } from 'jotai';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { useTranslation } from 'react-i18next';
 
 import { App } from './App';
-import { useTranslation } from './i18n';
 import { AppStateProvider } from './store';
 
 // 错误边界内容组件（支持翻译）

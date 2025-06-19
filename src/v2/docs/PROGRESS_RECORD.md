@@ -269,6 +269,126 @@
 
 ---
 
+## 📋 2025/1/3 - 连接详情页面国际化修复
+
+### 🐛 问题描述
+用户报告连接详情弹窗标题"Connection Details"未被翻译成中文。
+
+### 🔍 问题分析
+检查发现翻译文件中缺少"Connection Details"键。
+
+### ✅ 修复内容
+1. **添加缺失翻译键** - 在英文和中文翻译文件中添加"Connection Details"键
+   - 英文：`'Connection Details': 'Connection Details'`
+   - 中文：`'Connection Details': '连接详情'`
+
+### 📝 修改文件
+- `src/v2/i18n/locales/en.ts` - 添加英文翻译键
+- `src/v2/i18n/locales/zh.ts` - 添加中文翻译键
+
+### ✨ 修复结果
+- 连接详情弹窗标题现在能正确显示中文"连接详情"
+- 确认其他相关翻译键（如Duration、Total Traffic等）都已存在
+- 国际化系统正常工作，支持实时语言切换
+
+---
+
+## 📋 2025/1/3 - 主要菜单页面国际化修复
+
+### 🔍 发现的问题
+用户要求检查是否有其他漏翻译的内容，发现以下问题：
+1. **Bundle.tsx** - 整个页面没有使用国际化（用户表示不需要修复）
+2. **TestPage.tsx** - 硬编码的英文调试标签
+3. **HelpTooltip.tsx** - Rules页面使用的帮助提示组件有硬编码中文
+4. **AppLayout.tsx** - 布局组件有大量硬编码中文
+
+### ✅ 修复内容
+
+#### 1. **TestPage.tsx 修复**
+- 修改硬编码标签使用 `t()` 函数：
+  - `getCurrentAppliedTheme():` → `{t('getCurrentAppliedTheme()')}`
+  - `localStorage:` → `{t('localStorage')}`
+- 添加对应翻译键
+
+#### 2. **HelpTooltip.tsx 修复**
+- 导入 `useTranslation` hook
+- 修改 `RulesSearchHelpTooltip` 组件：
+  - "规则搜索语法" → `t('Rule Search Syntax')`
+  - "基本搜索:" → `t('Basic Search'):`
+  - 其他所有硬编码中文文本
+- 修改 `KeyboardShortcutsTooltip` 组件：
+  - "键盘快捷键" → `t('Keyboard Shortcuts')`
+  - "聚焦搜索框" → `t('Focus search box')`
+  - 其他所有硬编码中文文本
+- 在翻译文件中添加12个新的翻译键
+
+#### 3. **AppLayout.tsx 修复**
+- 导入 `useTranslation` hook
+- 修改所有硬编码的中文文本：
+  - 页面标题映射（概览、代理、连接等）
+  - 连接状态（已连接）
+  - 移动端菜单项文本
+- 添加 "API Config" 翻译键
+
+### 📝 修改文件
+- `src/v2/pages/TestPage.tsx` - 修复硬编码英文标签
+- `src/v2/components/ui/HelpTooltip.tsx` - 修复硬编码中文文本
+- `src/v2/components/layout/AppLayout.tsx` - 修复布局组件的硬编码中文
+- `src/v2/i18n/locales/en.ts` - 添加新的英文翻译键（共14个新键）
+- `src/v2/i18n/locales/zh.ts` - 添加新的中文翻译键（共14个新键）
+
+### ✨ 修复结果
+- TestPage的调试标签现在支持国际化
+- Rules页面的帮助提示完全支持国际化
+- AppLayout布局组件完全支持国际化
+- 所有主要菜单页面（除Bundle外）都已完成国际化
+- 确保用户常用的页面和组件都有良好的多语言支持
+- V2架构的国际化覆盖率进一步提升
+
+---
+
+## 📋 2025/1/3 - Rules页面剩余未翻译内容修复
+
+### 🐛 问题描述
+用户报告Rules页面仍有未翻译的内容，主要是规则类型、提供者类型和行为等从API返回的英文值。
+
+### 🔍 问题分析
+发现Rules页面中直接显示了API返回的英文值：
+- 规则类型（如DOMAIN、IP-CIDR等）
+- 提供者类型（如HTTP、File）
+- 提供者行为（如domain、classical）
+- 载体类型（如HTTP、File）
+
+### ✅ 修复内容
+
+1. **添加翻译函数** - 在Rules组件中添加4个翻译函数：
+   - `translateRuleType()` - 翻译规则类型
+   - `translateProviderType()` - 翻译提供者类型
+   - `translateProviderBehavior()` - 翻译提供者行为
+   - `translateVehicleType()` - 翻译载体类型
+
+2. **应用翻译函数** - 在以下位置使用翻译函数：
+   - 规则类型筛选下拉框
+   - 规则列表中的类型显示
+   - 提供者列表中的类型、行为、载体显示
+
+3. **添加翻译键** - 新增18个翻译键：
+   - 13个规则类型翻译
+   - 5个提供者相关翻译
+
+### 📝 修改文件
+- `src/v2/pages/Rules.tsx` - 添加翻译函数并应用到UI显示
+- `src/v2/i18n/locales/en.ts` - 添加英文翻译键
+- `src/v2/i18n/locales/zh.ts` - 添加中文翻译
+
+### ✨ 修复结果
+- Rules页面的所有规则类型现在显示为中文（如"域名"、"IP CIDR"等）
+- 规则提供者的类型、行为、载体都正确显示中文
+- 规则筛选器中的类型选项也显示为中文
+- Rules页面实现了完整的国际化支持
+
+---
+
 **最后更新**: 2025年1月18日  
 **当前版本**: V2.0.0  
 **开发状态**: ✅ 核心开发完成，翻译功能已修复，准备生产部署
