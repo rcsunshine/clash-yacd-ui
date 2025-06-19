@@ -355,16 +355,8 @@ export function Sidebar(props: SidebarProps = {}) {
       {/* 底部区域 */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-              {t('V2 Running')}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <LanguageDropdown />
-            <ThemeDropdown />
-          </div>
+          <LanguageDropdown />
+          <ThemeDropdown />
         </div>
 
         {/* Connection Status */}
