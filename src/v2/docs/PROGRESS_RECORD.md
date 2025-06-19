@@ -207,6 +207,57 @@
 
 ---
 
+## 最新更新 (2024-12-19)
+
+### 🌍 API页面国际化翻译修复 (新增)
+**完成时间**: 2024-12-19  
+**任务描述**: 修复API配置页面中缺失的TEST相关国际化翻译  
+
+**主要修复内容**:
+1. **硬编码文本替换**: 将所有硬编码的中文文本替换为i18n翻译键
+   - `连接成功` → `t('Connection successful')`
+   - `连接失败` → `t('Connection failed')`
+   - `测试失败` → `t('Test failed')`
+   - `请输入API地址` → `t('Please enter API address')`
+   - `连接超时` → `t('Connection timeout')`
+   - `不能删除默认配置` → `t('Cannot delete default configuration')`
+   - `确定要删除这个配置吗？` → `t('Are you sure you want to delete this configuration?')`
+
+2. **新增翻译键**: 在英文和中文翻译文件中添加缺失的翻译
+   ```typescript
+   // 新增的翻译键
+   'Test failed': 'Test failed' / '测试失败',
+   'Please enter API address': 'Please enter API address' / '请输入API地址',
+   'Connection timeout': 'Connection timeout' / '连接超时',
+   'Network error': 'Network error' / '网络错误',
+   'Cannot delete default configuration': 'Cannot delete default configuration' / '不能删除默认配置',
+   'Are you sure you want to delete this configuration?': 'Are you sure you want to delete this configuration?' / '确定要删除这个配置吗？',
+   'Loading API configuration...': 'Loading API configuration...' / '加载API配置中...',
+   'Add New Configuration': 'Add New Configuration' / '添加新配置',
+   'Edit Configuration': 'Edit Configuration' / '编辑配置',
+   'API Address': 'API Address' / 'API地址',
+   'Leave empty for no password': 'Leave empty for no password' / '留空表示无密码',
+   'Request timeout (10 seconds)': 'Request timeout (10 seconds)' / '请求超时（10秒）',
+   'Unknown error': 'Unknown error' / '未知错误',
+   ```
+
+3. **依赖数组修复**: 修复useCallback钩子的依赖数组，添加缺失的't'依赖
+
+**技术细节**:
+- 遵循V2架构强制性国际化规范
+- 确保英中文翻译文件键名完全一致  
+- 移除重复的翻译键，避免linter错误
+- 修复React Hook依赖数组警告
+
+**验证结果**:
+- ✅ Linter检查: 0 errors, 仅有warnings (符合要求)
+- ✅ 国际化完整性: 所有硬编码中文文本已替换
+- ✅ 翻译文件同步: 英中文翻译键完全对应
+
+**影响范围**: APIConfig页面的所有测试相关功能的多语言支持
+
+---
+
 **最后更新**: 2025年1月18日  
 **当前版本**: V2.0.0  
 **开发状态**: ✅ 核心开发完成，翻译功能已修复，准备生产部署

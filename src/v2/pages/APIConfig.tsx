@@ -68,7 +68,7 @@ export const APIConfig: React.FC = () => {
         const data = await response.json();
         return {
           success: true,
-          message: '连接成功',
+          message: t('Connection successful'),
           version: data.version || 'Unknown'
         };
       } else {
@@ -81,14 +81,14 @@ export const APIConfig: React.FC = () => {
       if (error instanceof Error && error.name === 'AbortError') {
         return {
           success: false,
-          message: '连接超时',
-          error: '请求超时（10秒）'
+          message: t('Connection timeout'),
+          error: t('Request timeout (10 seconds)')
         };
       }
       return {
         success: false,
-        message: '连接失败',
-        error: error instanceof Error ? error.message : '网络错误'
+        message: t('Connection failed'),
+        error: error instanceof Error ? error.message : t('Network error')
       };
     }
   }, []);
@@ -104,13 +104,13 @@ export const APIConfig: React.FC = () => {
     } catch (error) {
       setCurrentTestResult({
         success: false,
-        message: '测试失败',
-        error: error instanceof Error ? error.message : '未知错误'
+        message: t('Test failed'),
+        error: error instanceof Error ? error.message : t('Unknown error')
       });
     } finally {
       setTestingCurrent(false);
     }
-  }, [currentConfig, testAPIConnection]);
+  }, [currentConfig, testAPIConnection, t]);
 
   // 测试指定配置
   const handleTestConfig = useCallback(async (index: number) => {
@@ -125,8 +125,8 @@ export const APIConfig: React.FC = () => {
     } catch (error) {
       setConfigTestResults(prev => new Map([...prev, [index, {
         success: false,
-        message: '测试失败',
-        error: error instanceof Error ? error.message : '未知错误'
+        message: t('Test failed'),
+        error: error instanceof Error ? error.message : t('Unknown error')
       }]]));
     } finally {
       setTestingConfigs(prev => {
@@ -135,14 +135,14 @@ export const APIConfig: React.FC = () => {
         return newSet;
       });
     }
-  }, [configs, testAPIConnection]);
+  }, [configs, testAPIConnection, t]);
 
   // 测试表单配置
   const handleTestForm = useCallback(async () => {
     if (!formData.baseURL.trim()) {
       setFormTestResult({
         success: false,
-        message: '请输入API地址',
+        message: t('Please enter API address'),
       });
       return;
     }
@@ -161,13 +161,13 @@ export const APIConfig: React.FC = () => {
     } catch (error) {
       setFormTestResult({
         success: false,
-        message: '测试失败',
-        error: error instanceof Error ? error.message : '未知错误'
+        message: t('Test failed'),
+        error: error instanceof Error ? error.message : t('Unknown error')
       });
     } finally {
       setTestingForm(false);
     }
-  }, [formData, testAPIConnection]);
+  }, [formData, testAPIConnection, t]);
 
   // 开始添加新配置
   const handleStartAdd = useCallback(() => {
@@ -200,7 +200,7 @@ export const APIConfig: React.FC = () => {
   // 保存配置
   const handleSave = useCallback(() => {
     if (!formData.baseURL.trim()) {
-      alert('请输入API地址');
+      alert(t('Please enter API address'));
       return;
     }
 
@@ -222,22 +222,22 @@ export const APIConfig: React.FC = () => {
     }
 
     handleCancel();
-  }, [formData, isAdding, editingIndex, addConfig, updateConfig, handleCancel]);
+  }, [formData, isAdding, editingIndex, addConfig, updateConfig, handleCancel, t]);
 
   // 删除配置
   const handleDelete = useCallback((index: number) => {
     if (index === 0) {
-      alert('不能删除默认配置');
+      alert(t('Cannot delete default configuration'));
       return;
     }
 
-    if (confirm('确定要删除这个配置吗？')) {
+    if (confirm(t('Are you sure you want to delete this configuration?'))) {
       const success = removeConfig(index);
       if (success) {
         console.log(`✅ 删除配置 ${index} 成功`);
       }
     }
-  }, [removeConfig]);
+  }, [removeConfig, t]);
 
   // 切换配置
   const handleSwitch = useCallback((index: number) => {
