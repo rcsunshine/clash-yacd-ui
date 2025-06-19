@@ -89,6 +89,8 @@ export default {
   'ms': 'ms',
   'Timeout': '超时',
   'Testing': '测试中',
+  'Testing progress...': '测试进度...',
+  'Test completed': '测试完成',
   'Untested': '未测试',
 
   // Connections

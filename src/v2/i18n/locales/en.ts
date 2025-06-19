@@ -89,6 +89,8 @@ export default {
   'ms': 'ms',
   'Timeout': 'Timeout',
   'Testing': 'Testing',
+  'Testing progress...': 'Testing progress...',
+  'Test completed': 'Test completed',
   'Untested': 'Untested',
 
   // Connections
