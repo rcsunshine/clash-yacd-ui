@@ -577,10 +577,10 @@ export const Proxies: React.FC = () => {
       const result = await switchProxy(groupName, proxyName);
       if (result.error) {
         console.error('Failed to switch proxy:', result.error);
-        showNotification('error', t('Switched to "{proxyName}" failed, please retry', { proxyName }));
+        showNotification('error', t('Switched to "{{proxyName}}" failed, please retry', { proxyName }));
       } else {
         console.log(`Successfully switched ${groupName} to ${proxyName}`);
-        showNotification('success', t('Switched to "{proxyName}"', { proxyName }));
+                  showNotification('success', t('Switched to "{{proxyName}}"', { proxyName }));
         refetch();
       }
     } catch (error) {
@@ -604,7 +604,7 @@ export const Proxies: React.FC = () => {
         group.all.forEach(proxyName => next.delete(proxyName));
         return next;
       });
-      showNotification('info', t('Cancelled proxy group "{groupName}" test', { groupName: group.name }));
+      showNotification('info', t('Cancelled proxy group "{{groupName}}" test', { groupName: group.name }));
       return;
     }
     
@@ -631,10 +631,10 @@ export const Proxies: React.FC = () => {
       }
       
       refetch(); // 刷新数据以获取最新的延迟结果
-      showNotification('success', t('Proxy group "{groupName}" test completed! Tested {count} nodes', { groupName: group.name, count: group.all.length }));
+      showNotification('success', t('Proxy group "{{groupName}}" test completed! Tested {{count}} nodes', { groupName: group.name, count: group.all.length }));
     } catch (error) {
       console.error('Failed to test group delay:', error);
-      showNotification('error', t('Proxy group "{groupName}" test failed, please retry', { groupName: group.name }));
+      showNotification('error', t('Proxy group "{{groupName}}" test failed, please retry', { groupName: group.name }));
     } finally {
       setTestingProxies(prev => {
         const next = new Set(prev);
@@ -659,10 +659,10 @@ export const Proxies: React.FC = () => {
     try {
       await testDelay(proxyName);
       refetch(); // 刷新数据以获取最新的延迟结果
-      showNotification('success', t('Proxy "{proxyName}" latency test completed', { proxyName }));
+      showNotification('success', t('Proxy "{{proxyName}}" latency test completed', { proxyName }));
     } catch (error) {
       console.error(`Failed to test delay for ${proxyName}:`, error);
-      showNotification('error', t('Proxy "{proxyName}" test failed, please retry', { proxyName }));
+      showNotification('error', t('Proxy "{{proxyName}}" test failed, please retry', { proxyName }));
     } finally {
       setTestingSingleProxies(prev => {
         const next = new Set(prev);
@@ -748,7 +748,7 @@ export const Proxies: React.FC = () => {
         refetch(); // 刷新数据以获取最新的延迟结果
         
         // 显示完成提示，3秒后隐藏进度条
-        showNotification('success', t('Test completed! Success {success}, Failed {failed}, Total {total} proxy nodes', { success, failed, total }));
+        showNotification('success', t('Test completed! Success {{success}}, Failed {{failed}}, Total {{total}} proxy nodes', { success, failed, total }));
         setTimeout(() => {
           setShowTestingProgress(false);
         }, 3000);
@@ -1034,7 +1034,7 @@ export const Proxies: React.FC = () => {
               {!testingAllProxies && testingProgress.current === testingProgress.total && (
                 <span className="text-blue-700 dark:text-blue-300 animate-pulse text-sm flex items-center space-x-1">
                   <span>✨</span>
-                  <span className="font-medium">完成!</span>
+                  <span className="font-medium">{t('Completed!')}</span>
                 </span>
               )}
             </div>
