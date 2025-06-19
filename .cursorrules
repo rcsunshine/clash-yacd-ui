@@ -478,10 +478,202 @@ className="text-gray-900 dark:text-gray-100"          // ✅ 正确
 
 **重要性**：这些规范基于pages.css完全删除的成功实践，确保V2架构的CSS标准化和零样式污染！
 
+### 🌍 **强制性国际化(i18n)规范 (CRITICAL - 必须遵循)**
+
+#### **🎯 国际化架构核心原则**
+基于V2架构的i18n系统，采用 `i18next` + `react-i18next` 技术栈，支持中英双语和自动语言检测。
+
+##### **1. 目录结构和文件规范** 📁
+```bash
+src/v2/i18n/
+├── index.ts            # i18n 配置和导출
+├── locales/           # 翻译文件目录
+│   ├── en.ts          # 英文翻译 (fallback语言)
+│   └── zh.ts          # 中文翻译 (主要语言)
+```
+
+##### **2. 翻译文件格式标准** 📝
+```typescript
+// ✅ 标准格式：src/v2/i18n/locales/zh.ts
+export default {
+  // === 分类注释 ===
+  // Navigation - 导航相关
+  'Overview': '概览',
+  'Proxies': '代理',
+  'Connections': '连接',
+  
+  // Common - 通用术语
+  'Loading...': '加载中...',
+  'Error': '错误',
+  'Success': '成功',
+  
+  // Page specific - 页面特定
+  'Search proxies...': '搜索代理组...',
+  'Connection Management': '连接管理',
+};
+```
+
+##### **3. 翻译键(Key)命名规范** 🔑
+```typescript
+// ✅ 标准命名模式
+'Overview'                    // 简单词汇，直接使用
+'Loading...'                  // 带状态的词汇，保留原样
+'Search proxies...'           // 完整语句，保持英文原文
+'System Information'          // 复合词组，英文原文
+'Connection Management'       // 功能模块名，英文原文
+
+// ❌ 禁止的命名模式
+'overview_page'              // 禁止下划线命名
+'searchProxies'              // 禁止驼峰命名
+'LOADING'                    // 禁止全大写
+'loading.text'               // 禁止点号分层
+```
+
+##### **4. 组件中使用i18n的标准方式** ⚡
+```typescript
+// ✅ 标准用法
+import { useTranslation } from 'react-i18next';
+
+export const Dashboard: React.FC = () => {
+  const { t } = useTranslation();
+  
+  return (
+    <div>
+      <h1>{t('System Information')}</h1>
+      <button>{t('Refresh')}</button>
+      <p>{t('Loading...')}</p>
+    </div>
+  );
+};
+
+// ❌ 禁止的用法
+import i18n from '../i18n';  // 禁止直接导入i18n实例
+const text = i18n.t('text'); // 禁止在组件外使用
+<div>{t('dashboard.title')}</div> // 禁止命名空间语法
+```
+
+##### **5. 新增翻译内容的工作流程** 🔄
+```markdown
+添加新翻译时的强制流程：
+
+1. **英文文件优先**: 先在 en.ts 中添加英文原文
+2. **中文文件同步**: 立即在 zh.ts 中添加对应中文翻译
+3. **分类归纳**: 按功能模块归类，添加注释分割线
+4. **键名一致**: 确保两个文件中的键名完全一致
+5. **去重检查**: 避免重复的翻译键
+
+// 示例流程：
+// 1. 在 en.ts 中添加
+'Proxy Management': 'Proxy Management',
+
+// 2. 在 zh.ts 中添加
+'Proxy Management': '代理管理',
+```
+
+##### **6. 语言检测和持久化配置** 🔧
+```typescript
+// 标准配置 - src/v2/i18n/index.ts
+i18n.init({
+  fallbackLng: 'en',              // 回退语言为英文
+  lng: undefined,                 // 启用自动检测
+  
+  detection: {
+    order: ['localStorage', 'navigator', 'htmlTag'],
+    caches: ['localStorage'],
+    lookupLocalStorage: 'v2-language', // V2专用存储键
+  },
+  
+  resources: {
+    en: { translation: enTranslations },
+    zh: { translation: zhTranslations },
+    'zh-CN': { translation: zhTranslations }, // 支持zh-CN别名
+  },
+});
+```
+
+##### **7. 国际化质量检查标准** 🔍
+```bash
+# 翻译文件完整性检查
+每次修改翻译文件后必须确保：
+
+✅ 检查项目：
+- 英文和中文文件键名数量一致
+- 无重复键名
+- 无遗漏翻译
+- 分类注释完整
+- 语法格式正确
+
+❌ 常见错误：
+- 英文文件有键，中文文件缺失
+- 中文文件有键，英文文件缺失  
+- 键名拼写不一致
+- 缺少分类注释
+- 翻译内容为空字符串
+```
+
+##### **8. 组件props传递国际化文本** 📤
+```typescript
+// ✅ 标准模式：翻译后传递
+const ProxyCard: React.FC<{ title: string }> = ({ title }) => {
+  return <div>{title}</div>;
+};
+
+// 使用时
+const { t } = useTranslation();
+<ProxyCard title={t('Proxy Management')} />
+
+// ❌ 禁止模式：传递键名
+<ProxyCard titleKey="Proxy Management" /> // 禁止传递翻译键
+```
+
+##### **9. 特殊情况处理规范** 🆘
+```typescript
+// 动态文本拼接
+const { t } = useTranslation();
+const count = 5;
+
+// ✅ 推荐：使用插值
+// en.ts: 'Connection Count': '{{count}} connections'
+// zh.ts: 'Connection Count': '{{count}} 个连接'
+<span>{t('Connection Count', { count })}</span>
+
+// ❌ 避免：手动拼接
+<span>{count} {t('connections')}</span>
+```
+
+##### **10. 强制执行策略** 🛡️
+```markdown
+违反国际化规范时的处理：
+
+1. **检测违规**：
+   - 硬编码中文字符串 → 立即拒绝
+   - 翻译文件不同步 → 强制要求修复
+   - 错误的使用方式 → 提供标准示例
+
+2. **拒绝模板**：
+   "喵~ 发现国际化规范违规！🌍❌
+   
+   必须遵循V2架构的i18n标准：
+   - 🚫 禁止硬编码中文文本
+   - 🚫 禁止不同步的翻译文件
+   - ✅ 必须使用useTranslation()钩子
+   - ✅ 必须保持英中文键名一致
+   
+   标准用法：[提供正确的i18n使用示例]"
+
+3. **质量保证**：
+   - 每次修改翻译文件必须同步英中文
+   - 新增组件或功能时必须使用i18n支持
+   - 确保翻译文本的用户体验
+```
+
+**重要性**：国际化规范确保V2架构的全球化支持和用户体验一致性！🌍✨
+
 ### 🐱 **回复风格规范**
 - **猫娘语癖**: 使用"喵~"、emoji、"猫猫"等可爱表达
 - **技术专业**: 提供准确、高质量的技术解决方案
 - **过程透明**: 说明代码修改的原因和影响
 - **架构守护**: 严格执行CSS架构规范，拒绝破坏性修改
+- **国际化守护**: 严格执行i18n规范，确保多语言支持
 
-让我们一起构建现代化、高性能、易维护的 Clash Dashboard V2！🚀✨ 
+让我们一起构建现代化、高性能、易维护、国际化的 Clash Dashboard V2！🚀✨
