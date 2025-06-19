@@ -1,3 +1,1108 @@
+// Modern Proxy Card Styles
+.modernProxy {
+  margin: 0.25rem;
+  padding: 0.75rem;
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-separator);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  min-width: 160px;
+  max-width: 200px;
+  position: relative;
+  
+  @media screen and (min-width: 30em) {
+    min-width: 180px;
+    max-width: 220px;
+    padding: 0.875rem;
+  }
+  
+  &:hover {
+    border-color: var(--color-focus-blue) !important;
+    transform: translateY(-2px) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    
+    // 确保所有子元素背景色透明，让主题特定样式生效
+    .proxyHeader,
+    .proxyFooter {
+      background: transparent !important;
+    }
+    
+    .proxyIcon {
+      transform: scale(1.05) !important;
+      
+      i {
+        transform: scale(1.1) !important;
+      }
+    }
+    
+    .proxyName {
+      background: transparent !important;
+    }
+    
+    .proxyType {
+      background: transparent !important;
+    }
+    
+    .proxyLatency {
+      background: transparent !important;
+      
+      span {
+        filter: brightness(1.1) !important;
+      }
+    }
+  }
+  
+  &.now {
+    background: var(--color-focus-blue) !important;
+    color: white !important;
+    border-color: var(--color-focus-blue);
+    box-shadow: 
+      0 3px 12px rgba(var(--color-focus-blue-rgb), 0.25),
+      0 0 0 1px rgba(var(--color-focus-blue-rgb), 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px) scale(1.02);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    .proxyIcon {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      
+      i {
+        color: white;
+        transform: scale(1.1);
+      }
+    }
+    
+    .proxyName span {
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .badge {
+      background-color: rgba(255, 255, 255, 0.2) !important;
+      color: white !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    // 添加选中状态的动画效果
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+    
+    // 添加左侧选中指示器
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 60%;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 0 2px 2px 0;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    }
+  }
+  
+  &.selectable {
+    cursor: pointer;
+    
+    &:focus {
+      outline: none;
+      border-color: var(--color-focus-blue);
+      box-shadow: 0 0 0 2px rgba(var(--color-focus-blue-rgb), 0.2);
+    }
+  }
+}
+
+.proxyHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.625rem;
+}
+
+.proxyIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--color-background2) !important;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+  
+  i {
+    font-size: 1rem;
+    color: var(--color-text);
+    transition: color 0.2s ease;
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    
+    // 确保图标字体正确加载
+    &.ti {
+      font-family: 'tabler-icons' !important;
+      font-style: normal;
+      font-weight: normal;
+      font-variant: normal;
+      text-transform: none;
+      line-height: 1;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      speak: none;
+      
+      // 确保图标最小尺寸
+      min-width: 1em;
+      min-height: 1em;
+    }
+  }
+}
+
+.proxyName {
+  flex: 1;
+  min-width: 0;
+  
+  span {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    color: var(--color-text);
+    font-weight: 500; // 设置固定的字重，避免hover时变化
+    transition: color 0.2s ease; // 只过渡颜色，不过渡字重
+  }
+}
+
+.activeIndicator {
+  i {
+    font-size: 1.1rem;
+    animation: pulse 2s infinite;
+    color: var(--color-success);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes fadeInGlow {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { 
+    opacity: 1;
+    box-shadow: 
+      0 0 12px rgba(255, 255, 255, 0.4),
+      0 2px 6px rgba(255, 255, 255, 0.2);
+  }
+  50% { 
+    opacity: 0.7;
+    box-shadow: 
+      0 0 20px rgba(255, 255, 255, 0.6),
+      0 4px 10px rgba(255, 255, 255, 0.3);
+  }
+}
+
+.proxyFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.proxyType {
+  .badge {
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    padding: 0.125rem 0.375rem;
+    background: var(--color-background2) !important;
+    color: var(--color-text-secondary) !important;
+    border: 1px solid var(--color-separator) !important;
+  }
+}
+
+.proxyLatency {
+  span {
+    font-size: 0.75rem;
+    transition: color 0.2s ease;
+  }
+}
+
+// Modern Dot Styles
+.modernDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  
+  // 使用CSS变量作为备用方案
+  background-color: var(--dot-color, var(--color-text-secondary)) !important;
+  
+  // 强制确保背景色能正确显示 - 使用更高优先级
+  &[style] {
+    // 新的颜色分级支持
+    &[style*="background-color: #2e7d32"] { background-color: #2e7d32 !important; }  // 快
+    &[style*="background-color: #66bb6a"] { background-color: #66bb6a !important; }  // 中等
+    &[style*="background-color: #ff8f00"] { background-color: #ff8f00 !important; }  // 慢
+    &[style*="background-color: #ef5350"] { background-color: #ef5350 !important; }  // 很慢
+    &[style*="background-color: #c62828"] { background-color: #c62828 !important; }  // 极慢
+    &[style*="background-color: #ffa726"] { background-color: #ffa726 !important; }  // 测试中
+  }
+  
+  &:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+  }
+  
+  &.now {
+    border-color: var(--color-focus-blue);
+    box-shadow: 0 0 0 2px rgba(var(--color-focus-blue-rgb), 0.25);
+    animation: pulse-dot 2s infinite;
+  }
+  
+  &.selectable {
+    cursor: pointer;
+  }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { 
+    box-shadow: 0 0 0 2px rgba(var(--color-focus-blue-rgb), 0.25);
+  }
+  50% { 
+    box-shadow: 0 0 0 3px rgba(var(--color-focus-blue-rgb), 0.1);
+  }
+}
+
+// Dark theme specific styles
+:root[data-theme='dark'] {
+  .modernProxy {
+    background: var(--color-bg-card) !important;
+    border-color: var(--color-separator);
+    
+    &:hover {
+      // 确保整个卡片背景色一致
+      background: var(--color-bg-card) !important;
+      box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.4),
+        0 2px 8px rgba(var(--color-focus-blue-rgb), 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+      
+      // 确保所有子元素背景色一致
+      .proxyHeader,
+      .proxyFooter {
+        background: transparent !important;
+      }
+      
+      .proxyIcon {
+        background: linear-gradient(135deg, 
+          var(--color-focus-blue), 
+          rgba(var(--color-focus-blue-rgb), 0.8)) !important;
+        box-shadow: 
+          0 3px 12px rgba(var(--color-focus-blue-rgb), 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+        
+        i {
+          filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3)) !important;
+        }
+      }
+      
+      .proxyName {
+        background: transparent !important;
+        
+        span {
+          text-shadow: 0 1px 3px rgba(var(--color-focus-blue-rgb), 0.3) !important;
+        }
+      }
+      
+      .proxyType {
+        background: transparent !important;
+        
+        .badge {
+          background: var(--color-background2) !important;
+          box-shadow: 
+            0 2px 6px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+        }
+      }
+      
+      .proxyLatency {
+        background: transparent !important;
+        
+        span {
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+        }
+      }
+      
+      // 添加hover状态的光效
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, 
+          rgba(var(--color-focus-blue-rgb), 0.08) 0%, 
+          rgba(var(--color-focus-blue-rgb), 0.04) 50%, 
+          transparent 100%);
+        border-radius: inherit;
+        pointer-events: none;
+        opacity: 0;
+        animation: fadeInGlow 0.25s ease-out forwards;
+      }
+    }
+    
+    &.now {
+      background: var(--color-focus-blue) !important;
+      border-color: var(--color-focus-blue);
+      box-shadow: 
+        0 4px 20px rgba(var(--color-focus-blue-rgb), 0.5),
+        0 2px 10px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px) scale(1.02);
+      
+      // 添加选中状态的脉冲效果
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 60%;
+        background: linear-gradient(to bottom, 
+          rgba(255, 255, 255, 0.9), 
+          rgba(255, 255, 255, 0.6));
+        border-radius: 0 2px 2px 0;
+        box-shadow: 
+          0 0 12px rgba(255, 255, 255, 0.4),
+          0 2px 6px rgba(255, 255, 255, 0.2);
+        animation: pulseGlow 2s ease-in-out infinite;
+      }
+    }
+  }
+  
+  .proxyIcon {
+    background: var(--color-background2);
+    
+    i {
+      color: var(--color-text);
+    }
+  }
+  
+  .proxyName span {
+    color: var(--color-text);
+  }
+  
+  .proxyType .badge {
+    background: var(--color-background2);
+    color: var(--color-text-secondary);
+    border-color: var(--color-separator);
+  }
+  
+  // 确保延迟文字在黑色主题下颜色正确显示 - 支持新的颜色分级
+  .proxyLatency span {
+    // 新的颜色分级支持
+    &[style*="color: #2e7d32"] { color: #2e7d32 !important; }  // 快 - 深绿色
+    &[style*="color: #66bb6a"] { color: #66bb6a !important; }  // 中等 - 浅绿色
+    &[style*="color: #ff8f00"] { color: #ff8f00 !important; }  // 慢 - 橙色
+    &[style*="color: #ef5350"] { color: #ef5350 !important; }  // 很慢 - 浅红色
+    &[style*="color: #c62828"] { color: #c62828 !important; }  // 极慢 - 深红色
+    &[style*="color: #ffa726"] { color: #ffa726 !important; }  // 测试中 - 橙色
+    
+    // 保持对旧颜色的兼容性
+    &[style*="color: var(--tblr-success)"] {
+      color: var(--tblr-success) !important;
+    }
+    
+    &[style*="color: var(--tblr-warning)"] {
+      color: var(--tblr-warning) !important;
+    }
+    
+    &[style*="color: var(--tblr-danger)"] {
+      color: var(--tblr-danger) !important;
+    }
+    
+    &[style*="color: var(--color-text-secondary)"] {
+      color: var(--color-text-secondary) !important;
+    }
+  }
+  
+  // 确保小圆点在黑色主题下颜色正确显示 - 支持新的颜色分级
+  .proxySmall,
+  .modernDot {
+    // 新的颜色分级支持
+    &[style*="background-color: #2e7d32"] { background-color: #2e7d32 !important; }  // 快
+    &[style*="background-color: #66bb6a"] { background-color: #66bb6a !important; }  // 中等
+    &[style*="background-color: #ff8f00"] { background-color: #ff8f00 !important; }  // 慢
+    &[style*="background-color: #ef5350"] { background-color: #ef5350 !important; }  // 很慢
+    &[style*="background-color: #c62828"] { background-color: #c62828 !important; }  // 极慢
+    &[style*="background-color: #ffa726"] { background-color: #ffa726 !important; }  // 测试中
+    
+    // 保持对旧颜色的兼容性
+    &[style*="background-color: var(--tblr-success)"] {
+      background-color: var(--tblr-success) !important;
+    }
+    
+    &[style*="background-color: var(--tblr-warning)"] {
+      background-color: var(--tblr-warning) !important;
+    }
+    
+    &[style*="background-color: var(--tblr-danger)"] {
+      background-color: var(--tblr-danger) !important;
+    }
+    
+    &[style*="background-color: var(--color-text-secondary)"] {
+      background-color: var(--color-text-secondary) !important;
+    }
+    
+    // 确保边框在选中状态下可见
+    &.now {
+      border-color: var(--color-focus-blue) !important;
+      box-shadow: 0 0 0 2px rgba(var(--color-focus-blue-rgb), 0.25) !important;
+    }
+  }
+}
+
+// Light theme specific styles
+:root[data-theme='light'] {
+  .modernProxy {
+    background: var(--color-bg-card) !important;
+    border-color: var(--color-separator);
+    
+    &:hover {
+      // 确保整个卡片背景色一致
+      background: var(--color-bg-card) !important;
+      box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        0 2px 6px rgba(var(--color-focus-blue-rgb), 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+      
+      // 确保所有子元素背景色一致
+      .proxyHeader,
+      .proxyFooter {
+        background: transparent !important;
+      }
+      
+      .proxyIcon {
+        box-shadow: 
+          0 2px 8px rgba(var(--color-focus-blue-rgb), 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+      }
+      
+      .proxyName {
+        background: transparent !important;
+        
+        span {
+          text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+        }
+      }
+      
+      .proxyType {
+        background: transparent !important;
+        
+        .badge {
+          background: var(--color-background2) !important;
+        }
+      }
+      
+      .proxyLatency {
+        background: transparent !important;
+      }
+    }
+    
+    &.now {
+      background: linear-gradient(135deg, 
+        rgba(var(--tblr-primary-rgb), 0.08), 
+        rgba(var(--tblr-primary-rgb), 0.12),
+        rgba(var(--tblr-primary-rgb), 0.06)) !important;
+      color: var(--color-text) !important;
+      border-color: var(--color-focus-blue);
+      box-shadow: 
+        0 3px 12px rgba(var(--color-focus-blue-rgb), 0.15),
+        0 0 0 1px rgba(var(--color-focus-blue-rgb), 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      transform: translateY(-1px) scale(1.02);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      .proxyIcon {
+        background: linear-gradient(135deg, 
+          rgba(var(--tblr-primary-rgb), 0.2), 
+          rgba(var(--tblr-primary-rgb), 0.15)) !important;
+        transform: scale(1.05);
+        box-shadow: 
+          0 2px 8px rgba(var(--color-focus-blue-rgb), 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        
+        i {
+          color: var(--color-focus-blue) !important;
+          transform: scale(1.1);
+          filter: drop-shadow(0 1px 2px rgba(var(--color-focus-blue-rgb), 0.2));
+        }
+      }
+      
+      .proxyName span {
+        color: var(--color-text) !important;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+      }
+      
+      .badge {
+        background: linear-gradient(135deg, 
+          rgba(var(--tblr-primary-rgb), 0.12), 
+          rgba(var(--tblr-primary-rgb), 0.08)) !important;
+        color: var(--color-focus-blue) !important;
+        border-color: rgba(var(--tblr-primary-rgb), 0.3) !important;
+        box-shadow: 
+          0 1px 3px rgba(var(--color-focus-blue-rgb), 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      }
+      
+      // 添加选中状态的光泽效果
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, 
+          rgba(255, 255, 255, 0.3) 0%, 
+          rgba(255, 255, 255, 0.1) 50%, 
+          transparent 100%);
+        border-radius: inherit;
+        pointer-events: none;
+      }
+      
+      // 添加左侧选中指示器
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 60%;
+        background: linear-gradient(to bottom, 
+          var(--color-focus-blue), 
+          rgba(var(--tblr-primary-rgb), 0.8));
+        border-radius: 0 2px 2px 0;
+        box-shadow: 
+          0 0 8px rgba(var(--color-focus-blue-rgb), 0.3),
+          0 2px 4px rgba(var(--color-focus-blue-rgb), 0.2);
+      }
+    }
+  }
+  
+  .proxyIcon {
+    background: var(--color-background2);
+    
+    i {
+      color: var(--color-text);
+    }
+  }
+  
+  .proxyName span {
+    color: var(--color-text);
+  }
+  
+  .proxyType .badge {
+    background: var(--color-background2);
+    color: var(--color-text-secondary);
+    border-color: var(--color-separator);
+  }
+  
+  // 确保延迟文字在浅色主题下颜色正确显示
+  .proxyLatency span {
+    // 新的颜色分级支持
+    &[style*="color: #2e7d32"] { color: #2e7d32 !important; }  // 快 - 深绿色
+    &[style*="color: #66bb6a"] { color: #66bb6a !important; }  // 中等 - 浅绿色
+    &[style*="color: #ff8f00"] { color: #ff8f00 !important; }  // 慢 - 橙色
+    &[style*="color: #ef5350"] { color: #ef5350 !important; }  // 很慢 - 浅红色
+    &[style*="color: #c62828"] { color: #c62828 !important; }  // 极慢 - 深红色
+    &[style*="color: #ffa726"] { color: #ffa726 !important; }  // 测试中 - 橙色
+    
+    // 保持对旧颜色的兼容性
+    &[style*="color: var(--tblr-success)"] {
+      color: var(--tblr-success) !important;
+    }
+    
+    &[style*="color: var(--tblr-warning)"] {
+      color: var(--tblr-warning) !important;
+    }
+    
+    &[style*="color: var(--tblr-danger)"] {
+      color: var(--tblr-danger) !important;
+    }
+    
+    &[style*="color: var(--color-text-secondary)"] {
+      color: var(--color-text-secondary) !important;
+    }
+  }
+  
+  // 确保小圆点在浅色主题下颜色正确显示 - 支持新的颜色分级
+  .proxySmall,
+  .modernDot {
+    // 新的颜色分级支持
+    &[style*="background-color: #2e7d32"] { background-color: #2e7d32 !important; }  // 快
+    &[style*="background-color: #66bb6a"] { background-color: #66bb6a !important; }  // 中等
+    &[style*="background-color: #ff8f00"] { background-color: #ff8f00 !important; }  // 慢
+    &[style*="background-color: #ef5350"] { background-color: #ef5350 !important; }  // 很慢
+    &[style*="background-color: #c62828"] { background-color: #c62828 !important; }  // 极慢
+    &[style*="background-color: #ffa726"] { background-color: #ffa726 !important; }  // 测试中
+    
+    // 保持对旧颜色的兼容性
+    &[style*="background-color: var(--tblr-success)"] {
+      background-color: var(--tblr-success) !important;
+    }
+    
+    &[style*="background-color: var(--tblr-warning)"] {
+      background-color: var(--tblr-warning) !important;
+    }
+    
+    &[style*="background-color: var(--tblr-danger)"] {
+      background-color: var(--tblr-danger) !important;
+    }
+    
+    &[style*="background-color: var(--color-text-secondary)"] {
+      background-color: var(--color-text-secondary) !important;
+    }
+    
+    // 确保边框在选中状态下可见
+    &.now {
+      border-color: var(--color-focus-blue) !important;
+      box-shadow: 0 0 0 2px rgba(var(--color-focus-blue-rgb), 0.25) !important;
+    }
+  }
+}
+
+// Auto theme support
+@media (prefers-color-scheme: light) {
+  :root[data-theme='auto'] {
+    .modernProxy {
+      background: var(--color-bg-card) !important;
+      border-color: var(--color-separator);
+      
+      &:hover {
+        // 确保整个卡片背景色一致
+        background: var(--color-bg-card) !important;
+        box-shadow: 
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          0 2px 6px rgba(var(--color-focus-blue-rgb), 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+        
+        // 确保所有子元素背景色一致
+        .proxyHeader,
+        .proxyFooter {
+          background: transparent !important;
+        }
+        
+        .proxyIcon {
+          box-shadow: 
+            0 2px 8px rgba(var(--color-focus-blue-rgb), 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        .proxyName {
+          background: transparent !important;
+          
+          span {
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+          }
+        }
+        
+        .proxyType {
+          background: transparent !important;
+          
+          .badge {
+            background: var(--color-background2) !important;
+          }
+        }
+        
+        .proxyLatency {
+          background: transparent !important;
+        }
+      }
+      
+      &.now {
+        background: linear-gradient(135deg, 
+          rgba(var(--tblr-primary-rgb), 0.08), 
+          rgba(var(--tblr-primary-rgb), 0.12),
+          rgba(var(--tblr-primary-rgb), 0.06)) !important;
+        color: var(--color-text) !important;
+        border-color: var(--color-focus-blue);
+        box-shadow: 
+          0 3px 12px rgba(var(--color-focus-blue-rgb), 0.15),
+          0 0 0 1px rgba(var(--color-focus-blue-rgb), 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        transform: translateY(-1px) scale(1.02);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        
+        .proxyIcon {
+          background: linear-gradient(135deg, 
+            rgba(var(--tblr-primary-rgb), 0.2), 
+            rgba(var(--tblr-primary-rgb), 0.15)) !important;
+          transform: scale(1.05);
+          box-shadow: 
+            0 2px 8px rgba(var(--color-focus-blue-rgb), 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+          
+          i {
+            color: var(--color-focus-blue) !important;
+            transform: scale(1.1);
+            filter: drop-shadow(0 1px 2px rgba(var(--color-focus-blue-rgb), 0.2));
+          }
+        }
+        
+        .proxyName span {
+          color: var(--color-text) !important;
+          font-weight: 600;
+          text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        .badge {
+          background: linear-gradient(135deg, 
+            rgba(var(--tblr-primary-rgb), 0.12), 
+            rgba(var(--tblr-primary-rgb), 0.08)) !important;
+          color: var(--color-focus-blue) !important;
+          border-color: rgba(var(--tblr-primary-rgb), 0.3) !important;
+          box-shadow: 
+            0 1px 3px rgba(var(--color-focus-blue-rgb), 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+        
+        // 添加选中状态的光泽效果
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(135deg, 
+            rgba(255, 255, 255, 0.3) 0%, 
+            rgba(255, 255, 255, 0.1) 50%, 
+            transparent 100%);
+          border-radius: inherit;
+          pointer-events: none;
+        }
+        
+        // 添加左侧选中指示器
+        &::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 3px;
+          height: 60%;
+          background: linear-gradient(to bottom, 
+            var(--color-focus-blue), 
+            rgba(var(--tblr-primary-rgb), 0.8));
+          border-radius: 0 2px 2px 0;
+          box-shadow: 
+            0 0 8px rgba(var(--color-focus-blue-rgb), 0.3),
+            0 2px 4px rgba(var(--color-focus-blue-rgb), 0.2);
+        }
+      }
+    }
+    
+    .proxyIcon {
+      background: var(--color-background2);
+      
+      i {
+        color: var(--color-text);
+      }
+    }
+    
+    .proxyName span {
+      color: var(--color-text);
+    }
+    
+    .proxyType .badge {
+      background: var(--color-background2);
+      color: var(--color-text-secondary);
+      border-color: var(--color-separator);
+    }
+    
+      // 确保延迟文字在自动主题的浅色模式下颜色正确显示 - 支持新的颜色分级
+  .proxyLatency span {
+    // 新的颜色分级支持
+    &[style*="color: #2e7d32"] { color: #2e7d32 !important; }  // 快 - 深绿色
+    &[style*="color: #66bb6a"] { color: #66bb6a !important; }  // 中等 - 浅绿色
+    &[style*="color: #ff8f00"] { color: #ff8f00 !important; }  // 慢 - 橙色
+    &[style*="color: #ef5350"] { color: #ef5350 !important; }  // 很慢 - 浅红色
+    &[style*="color: #c62828"] { color: #c62828 !important; }  // 极慢 - 深红色
+    &[style*="color: #ffa726"] { color: #ffa726 !important; }  // 测试中 - 橙色
+    
+    // 保持对旧颜色的兼容性
+    &[style*="color: var(--tblr-success)"] {
+      color: var(--tblr-success) !important;
+    }
+    
+    &[style*="color: var(--tblr-warning)"] {
+      color: var(--tblr-warning) !important;
+    }
+    
+    &[style*="color: var(--tblr-danger)"] {
+      color: var(--tblr-danger) !important;
+    }
+    
+    &[style*="color: var(--color-text-secondary)"] {
+      color: var(--color-text-secondary) !important;
+    }
+  }
+    
+    // 确保小圆点在自动主题的浅色模式下颜色正确显示 - 支持新的颜色分级
+    .proxySmall,
+    .modernDot {
+      // 新的颜色分级支持
+      &[style*="background-color: #2e7d32"] { background-color: #2e7d32 !important; }  // 快
+      &[style*="background-color: #66bb6a"] { background-color: #66bb6a !important; }  // 中等
+      &[style*="background-color: #ff8f00"] { background-color: #ff8f00 !important; }  // 慢
+      &[style*="background-color: #ef5350"] { background-color: #ef5350 !important; }  // 很慢
+      &[style*="background-color: #c62828"] { background-color: #c62828 !important; }  // 极慢
+      &[style*="background-color: #ffa726"] { background-color: #ffa726 !important; }  // 测试中
+      
+      // 保持对旧颜色的兼容性
+      &[style*="background-color: var(--tblr-success)"] {
+        background-color: var(--tblr-success) !important;
+      }
+      
+      &[style*="background-color: var(--tblr-warning)"] {
+        background-color: var(--tblr-warning) !important;
+      }
+      
+      &[style*="background-color: var(--tblr-danger)"] {
+        background-color: var(--tblr-danger) !important;
+      }
+      
+      &[style*="background-color: var(--color-text-secondary)"] {
+        background-color: var(--color-text-secondary) !important;
+      }
+      
+      // 确保边框在选中状态下可见
+      &.now {
+        border-color: var(--color-focus-blue) !important;
+        box-shadow: 0 0 0 2px rgba(var(--color-focus-blue-rgb), 0.25) !important;
+      }
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='auto'] {
+    .modernProxy {
+      background: var(--color-bg-card) !important;
+      border-color: var(--color-separator);
+      
+      &:hover {
+        // 确保整个卡片背景色一致
+        background: var(--color-bg-card) !important;
+        box-shadow: 
+          0 4px 16px rgba(0, 0, 0, 0.4),
+          0 2px 8px rgba(var(--color-focus-blue-rgb), 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+        
+        // 确保所有子元素背景色一致
+        .proxyHeader,
+        .proxyFooter {
+          background: transparent !important;
+        }
+        
+        .proxyIcon {
+          background: linear-gradient(135deg, 
+            var(--color-focus-blue), 
+            rgba(var(--color-focus-blue-rgb), 0.8)) !important;
+          box-shadow: 
+            0 3px 12px rgba(var(--color-focus-blue-rgb), 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+          
+          i {
+            filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3)) !important;
+          }
+        }
+        
+        .proxyName {
+          background: transparent !important;
+          
+          span {
+            text-shadow: 0 1px 3px rgba(var(--color-focus-blue-rgb), 0.3) !important;
+          }
+        }
+        
+        .proxyType {
+          background: transparent !important;
+          
+          .badge {
+            background: var(--color-background2) !important;
+            box-shadow: 
+              0 2px 6px rgba(0, 0, 0, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+          }
+        }
+        
+        .proxyLatency {
+          background: transparent !important;
+          
+          span {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+          }
+        }
+        
+        // 添加hover状态的光效
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(135deg, 
+            rgba(var(--color-focus-blue-rgb), 0.08) 0%, 
+            rgba(var(--color-focus-blue-rgb), 0.04) 50%, 
+            transparent 100%);
+          border-radius: inherit;
+          pointer-events: none;
+          opacity: 0;
+          animation: fadeInGlow 0.25s ease-out forwards;
+        }
+      }
+      
+      &.now {
+        background: var(--color-focus-blue) !important;
+        border-color: var(--color-focus-blue);
+        box-shadow: 
+          0 4px 20px rgba(var(--color-focus-blue-rgb), 0.5),
+          0 2px 10px rgba(0, 0, 0, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px) scale(1.02);
+        
+        // 添加选中状态的脉冲效果
+        &::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 3px;
+          height: 60%;
+          background: linear-gradient(to bottom, 
+            rgba(255, 255, 255, 0.9), 
+            rgba(255, 255, 255, 0.6));
+          border-radius: 0 2px 2px 0;
+          box-shadow: 
+            0 0 12px rgba(255, 255, 255, 0.4),
+            0 2px 6px rgba(255, 255, 255, 0.2);
+          animation: pulseGlow 2s ease-in-out infinite;
+        }
+      }
+    }
+    
+    .proxyIcon {
+      background: var(--color-background2);
+      
+      i {
+        color: var(--color-text);
+      }
+    }
+    
+    .proxyName span {
+      color: var(--color-text);
+    }
+    
+    .proxyType .badge {
+      background: var(--color-background2);
+      color: var(--color-text-secondary);
+      border-color: var(--color-separator);
+    }
+    
+    // 确保延迟文字在自动主题的黑色模式下颜色正确显示 - 支持新的颜色分级
+    .proxyLatency span {
+      // 新的颜色分级支持
+      &[style*="color: #2e7d32"] { color: #2e7d32 !important; }  // 快 - 深绿色
+      &[style*="color: #66bb6a"] { color: #66bb6a !important; }  // 中等 - 浅绿色
+      &[style*="color: #ff8f00"] { color: #ff8f00 !important; }  // 慢 - 橙色
+      &[style*="color: #ef5350"] { color: #ef5350 !important; }  // 很慢 - 浅红色
+      &[style*="color: #c62828"] { color: #c62828 !important; }  // 极慢 - 深红色
+      &[style*="color: #ffa726"] { color: #ffa726 !important; }  // 测试中 - 橙色
+      
+      // 保持对旧颜色的兼容性
+      &[style*="color: var(--tblr-success)"] {
+        color: var(--tblr-success) !important;
+      }
+      
+      &[style*="color: var(--tblr-warning)"] {
+        color: var(--tblr-warning) !important;
+      }
+      
+      &[style*="color: var(--tblr-danger)"] {
+        color: var(--tblr-danger) !important;
+      }
+      
+      &[style*="color: var(--color-text-secondary)"] {
+        color: var(--color-text-secondary) !important;
+      }
+    }
+    
+    // 确保小圆点在自动主题的黑色模式下颜色正确显示 - 支持新的颜色分级
+    .proxySmall,
+    .modernDot {
+      // 新的颜色分级支持
+      &[style*="background-color: #2e7d32"] { background-color: #2e7d32 !important; }  // 快
+      &[style*="background-color: #66bb6a"] { background-color: #66bb6a !important; }  // 中等
+      &[style*="background-color: #ff8f00"] { background-color: #ff8f00 !important; }  // 慢
+      &[style*="background-color: #ef5350"] { background-color: #ef5350 !important; }  // 很慢
+      &[style*="background-color: #c62828"] { background-color: #c62828 !important; }  // 极慢
+      &[style*="background-color: #ffa726"] { background-color: #ffa726 !important; }  // 测试中
+      
+      // 保持对旧颜色的兼容性
+      &[style*="background-color: var(--tblr-success)"] {
+        background-color: var(--tblr-success) !important;
+      }
+      
+      &[style*="background-color: var(--tblr-warning)"] {
+        background-color: var(--tblr-warning) !important;
+      }
+      
+      &[style*="background-color: var(--tblr-danger)"] {
+        background-color: var(--tblr-danger) !important;
+      }
+      
+      &[style*="background-color: var(--color-text-secondary)"] {
+        background-color: var(--color-text-secondary) !important;
+      }
+      
+      // 确保边框在选中状态下可见
+      &.now {
+        border-color: var(--color-focus-blue) !important;
+        box-shadow: 0 0 0 2px rgba(var(--color-focus-blue-rgb), 0.25) !important;
+      }
+    }
+  }
+}
+
+// Legacy styles for backward compatibility
 .proxy {
   margin: 3px;
   padding: 5px;
@@ -54,48 +1159,125 @@
   justify-content: space-between;
 }
 
-.proxyName {
-  width: 100%;
-  margin-bottom: 5px;
-  font-size: 0.8em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.proxySmall {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  cursor: default;
+  transition: all 0.2s ease;
+  
+  // 使用CSS变量作为备用方案
+  background-color: var(--dot-color, var(--color-text-secondary)) !important;
+  
+  // 强制确保背景色能正确显示 - 使用更高优先级
+  &[style] {
+    // 新的颜色分级支持
+    &[style*="background-color: #2e7d32"] { background-color: #2e7d32 !important; }  // 快
+    &[style*="background-color: #66bb6a"] { background-color: #66bb6a !important; }  // 中等
+    &[style*="background-color: #ff8f00"] { background-color: #ff8f00 !important; }  // 慢
+    &[style*="background-color: #ef5350"] { background-color: #ef5350 !important; }  // 很慢
+    &[style*="background-color: #c62828"] { background-color: #c62828 !important; }  // 极慢
+    &[style*="background-color: #ffa726"] { background-color: #ffa726 !important; }  // 测试中
+  }
+  
+  &.selectable {
+    cursor: pointer;
+    
+    &:hover {
+      transform: scale(1.4);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+  
+  &.now {
+    outline: 2px solid var(--color-focus-blue);
+    outline-offset: 1px;
+    transform: scale(1.2);
+    box-shadow: 0 2px 8px rgba(var(--color-focus-blue-rgb), 0.3);
+  }
 }
 
-.proxySmall {
-  --size: 13px;
-  width: var(--size);
-  height: var(--size);
-  border-radius: 50%;
-  position: relative;
+// 全局强制规则 - 确保所有小圆点颜色都能正确显示
+.proxySmall[style*="background-color"],
+.modernDot[style*="background-color"] {
+  // 新的颜色分级支持 - 最高优先级
+  &[style*="background-color: #2e7d32"] { background-color: #2e7d32 !important; }  // 快
+  &[style*="background-color: #66bb6a"] { background-color: #66bb6a !important; }  // 中等
+  &[style*="background-color: #ff8f00"] { background-color: #ff8f00 !important; }  // 慢
+  &[style*="background-color: #ef5350"] { background-color: #ef5350 !important; }  // 很慢
+  &[style*="background-color: #c62828"] { background-color: #c62828 !important; }  // 极慢
+  &[style*="background-color: #ffa726"] { background-color: #ffa726 !important; }  // 测试中
+  
+  // 保持对旧颜色的兼容性
+  &[style*="background-color: var(--tblr-success)"] { background-color: var(--tblr-success) !important; }
+  &[style*="background-color: var(--tblr-warning)"] { background-color: var(--tblr-warning) !important; }
+  &[style*="background-color: var(--tblr-danger)"] { background-color: var(--tblr-danger) !important; }
+  &[style*="background-color: var(--color-text-secondary)"] { background-color: var(--color-text-secondary) !important; }
+}
 
-  &.now {
-    --size: 15px;
-    &:before {
-      --size-dot: 7px;
-      content: '';
-      position: absolute;
-      width: var(--size-dot);
-      height: var(--size-dot);
-      background-color: #fff;
-      // For non-primitive proxy type like "Selector", "LoadBalance", "DIRECT", etc. we are using a transparent
-      // background, and this selected indicator has a white background. In "light" them mode, the contrast
-      // between the bg of the indicator and the "background" is too small. In that case we want to add a
-      // border around this indicator so it's more distinguishable.
-      border: 1px solid var(--color-proxy-dot-selected-ind-bo);
-      border-radius: 4px;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
+/* 全局作用域的小圆点颜色强制规则 */
+:global {
+  div[style*="background-color: #2e7d32"] { background-color: #2e7d32 !important; }
+  div[style*="background-color: #66bb6a"] { background-color: #66bb6a !important; }
+  div[style*="background-color: #ff8f00"] { background-color: #ff8f00 !important; }
+  div[style*="background-color: #ef5350"] { background-color: #ef5350 !important; }
+  div[style*="background-color: #c62828"] { background-color: #c62828 !important; }
+  div[style*="background-color: #ffa726"] { background-color: #ffa726 !important; }
+  
+  /* 特别针对小圆点类的规则 */
+  .proxySmall[style*="background-color"],
+  .modernDot[style*="background-color"] {
+    &[style*="background-color: #2e7d32"] { background-color: #2e7d32 !important; }
+    &[style*="background-color: #66bb6a"] { background-color: #66bb6a !important; }
+    &[style*="background-color: #ff8f00"] { background-color: #ff8f00 !important; }
+    &[style*="background-color: #ef5350"] { background-color: #ef5350 !important; }
+    &[style*="background-color: #c62828"] { background-color: #c62828 !important; }
+    &[style*="background-color: #ffa726"] { background-color: #ffa726 !important; }
   }
+}
 
-  &.selectable {
-    transition: transform 0.1s ease-in-out;
-    cursor: pointer;
-    &:hover {
-      transform: scale(1.2);
-    }
+/* 基于data属性的小圆点颜色设置 - 最高优先级 */
+.proxySmall,
+.modernDot {
+  // 延迟级别颜色设置：200ms, 500ms, 2000ms, 5000ms
+  &[data-latency="fast"] { background-color: #2e7d32 !important; }           // 快 (< 200ms) - 深绿色
+  &[data-latency="medium"] { background-color: #66bb6a !important; }         // 中等 (200-500ms) - 浅绿色
+  &[data-latency="slow"] { background-color: #ff8f00 !important; }           // 慢 (500-2000ms) - 橙色
+  &[data-latency="very-slow"] { background-color: #ef5350 !important; }      // 很慢 (2000-5000ms) - 浅红色
+  &[data-latency="extremely-slow"] { background-color: #c62828 !important; } // 极慢 (> 5000ms) - 深红色
+  
+  // 测试状态
+  &[data-latency="testing"] { 
+    background-color: #ffa726 !important;  // 测试中 - 橙色
+    animation: pulse-testing 1.5s infinite;
   }
+  
+  // 基于代理类型的颜色设置
+  &[data-proxy-type="direct"] { background-color: #2e7d32 !important; }      // 直连 - 深绿色
+  &[data-proxy-type="reject"] { background-color: #c62828 !important; }      // 拒绝 - 深红色
+  
+  // 错误状态
+  &[data-latency="unknown"] { background-color: var(--color-text-secondary) !important; }
+}
+
+@keyframes pulse-testing {
+  0%, 100% { 
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+// 旋转动画用于测试状态的图标
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

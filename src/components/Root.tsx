@@ -24,7 +24,6 @@ import { ErrorFallback } from './error/ErrorFallback';
 import { BackendBeacon } from './fn/BackendBeacon';
 import Home from './Home';
 import Loading2 from './Loading2';
-import s0 from './Root.module.scss';
 import SideBar from './SideBar';
 import StateProvider from './StateProvider';
 
@@ -34,7 +33,7 @@ const Connections = lazy(() => import('./Connections'));
 const Config = lazy(() => import('./Config'));
 const Logs = lazy(() => import('./Logs'));
 const Proxies = lazy(() => import('./proxies/Proxies'));
-const Rules = lazy(() => import('./Rules'));
+const Rules = lazy(() => import('../v2/pages/Rules').then(module => ({ default: module.Rules })));
 const StyleGuide = lazy(() => import('$src/components/style/StyleGuide'));
 
 const routes = [
@@ -61,13 +60,17 @@ function RouteInnerApp() {
 
 function SideBarApp() {
   return (
-    <div className={s0.app}>
+    <div className="page">
       <BackendBeacon />
+      <aside className="navbar navbar-vertical navbar-expand-lg tabler-sidebar">
       <SideBar />
-      <div className={s0.content}>
+      </aside>
+      <div className="page-wrapper">
+        <main className="page-content">
         <Suspense fallback={<Loading2 />}>
           <RouteInnerApp />
         </Suspense>
+        </main>
       </div>
     </div>
   );

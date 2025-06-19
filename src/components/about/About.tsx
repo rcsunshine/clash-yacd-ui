@@ -27,7 +27,16 @@ function Version({ name, link, version }: { name: string; link: string; version:
 
 export function About() {
   const apiConfig = useApiConfig();
-  const { data: version } = useQuery(['/version', apiConfig], fetchVersion);
+  
+  const { data: version } = useQuery({
+    queryKey: ['/version', apiConfig?.baseURL, apiConfig?.secret],
+    queryFn: () => fetchVersion({ queryKey: ['/version', apiConfig] as const }),
+    enabled: !!apiConfig?.baseURL,
+    staleTime: 30000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+  
   return (
     <>
       <ContentHeader title="About" />

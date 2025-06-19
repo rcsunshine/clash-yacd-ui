@@ -1,0 +1,2239 @@
+// Tabler Theme Customization
+// Import Tabler CSS first to ensure proper override order
+@import '@tabler/core/dist/css/tabler.min.css';
+@import '@tabler/icons-webfont/dist/tabler-icons.min.css';
+@import './search-unified.scss';
+
+:root {
+  // Override Tabler variables for better integration
+  --tblr-primary: #387cec;
+  --tblr-secondary: #6c757d;
+  --tblr-success: #2fb344;
+  --tblr-info: #17a2b8;
+  --tblr-warning: #f76707;
+  --tblr-danger: #d63384;
+  --tblr-light: #f8f9fa;
+  --tblr-dark: #343a40;
+  
+  // RGB versions for rgba() usage
+  --tblr-primary-rgb: 56, 124, 236;
+  --tblr-secondary-rgb: 108, 117, 125;
+  --tblr-success-rgb: 47, 179, 68;
+  --tblr-info-rgb: 23, 162, 184;
+  --tblr-warning-rgb: 247, 103, 7;
+  --tblr-danger-rgb: 214, 51, 132;
+  --tblr-light-rgb: 248, 249, 250;
+  --tblr-dark-rgb: 52, 58, 64;
+  
+  // Focus blue RGB for box-shadow usage
+  --color-focus-blue-rgb: 26, 115, 232;
+  
+  // Custom spacing
+  --tblr-spacer: 1rem;
+  --tblr-border-radius: 0.375rem;
+  --tblr-border-radius-lg: 0.5rem;
+  --tblr-border-radius-sm: 0.25rem;
+  
+  // Typography
+  --tblr-font-family-sans-serif: var(--font-normal);
+  --tblr-font-family-monospace: var(--font-mono);
+}
+
+// 响应式容器优化
+.container-fluid {
+  max-width: none !important;
+  
+  // 大屏幕优化 - 更好地利用空间
+  @media (min-width: 1400px) {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+  
+  @media (min-width: 1600px) {
+    padding-left: 2.5rem !important;
+    padding-right: 2.5rem !important;
+  }
+  
+  @media (min-width: 1920px) {
+    padding-left: 3rem !important;
+    padding-right: 3rem !important;
+  }
+  
+  @media (min-width: 2560px) {
+    padding-left: 4rem !important;
+    padding-right: 4rem !important;
+  }
+}
+
+// 页面布局优化
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-header {
+  flex-shrink: 0;
+  
+  // 粘性头部优化
+  &.sticky-top {
+    backdrop-filter: blur(10px);
+    background: rgba(var(--tblr-body-bg-rgb), 0.95) !important;
+    border-bottom: 1px solid var(--color-separator);
+  }
+}
+
+.page-body {
+  flex: 1;
+  min-height: 0; // 防止flex子元素溢出
+}
+
+// 卡片响应式优化
+.card {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  // 移动端卡片优化
+  @media (max-width: 768px) {
+    border-radius: 8px !important;
+    margin-bottom: 1rem;
+    
+    .card-header {
+      padding: 1rem !important;
+      
+      .card-title {
+        font-size: 1rem !important;
+      }
+    }
+    
+    .card-body {
+      padding: 1rem !important;
+    }
+  }
+}
+
+// 网格系统优化
+.row {
+  // 更好的间距控制
+  &.row-cards {
+    > .col,
+    > [class*="col-"] {
+      margin-bottom: 1.5rem;
+      
+      @media (max-width: 768px) {
+        margin-bottom: 1rem;
+      }
+    }
+  }
+}
+
+// 按钮组响应式优化
+.btn-group {
+  @media (max-width: 576px) {
+    .btn {
+      padding: 0.375rem 0.5rem !important;
+      font-size: 0.875rem !important;
+      
+      .d-none.d-sm-inline {
+        display: none !important;
+      }
+    }
+  }
+}
+
+// 输入组响应式优化
+.input-group {
+  @media (max-width: 576px) {
+    .form-control {
+      font-size: 0.875rem !important;
+    }
+    
+    .input-group-text {
+      padding: 0.375rem 0.5rem !important;
+    }
+  }
+}
+
+// 表格响应式优化
+.table-responsive {
+  @media (max-width: 768px) {
+    border-radius: 8px;
+    
+    .table {
+      font-size: 0.875rem;
+      
+      th, td {
+        padding: 0.5rem !important;
+      }
+    }
+  }
+}
+
+// Dark theme overrides
+:root[data-theme='dark'] {
+  --tblr-body-bg: var(--color-background);
+  --tblr-body-color: var(--color-text);
+  --tblr-card-bg: var(--color-bg-card);
+  --tblr-border-color: var(--color-separator);
+  --tblr-navbar-bg: var(--color-bg-sidebar);
+  --tblr-sidebar-bg: var(--color-bg-sidebar);
+  --tblr-body-bg-rgb: 32, 32, 32;
+}
+
+// Light theme overrides  
+:root[data-theme='light'] {
+  --tblr-body-bg: var(--color-background);
+  --tblr-body-color: var(--color-text);
+  --tblr-card-bg: var(--color-bg-card);
+  --tblr-border-color: var(--color-separator);
+  --tblr-navbar-bg: var(--color-bg-sidebar);
+  --tblr-sidebar-bg: var(--color-bg-sidebar);
+  --tblr-body-bg-rgb: 238, 238, 238;
+  
+  // 浅色主题下的代理卡片优化
+  .proxy-card {
+    background: var(--color-bg-card);
+    border-color: var(--color-separator);
+    
+    &:hover {
+      background: var(--color-background2);
+      border-color: var(--color-focus-blue);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    &.active {
+      background: linear-gradient(135deg, rgba(var(--tblr-primary-rgb), 0.08), rgba(var(--tblr-primary-rgb), 0.12));
+      color: var(--color-text);
+      border-color: var(--color-focus-blue);
+      box-shadow: 0 3px 12px rgba(var(--color-focus-blue-rgb), 0.15);
+    }
+  }
+}
+
+// Auto theme
+:root[data-theme='auto'] {
+  @media (prefers-color-scheme: dark) {
+    --tblr-body-bg: var(--color-background);
+    --tblr-body-color: var(--color-text);
+    --tblr-card-bg: var(--color-bg-card);
+    --tblr-border-color: var(--color-separator);
+    --tblr-navbar-bg: var(--color-bg-sidebar);
+    --tblr-sidebar-bg: var(--color-bg-sidebar);
+    --tblr-body-bg-rgb: 32, 32, 32;
+    
+    // Chart background improvements for auto dark theme
+    --chart-grid-color: rgba(255, 255, 255, 0.2);
+    --chart-text-color: var(--color-text);
+  }
+  
+  @media (prefers-color-scheme: light) {
+    --tblr-body-bg: var(--color-background);
+    --tblr-body-color: var(--color-text);
+    --tblr-card-bg: var(--color-bg-card);
+    --tblr-border-color: var(--color-separator);
+    --tblr-navbar-bg: var(--color-bg-sidebar);
+    --tblr-sidebar-bg: var(--color-bg-sidebar);
+    --tblr-body-bg-rgb: 238, 238, 238;
+    
+    // Chart settings for auto light theme
+    --chart-grid-color: rgba(0, 0, 0, 0.1);
+    --chart-text-color: var(--color-text);
+  }
+}
+
+// 动画优化
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+// 滚动条优化
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-separator);
+  border-radius: 4px;
+  
+  &:hover {
+    background: var(--color-text-secondary);
+  }
+}
+
+// 移动端优化
+@media (max-width: 768px) {
+  // 减少移动端的间距
+  .page-header {
+    padding: 1rem 0 !important;
+  }
+  
+  .page-body {
+    padding: 1rem 0 !important;
+  }
+  
+  // 优化移动端的统计信息显示
+  .d-flex.align-items-center.gap-3 {
+    gap: 1rem !important;
+    
+    .d-flex.align-items-center.gap-1 {
+      gap: 0.5rem !important;
+    }
+  }
+  
+  // 移动端按钮优化
+  .btn {
+    padding: 0.5rem 0.75rem !important;
+    
+    &.btn-sm {
+      padding: 0.25rem 0.5rem !important;
+    }
+  }
+}
+
+// 超大屏幕优化
+@media (min-width: 1920px) {
+  .card {
+    .card-header {
+      padding: 1.5rem 2rem !important;
+    }
+    
+    .card-body {
+      padding: 1.5rem 2rem !important;
+    }
+  }
+  
+  .page-header {
+    padding: 2rem 0 1.5rem 0 !important;
+  }
+  
+  .page-body {
+    padding: 2rem 0 !important;
+  }
+}
+
+// Custom component styles
+.tabler-card {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-separator) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+    border-color: var(--color-focus-blue) !important;
+    transform: translateY(-1px);
+  }
+}
+
+.tabler-btn {
+  border-radius: var(--tblr-border-radius);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  
+  &.btn-primary {
+    background-color: var(--tblr-primary);
+    border-color: var(--tblr-primary);
+    
+    &:hover {
+      background-color: color-mix(in srgb, var(--tblr-primary) 90%, black);
+      border-color: color-mix(in srgb, var(--tblr-primary) 90%, black);
+    }
+  }
+}
+
+.tabler-navbar {
+  background: var(--color-bg-sidebar);
+  border-bottom: 1px solid var(--color-separator);
+  backdrop-filter: blur(10px);
+}
+
+.tabler-sidebar {
+  background: var(--color-bg-sidebar);
+  border-right: 1px solid var(--color-separator);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  
+  // 确保侧边栏在深色主题下有更好的对比度
+  :root[data-theme='dark'] & {
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  // 移动端适配
+  @media (max-width: 768px) {
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+    
+    :root[data-theme='dark'] & {
+      box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+// Table styles
+.tabler-table {
+  background: var(--color-bg-card);
+  
+  th {
+    background: var(--color-background2);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    border-bottom: 2px solid var(--color-separator);
+  }
+  
+  td {
+    border-bottom: 1px solid var(--color-separator);
+    color: var(--color-text);
+  }
+  
+  tbody tr:nth-child(odd) {
+    background: var(--color-row-odd);
+  }
+  
+  tbody tr:hover {
+    background: var(--color-background2);
+  }
+}
+
+// Form controls
+.tabler-form-control {
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-input-border);
+  color: var(--color-text);
+  border-radius: var(--tblr-border-radius);
+  
+  &:focus {
+    border-color: var(--tblr-primary);
+    box-shadow: 0 0 0 0.2rem rgba(56, 124, 236, 0.25);
+  }
+}
+
+// Modal styles
+.tabler-modal {
+  .modal-content {
+    background: var(--bg-modal);
+    border: 1px solid var(--color-separator);
+    border-radius: var(--tblr-border-radius-lg);
+  }
+  
+  .modal-header {
+    border-bottom: 1px solid var(--color-separator);
+  }
+  
+  .modal-footer {
+    border-top: 1px solid var(--color-separator);
+  }
+}
+
+// Badge styles
+.tabler-badge {
+  border-radius: var(--tblr-border-radius-sm);
+  font-weight: 500;
+  
+  &.badge-success {
+    background: var(--tblr-success);
+  }
+  
+  &.badge-warning {
+    background: var(--tblr-warning);
+  }
+  
+  &.badge-danger {
+    background: var(--tblr-danger);
+  }
+  
+  &.badge-info {
+    background: var(--tblr-info);
+  }
+}
+
+// Animation utilities
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+// Chart.js fixes for Tabler
+canvas {
+  max-width: 100% !important;
+}
+
+.card-body canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+// Traffic chart specific styles
+#trafficChart {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+// Chart container fixes
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+// Fix chart responsiveness in cards
+.card .card-body {
+  position: relative;
+  
+  canvas {
+    display: block;
+    box-sizing: border-box;
+  }
+}
+
+// Dark theme chart enhancements
+:root[data-theme='dark'] {
+  // Chart background improvements
+  .card {
+    canvas {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: var(--tblr-border-radius);
+    }
+  }
+  
+  // Better chart grid and text visibility for dark theme
+  --chart-grid-color: rgba(255, 255, 255, 0.2);
+  --chart-text-color: var(--color-text);
+  --tblr-body-color: var(--color-text);
+}
+
+:root[data-theme='light'] {
+  // Light theme chart settings
+  --chart-grid-color: rgba(0, 0, 0, 0.1);
+  --chart-text-color: var(--color-text);
+  --tblr-body-color: var(--color-text);
+}
+
+// Chart legend improvements
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--tblr-body-color);
+    
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+  }
+}
+
+// System status cards improvements
+.card-sm {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-separator) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border-color: var(--color-focus-blue) !important;
+  }
+  
+  .avatar {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    
+    &.bg-success {
+      background: linear-gradient(135deg, #2fb344, #27a03a) !important;
+    }
+    
+    &.bg-danger {
+      background: linear-gradient(135deg, #d63384, #c02a6b) !important;
+    }
+    
+    &.bg-info {
+      background: linear-gradient(135deg, #17a2b8, #138496) !important;
+    }
+    
+    &.bg-warning {
+      background: linear-gradient(135deg, #f76707, #e55a00) !important;
+    }
+    
+    &.bg-primary {
+      background: linear-gradient(135deg, #387cec, #2968d4) !important;
+    }
+    
+    &.bg-secondary {
+      background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+    }
+  }
+}
+
+// Connection table improvements
+.connection-table-container {
+  border-radius: var(--tblr-border-radius);
+  overflow-x: auto;
+  overflow-y: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-separator);
+  background: var(--color-bg-card);
+  position: relative;
+  
+  // 确保表格在小屏幕上可以水平滚动
+  .table {
+    min-width: 1200px; // 设置最小宽度确保所有列都能显示
+    white-space: nowrap;
+  }
+  
+  // 滚动提示
+  &::after {
+    content: '← 滑动查看更多列 →';
+    position: absolute;
+    bottom: 8px;
+    right: 16px;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    opacity: 0.6;
+    pointer-events: none;
+    
+    @media (min-width: 1300px) {
+      display: none; // 在大屏幕上隐藏提示
+    }
+  }
+  
+  // 自定义滚动条样式
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: var(--color-background2);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-separator);
+    border-radius: 4px;
+    
+    &:hover {
+      background: var(--color-text-secondary);
+    }
+  }
+}
+
+.tabler-table {
+  margin-bottom: 0;
+  border: none;
+  
+  thead {
+    th {
+      background: var(--color-background2);
+      color: var(--color-text-secondary);
+      font-weight: 600;
+      border-bottom: 2px solid var(--color-separator);
+      padding: 12px 16px;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      
+      // 为不同列设置合适的宽度
+      &:nth-child(1) { width: 80px; }   // Host
+      &:nth-child(2) { width: 120px; }  // Process
+      &:nth-child(3) { width: 100px; }  // Download
+      &:nth-child(4) { width: 100px; }  // Upload
+      &:nth-child(5) { width: 90px; }   // DL Speed
+      &:nth-child(6) { width: 90px; }   // UL Speed
+      &:nth-child(7) { width: 150px; }  // Chains
+      &:nth-child(8) { width: 80px; }   // Rule
+      &:nth-child(9) { width: 100px; }  // Duration
+      &:nth-child(10) { width: 120px; } // Source
+      &:nth-child(11) { width: 120px; } // Destination
+      &:nth-child(12) { width: 80px; }  // Type
+      
+             &.cursor-pointer {
+         transition: all 0.2s ease;
+         
+         &:hover {
+           background: var(--color-toggle-selected);
+           color: var(--color-text-highlight);
+           
+           .sort-indicators {
+             opacity: 1;
+           }
+         }
+       }
+       
+       .sort-indicators {
+         opacity: 0.7;
+         transition: opacity 0.2s ease;
+         
+         i {
+           transition: all 0.2s ease;
+           
+           &.text-primary {
+             transform: scale(1.1);
+           }
+         }
+       }
+    }
+  }
+  
+  tbody {
+    tr {
+      transition: background-color 0.15s ease;
+      border-bottom: 1px solid var(--color-separator);
+      
+              &:hover {
+          background: var(--color-row-hover) !important;
+        }
+      
+      &.bg-light-subtle {
+        background: var(--color-row-odd);
+      }
+      
+              td {
+          padding: 12px 16px;
+          vertical-align: middle;
+          border-bottom: none;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        
+        .badge {
+          font-size: 0.75rem;
+          padding: 0.25rem 0.5rem;
+          border-radius: var(--tblr-border-radius-sm);
+          
+          &.badge-outline {
+            border: 1px solid currentColor;
+            background: transparent;
+            
+            &.text-info {
+              color: var(--tblr-info);
+              border-color: var(--tblr-info);
+              background: rgba(23, 162, 184, 0.1);
+            }
+            
+            &.text-success {
+              color: var(--tblr-success);
+              border-color: var(--tblr-success);
+              background: rgba(47, 179, 68, 0.1);
+            }
+            
+            &.text-warning {
+              color: var(--tblr-warning);
+              border-color: var(--tblr-warning);
+              background: rgba(247, 103, 7, 0.1);
+            }
+            
+            &.text-primary {
+              color: var(--tblr-primary);
+              border-color: var(--tblr-primary);
+              background: rgba(56, 124, 236, 0.1);
+            }
+          }
+        }
+        
+        code {
+          background: var(--color-background2);
+          color: var(--color-text);
+          padding: 0.25rem 0.5rem;
+          border-radius: var(--tblr-border-radius-sm);
+          font-size: 0.875rem;
+          border: 1px solid var(--color-separator);
+          
+          &.text-primary {
+            color: var(--tblr-primary);
+            background: rgba(56, 124, 236, 0.1);
+            border-color: var(--tblr-primary);
+          }
+          
+          &.text-secondary {
+            color: var(--tblr-secondary);
+            background: rgba(108, 117, 125, 0.1);
+            border-color: var(--tblr-secondary);
+          }
+        }
+        
+        .text-info {
+          color: var(--tblr-info) !important;
+        }
+        
+        .text-success {
+          color: var(--tblr-success) !important;
+        }
+        
+        .text-muted {
+          color: var(--color-text-secondary) !important;
+        }
+      }
+    }
+  }
+}
+
+// Bootstrap class overrides for dark theme
+:root[data-theme='dark'] {
+  .bg-light-subtle {
+    background-color: var(--color-row-odd) !important;
+  }
+  
+  // Dropdown menu styles for dark theme
+  .dropdown-menu {
+    background-color: var(--color-bg-card) !important;
+    border: 1px solid var(--color-separator) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    
+    .dropdown-header {
+      color: var(--color-text) !important;
+    }
+    
+    .dropdown-divider {
+      border-color: var(--color-separator) !important;
+    }
+    
+    .dropdown-item {
+      color: var(--color-text) !important;
+      
+      &:hover,
+      &:focus {
+        background-color: var(--color-background2) !important;
+        color: var(--color-text-highlight) !important;
+      }
+      
+      &.active {
+        background-color: var(--tblr-primary) !important;
+        color: white !important;
+      }
+    }
+  }
+  
+  // Button styles for dark theme
+  .btn-ghost-secondary {
+    color: var(--color-text) !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+    
+    &:hover {
+      background-color: var(--color-background2) !important;
+      color: var(--color-text-highlight) !important;
+    }
+  }
+}
+
+:root[data-theme='auto'] {
+  @media (prefers-color-scheme: dark) {
+    .bg-light-subtle {
+      background-color: var(--color-row-odd) !important;
+    }
+  }
+}
+    
+    // Dropdown menu styles for auto dark theme
+    .dropdown-menu {
+      background-color: var(--color-bg-card) !important;
+      border: 1px solid var(--color-separator) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+      
+      .dropdown-header {
+        color: var(--color-text) !important;
+      }
+      
+      .dropdown-divider {
+        border-color: var(--color-separator) !important;
+      }
+      
+      .dropdown-item {
+        color: var(--color-text) !important;
+        
+        &:hover,
+        &:focus {
+          background-color: var(--color-background2) !important;
+          color: var(--color-text-highlight) !important;
+        }
+        
+        &.active {
+          background-color: var(--tblr-primary) !important;
+          color: white !important;
+        }
+      }
+    }
+    
+    // Button styles for auto dark theme
+    .btn-ghost-secondary {
+      color: var(--color-text) !important;
+      background-color: transparent !important;
+      border-color: transparent !important;
+      
+      &:hover {
+        background-color: var(--color-background2) !important;
+        color: var(--color-text-highlight) !important;
+      }
+    }
+    
+    // System status cards for auto dark theme
+    .card-sm {
+      background: var(--color-bg-card) !important;
+      border: 1px solid var(--color-separator) !important;
+      
+      &:hover {
+        background: var(--color-background2) !important;
+        border-color: var(--color-separator) !important;
+      }
+      
+      .avatar {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+      }
+    }
+    
+    .font-weight-medium {
+      color: var(--color-text) !important;
+    }
+    
+    .text-muted {
+      color: var(--color-text-secondary) !important;
+    }
+    
+    // Main cards for auto dark theme
+    .tabler-card,
+    .card {
+      background: var(--color-bg-card) !important;
+      border: 1px solid var(--color-separator) !important;
+      color: var(--color-text) !important;
+      
+      .card-header {
+        background: transparent !important;
+        border-bottom: 1px solid var(--color-separator) !important;
+        color: var(--color-text) !important;
+        
+        .card-title {
+          color: var(--color-text) !important;
+        }
+      }
+      
+      .card-body {
+        color: var(--color-text) !important;
+      }
+    }
+    
+    // Page elements for auto dark theme
+    .page-header {
+      .page-pretitle {
+        color: var(--color-text-secondary) !important;
+      }
+      
+      .page-title {
+        color: var(--color-text) !important;
+      }
+    }
+    
+    .h2 {
+      color: var(--color-text) !important;
+    }
+    
+    // Chart canvas for auto dark theme
+    .card canvas {
+      background: rgba(255, 255, 255, 0.02) !important;
+      border-radius: var(--tblr-border-radius) !important;
+    }
+  
+  @media (prefers-color-scheme: light) {
+    // System status cards for auto light theme
+    .card-sm {
+      background: var(--color-bg-card) !important;
+      border: 1px solid var(--color-separator) !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+      
+      &:hover {
+        background: var(--color-background2) !important;
+        border-color: var(--color-focus-blue) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+      }
+    }
+    
+    .tabler-card {
+      background: var(--color-bg-card) !important;
+      border: 1px solid var(--color-separator) !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+      
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        border-color: var(--color-focus-blue) !important;
+      }
+    }
+    
+    .font-weight-medium {
+      color: var(--color-text) !important;
+    }
+    
+    .text-muted {
+      color: var(--color-text-secondary) !important;
+    }
+    
+    // Main cards for auto light theme
+    .tabler-card,
+    .card {
+      background: var(--color-bg-card) !important;
+      border: 1px solid var(--color-separator) !important;
+      color: var(--color-text) !important;
+      
+      .card-header {
+        background: transparent !important;
+        border-bottom: 1px solid var(--color-separator) !important;
+        color: var(--color-text) !important;
+        
+        .card-title {
+          color: var(--color-text) !important;
+        }
+      }
+      
+      .card-body {
+        color: var(--color-text) !important;
+      }
+    }
+    
+    // Page elements for auto light theme
+    .page-header {
+      .page-pretitle {
+        color: var(--color-text-secondary) !important;
+      }
+      
+      .page-title {
+        color: var(--color-text) !important;
+      }
+    }
+    
+    .h2 {
+      color: var(--color-text) !important;
+    }
+  }
+
+// Rules page specific styles
+.rules-page {
+  .page-header {
+    background: var(--color-background);
+    border-bottom: 1px solid var(--color-separator);
+  }
+  
+  .page-body {
+    background: var(--color-background);
+  }
+  
+  .tabler-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-separator);
+    
+    .card-header {
+      background: transparent;
+      border-bottom: 1px solid var(--color-separator);
+      
+      .card-title {
+        color: var(--color-text);
+      }
+      
+      .card-actions {
+        color: var(--color-text-secondary);
+      }
+    }
+  }
+}
+
+// Enhanced badge styles for rules
+.badge {
+  &.badge-outline {
+    background: transparent;
+    border: 1px solid;
+    
+    &.text-primary {
+      color: var(--tblr-primary) !important;
+      border-color: var(--tblr-primary);
+      background: rgba(56, 124, 236, 0.1);
+    }
+    
+    &.text-secondary {
+      color: var(--tblr-secondary) !important;
+      border-color: var(--tblr-secondary);
+      background: rgba(108, 117, 125, 0.1);
+    }
+    
+    &.text-success {
+      color: var(--tblr-success) !important;
+      border-color: var(--tblr-success);
+      background: rgba(47, 179, 68, 0.1);
+    }
+    
+    &.text-danger {
+      color: var(--tblr-danger) !important;
+      border-color: var(--tblr-danger);
+      background: rgba(214, 51, 132, 0.1);
+    }
+    
+    &.text-warning {
+      color: var(--tblr-warning) !important;
+      border-color: var(--tblr-warning);
+      background: rgba(247, 103, 7, 0.1);
+    }
+    
+    &.text-info {
+      color: var(--tblr-info) !important;
+      border-color: var(--tblr-info);
+      background: rgba(23, 162, 184, 0.1);
+    }
+    
+    &.text-muted {
+      color: var(--color-text-secondary) !important;
+      border-color: var(--color-separator);
+      background: var(--color-background2);
+    }
+  }
+}
+
+// Light theme specific improvements
+:root[data-theme='light'] {
+  .card-sm {
+    background: var(--color-bg-card) !important;
+    border: 1px solid var(--color-separator) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    
+    &:hover {
+      background: var(--color-background2) !important;
+      border-color: var(--color-focus-blue) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+  
+  .tabler-card {
+    background: var(--color-bg-card) !important;
+    border: 1px solid var(--color-separator) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+      border-color: var(--color-focus-blue) !important;
+    }
+  }
+}
+
+// Dark theme specific improvements - 与概览页面保持完全一致的样式
+:root[data-theme='dark'] {
+  .card-sm {
+    background: var(--color-bg-card) !important;
+    border: 1px solid var(--color-separator) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    
+    &:hover {
+      background: var(--color-background2) !important;
+      border-color: var(--color-focus-blue) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+    }
+    
+    .avatar {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+  }
+  
+  .tabler-card {
+    background: var(--color-bg-card) !important;
+    border: 1px solid var(--color-separator) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+      border-color: var(--color-focus-blue) !important;
+    }
+  }
+  
+  .font-weight-medium {
+    color: var(--color-text);
+  }
+  
+  .text-muted {
+    color: var(--color-text-secondary) !important;
+  }
+  
+  // Dark theme table improvements - 完全使用与概览页面一致的CSS变量
+  .connection-table-container {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-separator);
+    background: var(--color-bg-card);
+  }
+  
+  .tabler-table {
+    background: transparent;
+    
+    thead th {
+      background: var(--color-background2);
+      color: var(--color-text-secondary);
+      border-bottom: 2px solid var(--color-separator);
+      
+      &:hover {
+        background: var(--color-toggle-selected);
+        color: var(--color-text-highlight);
+      }
+      
+      .sort-indicators {
+        i.text-primary {
+          color: var(--tblr-primary) !important;
+        }
+        
+        i.text-muted {
+          color: var(--color-text-secondary) !important;
+        }
+      }
+    }
+    
+    tbody {
+      tr {
+        border-bottom: 1px solid var(--color-separator);
+        background: transparent;
+        transition: background-color 0.15s ease;
+        
+        &:hover {
+          background: var(--color-row-hover) !important;
+        }
+        
+        &.bg-light-subtle {
+          background: var(--color-row-odd) !important;
+        }
+        
+        td {
+          color: var(--color-text);
+          
+          .badge.badge-outline {
+            font-weight: 500;
+            background: var(--color-bg-card);
+            border: 1px solid;
+            
+            &.text-info {
+              color: var(--tblr-info);
+              border-color: var(--tblr-info);
+            }
+            
+            &.text-success {
+              color: var(--tblr-success);
+              border-color: var(--tblr-success);
+            }
+            
+            &.text-warning {
+              color: var(--tblr-warning);
+              border-color: var(--tblr-warning);
+            }
+            
+            &.text-primary {
+              color: var(--tblr-primary);
+              border-color: var(--tblr-primary);
+            }
+          }
+          
+          code {
+            background: var(--color-background2);
+            color: var(--color-text);
+            border: 1px solid var(--color-separator);
+            
+            &.text-primary {
+              color: var(--tblr-primary);
+              background: var(--color-background2);
+              border-color: var(--color-separator);
+            }
+            
+            &.text-secondary {
+              color: var(--color-text-secondary);
+              background: var(--color-background2);
+              border-color: var(--color-separator);
+            }
+          }
+          
+          .text-info {
+            color: var(--tblr-info) !important;
+          }
+          
+          .text-success {
+            color: var(--tblr-success) !important;
+          }
+          
+          .text-warning {
+            color: var(--tblr-warning) !important;
+          }
+          
+          .text-primary {
+            color: var(--tblr-primary) !important;
+          }
+          
+          .text-muted {
+            color: var(--color-text-secondary) !important;
+          }
+          
+          .fw-medium {
+            color: var(--color-text);
+          }
+          
+          i.ti {
+            color: var(--color-text-secondary);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Proxy page specific styles
+.proxy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.875rem;
+  }
+  
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+}
+
+.proxy-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-separator);
+  border-radius: 10px;
+  padding: 0.875rem;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: var(--color-focus-blue);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+    background: var(--color-background2);
+  }
+  
+  &.active {
+    background: var(--color-focus-blue);
+    color: white;
+    border-color: var(--color-focus-blue);
+    box-shadow: 0 3px 12px rgba(var(--color-focus-blue-rgb), 0.25);
+  }
+}
+
+.proxy-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  
+  &:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+  }
+  
+  &.active {
+    border-color: var(--color-focus-blue);
+    box-shadow: 0 0 0 2px rgba(var(--color-focus-blue-rgb), 0.25);
+    animation: pulse-dot 2s infinite;
+  }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { 
+    box-shadow: 0 0 0 2px rgba(var(--color-focus-blue-rgb), 0.25);
+  }
+  50% { 
+    box-shadow: 0 0 0 3px rgba(var(--color-focus-blue-rgb), 0.1);
+  }
+}
+
+// 全局白色背景重置（适用于所有主题）
+* {
+  &[style*="background: white"],
+  &[style*="background-color: white"],
+  &[style*="background: #fff"],
+  &[style*="background-color: #fff"],
+  &[style*="background: #ffffff"],
+  &[style*="background-color: #ffffff"] {
+    background: var(--color-bg-card) !important;
+  }
+}
+
+// 强制覆盖Tabler默认白色背景
+.card,
+.card-body,
+.card-header,
+.badge,
+.btn,
+.form-control,
+.dropdown-menu,
+.modal-content,
+.popover,
+.tooltip-inner,
+.badge-outline,
+.tabler-card {
+  &:not(.ti):not([class*="ti-"]) {
+    background: var(--color-bg-card) !important;
+    
+    &.card-header {
+      background: transparent !important;
+      border-bottom: 1px solid var(--color-separator) !important;
+    }
+  }
+}
+
+// Dark theme proxy page styles
+:root[data-theme='dark'] {
+  .proxy-card {
+    background: var(--color-bg-card) !important;
+    border-color: var(--color-separator) !important;
+    
+    &:hover {
+      background: var(--color-background2) !important;
+      border-color: var(--color-focus-blue) !important;
+      box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.4),
+        0 2px 8px rgba(var(--color-focus-blue-rgb), 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+      transform: translateY(-2px) !important;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    &.active {
+      background: var(--color-focus-blue) !important;
+      border-color: var(--color-focus-blue) !important;
+      box-shadow: 
+        0 4px 20px rgba(var(--color-focus-blue-rgb), 0.5),
+        0 2px 10px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    }
+  }
+  
+  // 强制覆盖所有可能的白色背景
+  .modernProxy,
+  .proxy-card,
+  .card,
+  .tabler-card {
+    background: var(--color-bg-card) !important;
+    
+    &:hover {
+      background: var(--color-background2) !important;
+      border-color: var(--color-focus-blue) !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.4),
+        0 2px 8px rgba(var(--color-focus-blue-rgb), 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      
+      .proxyIcon {
+        background: linear-gradient(135deg, 
+          var(--color-focus-blue), 
+          rgba(var(--color-focus-blue-rgb), 0.8)) !important;
+        transform: scale(1.05) !important;
+        box-shadow: 
+          0 3px 12px rgba(var(--color-focus-blue-rgb), 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+        
+        i {
+          color: white !important;
+          transform: scale(1.1) !important;
+          filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3)) !important;
+        }
+      }
+      
+      .proxyName span {
+        color: var(--color-focus-blue) !important;
+        text-shadow: 0 1px 3px rgba(var(--color-focus-blue-rgb), 0.3) !important;
+      }
+    }
+    
+    &.now,
+    &.active {
+      background: var(--color-focus-blue) !important;
+      color: white !important;
+      box-shadow: 
+        0 4px 20px rgba(var(--color-focus-blue-rgb), 0.5),
+        0 2px 10px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    }
+  }
+  
+  // 代理图标背景
+  .proxyIcon {
+    background: var(--color-background2) !important;
+  }
+  
+     // 徽章背景
+   .badge {
+     &:not(.badge-success):not(.badge-warning):not(.badge-danger):not(.badge-info) {
+       background: var(--color-background2) !important;
+       color: var(--color-text-secondary) !important;
+       border-color: var(--color-separator) !important;
+     }
+   }
+   
+   // 全局强制覆盖任何可能的白色背景
+   *:not(.ti):not([class*="ti-"]) {
+     &[style*="background: white"],
+     &[style*="background-color: white"],
+     &[style*="background: #fff"],
+     &[style*="background-color: #fff"],
+     &[style*="background: #ffffff"],
+     &[style*="background-color: #ffffff"],
+     &[style*="background:white"],
+     &[style*="background-color:white"],
+     &[style*="background:#fff"],
+     &[style*="background-color:#fff"],
+     &[style*="background:#ffffff"],
+     &[style*="background-color:#ffffff"] {
+       background: var(--color-bg-card) !important;
+       background-color: var(--color-bg-card) !important;
+     }
+   }
+   
+   // 强制覆盖常见的白色背景类
+   .bg-white,
+   .bg-light,
+   .card-white,
+   .white-bg,
+   [class*="white"],
+   [class*="light-bg"] {
+     background: var(--color-bg-card) !important;
+     background-color: var(--color-bg-card) !important;
+   }
+   
+     // 强制覆盖所有可能的代理相关元素
+  [class*="proxy"],
+  [class*="Proxy"],
+  [class*="modern"],
+  [class*="card"],
+  [class*="badge"] {
+    &:not(.ti):not([class*="ti-"]) {
+      background: var(--color-bg-card) !important;
+      
+      &:hover {
+        background: var(--color-background2) !important;
+        border-color: var(--color-focus-blue) !important;
+        transform: translateY(-1px) !important;
+        
+        .proxyIcon {
+          background: var(--color-focus-blue) !important;
+          
+          i {
+            color: white !important;
+          }
+        }
+        
+        .proxyName span {
+          color: var(--color-focus-blue) !important;
+        }
+      }
+      
+      &.now,
+      &.active,
+      &.selected {
+        background: var(--color-focus-blue) !important;
+        color: white !important;
+      }
+    }
+  }
+   
+   // 强制覆盖Tabler默认样式
+   .card,
+   .card-body,
+   .badge,
+   .btn,
+   .form-control,
+   .dropdown-menu,
+   .modal-content,
+   .popover,
+   .tooltip-inner {
+     background: var(--color-bg-card) !important;
+     
+     &.badge {
+       background: var(--color-background2) !important;
+       color: var(--color-text-secondary) !important;
+       border: 1px solid var(--color-separator) !important;
+     }
+   }
+   
+   // 特别处理badge-outline类
+   .badge-outline {
+     background: var(--color-background2) !important;
+     color: var(--color-text-secondary) !important;
+     border: 1px solid var(--color-separator) !important;
+   }
+ }
+
+// Auto theme proxy page styles
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='auto'] {
+    .proxy-card {
+      background: var(--color-bg-card);
+      border-color: var(--color-separator);
+      
+      &:hover {
+        background: var(--color-background2);
+        border-color: var(--color-focus-blue);
+        box-shadow: 
+          0 4px 16px rgba(0, 0, 0, 0.4),
+          0 2px 8px rgba(var(--color-focus-blue-rgb), 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        transform: translateY(-2px);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      &.active {
+        background: var(--color-focus-blue);
+        border-color: var(--color-focus-blue);
+        box-shadow: 
+          0 4px 20px rgba(var(--color-focus-blue-rgb), 0.5),
+          0 2px 10px rgba(0, 0, 0, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
+}
+
+// 强制覆盖所有可能的白色背景 - 最高优先级
+:root[data-theme='dark'] {
+  // 通用白色背景覆盖
+  *:not(.ti):not([class*="ti-"]) {
+    &[style*="background: white"],
+    &[style*="background-color: white"],
+    &[style*="background: #fff"],
+    &[style*="background-color: #fff"],
+    &[style*="background: #ffffff"],
+    &[style*="background-color: #ffffff"],
+    &[style*="background:white"],
+    &[style*="background-color:white"],
+    &[style*="background:#fff"],
+    &[style*="background-color:#fff"],
+    &[style*="background:#ffffff"],
+    &[style*="background-color:#ffffff"] {
+      background: var(--color-bg-card) !important;
+      background-color: var(--color-bg-card) !important;
+    }
+  }
+  
+  // 强制覆盖常见的白色背景类
+  .bg-white,
+  .bg-light,
+  .card-white,
+  .white-bg,
+  [class*="white"],
+  [class*="light-bg"] {
+    background: var(--color-bg-card) !important;
+    background-color: var(--color-bg-card) !important;
+  }
+  
+  // 强制覆盖所有可能的代理相关元素
+  [class*="proxy"],
+  [class*="Proxy"],
+  [class*="modern"],
+  [class*="card"],
+  [class*="badge"] {
+    &:not(.ti):not([class*="ti-"]) {
+      background: var(--color-bg-card) !important;
+      
+      &:hover {
+        background: var(--color-background2) !important;
+        border-color: var(--color-focus-blue) !important;
+        transform: translateY(-1px) !important;
+        
+        .proxyIcon {
+          background: var(--color-focus-blue) !important;
+          
+          i {
+            color: white !important;
+          }
+        }
+        
+        .proxyName span {
+          color: var(--color-focus-blue) !important;
+        }
+      }
+      
+      &.now,
+      &.active,
+      &.selected {
+        background: var(--color-focus-blue) !important;
+        color: white !important;
+      }
+    }
+  }
+}
+
+// 自动主题模式下的相同规则
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='auto'] {
+    // 通用白色背景覆盖
+    *:not(.ti):not([class*="ti-"]) {
+      &[style*="background: white"],
+      &[style*="background-color: white"],
+      &[style*="background: #fff"],
+      &[style*="background-color: #fff"],
+      &[style*="background: #ffffff"],
+      &[style*="background-color: #ffffff"],
+      &[style*="background:white"],
+      &[style*="background-color:white"],
+      &[style*="background:#fff"],
+      &[style*="background-color:#fff"],
+      &[style*="background:#ffffff"],
+      &[style*="background-color:#ffffff"] {
+        background: var(--color-bg-card) !important;
+        background-color: var(--color-bg-card) !important;
+      }
+    }
+    
+    // 强制覆盖常见的白色背景类
+    .bg-white,
+    .bg-light,
+    .card-white,
+    .white-bg,
+    [class*="white"],
+    [class*="light-bg"] {
+      background: var(--color-bg-card) !important;
+      background-color: var(--color-bg-card) !important;
+    }
+    
+    // 强制覆盖所有可能的代理相关元素
+    [class*="proxy"],
+    [class*="Proxy"],
+    [class*="modern"],
+    [class*="card"],
+    [class*="badge"] {
+      &:not(.ti):not([class*="ti-"]) {
+        background: var(--color-bg-card) !important;
+        
+        &:hover {
+          background: var(--color-background2) !important;
+          border-color: var(--color-focus-blue) !important;
+          transform: translateY(-1px) !important;
+          
+          .proxyIcon {
+            background: var(--color-focus-blue) !important;
+            
+            i {
+              color: white !important;
+            }
+          }
+          
+          .proxyName span {
+            color: var(--color-focus-blue) !important;
+          }
+        }
+        
+        &.now,
+        &.active,
+        &.selected {
+          background: var(--color-focus-blue) !important;
+          color: white !important;
+        }
+      }
+    }
+  }
+}
+
+/* 浅色主题优化规则 */
+:root[data-theme='light'] {
+  /* 优化代理卡片选中状态 */
+  .modernProxy,
+  .proxy-card,
+  [class*="proxy"][class*="card"] {
+    &.now,
+    &.active,
+    &.selected {
+      background: linear-gradient(135deg, 
+        rgba(var(--tblr-primary-rgb), 0.08), 
+        rgba(var(--tblr-primary-rgb), 0.12),
+        rgba(var(--tblr-primary-rgb), 0.06)) !important;
+      color: var(--color-text) !important;
+      border-color: var(--color-focus-blue) !important;
+      box-shadow: 
+        0 3px 12px rgba(var(--color-focus-blue-rgb), 0.15),
+        0 0 0 1px rgba(var(--color-focus-blue-rgb), 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+      transform: translateY(-1px) scale(1.02) !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      
+      .proxyIcon {
+        background: linear-gradient(135deg, 
+          rgba(var(--tblr-primary-rgb), 0.2), 
+          rgba(var(--tblr-primary-rgb), 0.15)) !important;
+        transform: scale(1.05) !important;
+        box-shadow: 
+          0 2px 8px rgba(var(--color-focus-blue-rgb), 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+        
+        i {
+          color: var(--color-focus-blue) !important;
+          transform: scale(1.1) !important;
+          filter: drop-shadow(0 1px 2px rgba(var(--color-focus-blue-rgb), 0.2)) !important;
+        }
+      }
+      
+      .proxyName span {
+        color: var(--color-text) !important;
+        font-weight: 600 !important;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+      }
+      
+      .badge {
+        background: linear-gradient(135deg, 
+          rgba(var(--tblr-primary-rgb), 0.12), 
+          rgba(var(--tblr-primary-rgb), 0.08)) !important;
+        color: var(--color-focus-blue) !important;
+        border-color: rgba(var(--tblr-primary-rgb), 0.3) !important;
+        box-shadow: 
+          0 1px 3px rgba(var(--color-focus-blue-rgb), 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+      }
+      
+      // 添加选中状态的光泽效果
+      &::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: linear-gradient(135deg, 
+          rgba(255, 255, 255, 0.3) 0%, 
+          rgba(255, 255, 255, 0.1) 50%, 
+          transparent 100%) !important;
+        border-radius: inherit !important;
+        pointer-events: none !important;
+      }
+      
+      // 添加左侧选中指示器
+      &::after {
+        content: '' !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 3px !important;
+        height: 60% !important;
+        background: linear-gradient(to bottom, 
+          var(--color-focus-blue), 
+          rgba(var(--tblr-primary-rgb), 0.8)) !important;
+        border-radius: 0 2px 2px 0 !important;
+        box-shadow: 
+          0 0 8px rgba(var(--color-focus-blue-rgb), 0.3),
+          0 2px 4px rgba(var(--color-focus-blue-rgb), 0.2) !important;
+      }
+    }
+  }
+}
+
+/* 自动主题模式下的浅色主题优化 */
+@media (prefers-color-scheme: light) {
+  :root[data-theme='auto'] {
+    /* 优化代理卡片选中状态 */
+    .modernProxy,
+    .proxy-card,
+    [class*="proxy"][class*="card"] {
+      &.now,
+      &.active,
+      &.selected {
+        background: linear-gradient(135deg, 
+          rgba(var(--tblr-primary-rgb), 0.08), 
+          rgba(var(--tblr-primary-rgb), 0.12),
+          rgba(var(--tblr-primary-rgb), 0.06)) !important;
+        color: var(--color-text) !important;
+        border-color: var(--color-focus-blue) !important;
+        box-shadow: 
+          0 3px 12px rgba(var(--color-focus-blue-rgb), 0.15),
+          0 0 0 1px rgba(var(--color-focus-blue-rgb), 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+        transform: translateY(-1px) scale(1.02) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        
+        .proxyIcon {
+          background: linear-gradient(135deg, 
+            rgba(var(--tblr-primary-rgb), 0.2), 
+            rgba(var(--tblr-primary-rgb), 0.15)) !important;
+          transform: scale(1.05) !important;
+          box-shadow: 
+            0 2px 8px rgba(var(--color-focus-blue-rgb), 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+          
+          i {
+            color: var(--color-focus-blue) !important;
+            transform: scale(1.1) !important;
+            filter: drop-shadow(0 1px 2px rgba(var(--color-focus-blue-rgb), 0.2)) !important;
+          }
+        }
+        
+        .proxyName span {
+          color: var(--color-text) !important;
+          font-weight: 600 !important;
+          text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        .badge {
+          background: linear-gradient(135deg, 
+            rgba(var(--tblr-primary-rgb), 0.12), 
+            rgba(var(--tblr-primary-rgb), 0.08)) !important;
+          color: var(--color-focus-blue) !important;
+          border-color: rgba(var(--tblr-primary-rgb), 0.3) !important;
+          box-shadow: 
+            0 1px 3px rgba(var(--color-focus-blue-rgb), 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+        }
+        
+        // 添加选中状态的光泽效果
+        &::before {
+          content: '' !important;
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          background: linear-gradient(135deg, 
+            rgba(255, 255, 255, 0.3) 0%, 
+            rgba(255, 255, 255, 0.1) 50%, 
+            transparent 100%) !important;
+          border-radius: inherit !important;
+          pointer-events: none !important;
+        }
+        
+        // 添加左侧选中指示器
+        &::after {
+          content: '' !important;
+          position: absolute !important;
+          left: 0 !important;
+          top: 50% !important;
+          transform: translateY(-50%) !important;
+          width: 3px !important;
+          height: 60% !important;
+          background: linear-gradient(to bottom, 
+            var(--color-focus-blue), 
+            rgba(var(--tblr-primary-rgb), 0.8)) !important;
+          border-radius: 0 2px 2px 0 !important;
+          box-shadow: 
+            0 0 8px rgba(var(--color-focus-blue-rgb), 0.3),
+            0 2px 4px rgba(var(--color-focus-blue-rgb), 0.2) !important;
+        }
+      }
+    }
+  }
+}
+
+/* 最终的白色背景清除规则 - 最高优先级 */
+:root[data-theme='dark'],
+:root[data-theme='auto'] {
+  /* 强制覆盖所有可能的白色背景元素 */
+  *:not(.ti):not([class*="ti-"]):not(svg):not(path):not(circle):not(rect):not(.proxySmall):not(.modernDot):not([class*="proxy"][class*="Small"]):not([class*="dot"]) {
+    &[style*="background: white"],
+    &[style*="background-color: white"],
+    &[style*="background: #fff"],
+    &[style*="background-color: #fff"],
+    &[style*="background: #ffffff"],
+    &[style*="background-color: #ffffff"],
+    &[style*="background:white"],
+    &[style*="background-color:white"],
+    &[style*="background:#fff"],
+    &[style*="background-color:#fff"],
+    &[style*="background:#ffffff"],
+    &[style*="background-color:#ffffff"] {
+      background: var(--color-bg-card) !important;
+      background-color: var(--color-bg-card) !important;
+    }
+  }
+  
+  /* 强制覆盖所有可能的白色背景类 */
+  .bg-white,
+  .bg-light,
+  .card-white,
+  .white-bg,
+  .white,
+  .light,
+  [class*="white"],
+  [class*="light"],
+  [class*="bg-white"],
+  [class*="bg-light"] {
+    background: var(--color-bg-card) !important;
+    background-color: var(--color-bg-card) !important;
+  }
+  
+  /* 强制覆盖所有卡片和容器 */
+  .card,
+  .card-body,
+  .card-header,
+  .card-footer,
+  .tabler-card,
+  .proxy-card,
+  .modernProxy,
+  .modernGroup,
+  .modernProvider,
+  [class*="card"],
+  [class*="proxy"],
+  [class*="modern"] {
+    background: var(--color-bg-card) !important;
+    
+    &:hover {
+      background: var(--color-background2) !important;
+    }
+    
+    &.now,
+    &.active,
+    &.selected {
+      background: var(--color-focus-blue) !important;
+      color: white !important;
+    }
+  }
+  
+  /* 特殊处理卡片头部 */
+  .card-header {
+    background: transparent !important;
+    border-bottom: 1px solid var(--color-separator) !important;
+  }
+  
+          /* 强制覆盖所有徽章 */
+     .badge,
+     .badge-outline,
+     [class*="badge"] {
+       &:not(.badge-success):not(.badge-warning):not(.badge-danger):not(.badge-info):not(.badge-primary) {
+         background: var(--color-background2) !important;
+         color: var(--color-text-secondary) !important;
+         border: 1px solid var(--color-separator) !important;
+       }
+     }
+     
+           /* 强制确保小圆点颜色在深色主题下正确显示 - 支持新的颜色分级 */
+      .proxySmall,
+      .modernDot,
+      [class*="proxy"][class*="Small"],
+      [class*="dot"] {
+        // 新的颜色分级支持 - 最高优先级
+        &[style*="background-color: #00c851"] { background-color: #00c851 !important; }  // 极快
+        &[style*="background-color: #2e7d32"] { background-color: #2e7d32 !important; }  // 很快
+        &[style*="background-color: #689f38"] { background-color: #689f38 !important; }  // 快
+        &[style*="background-color: #f57f17"] { background-color: #f57f17 !important; }  // 良好
+        &[style*="background-color: #ff8f00"] { background-color: #ff8f00 !important; }  // 一般
+        &[style*="background-color: #f4511e"] { background-color: #f4511e !important; }  // 较慢
+        &[style*="background-color: #d32f2f"] { background-color: #d32f2f !important; }  // 慢
+        &[style*="background-color: #b71c1c"] { background-color: #b71c1c !important; }  // 很慢
+        &[style*="background-color: #ff1744"] { background-color: #ff1744 !important; }  // 极慢
+        
+        // 确保内联样式的颜色能正确显示
+        &[style*="background-color: var(--tblr-success)"] {
+          background-color: var(--tblr-success) !important;
+        }
+        
+        &[style*="background-color: var(--tblr-warning)"] {
+          background-color: var(--tblr-warning) !important;
+        }
+        
+        &[style*="background-color: var(--tblr-danger)"] {
+          background-color: var(--tblr-danger) !important;
+        }
+        
+        &[style*="background-color: var(--color-text-secondary)"] {
+          background-color: var(--color-text-secondary) !important;
+        }
+        
+        // 确保选中状态的边框可见
+        &.now,
+        &.active,
+        &.selected {
+          border-color: var(--color-focus-blue) !important;
+          outline: 2px solid var(--color-focus-blue) !important;
+          outline-offset: 1px !important;
+        }
+      }
+}
+
+/* 自动主题模式下的深色主题规则 */
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='auto'] {
+    /* 强制覆盖所有可能的白色背景元素 */
+    *:not(.ti):not([class*="ti-"]):not(svg):not(path):not(circle):not(rect):not(.proxySmall):not(.modernDot):not([class*="proxy"][class*="Small"]):not([class*="dot"]) {
+      &[style*="background: white"],
+      &[style*="background-color: white"],
+      &[style*="background: #fff"],
+      &[style*="background-color: #fff"],
+      &[style*="background: #ffffff"],
+      &[style*="background-color: #ffffff"],
+      &[style*="background:white"],
+      &[style*="background-color:white"],
+      &[style*="background:#fff"],
+      &[style*="background-color:#fff"],
+      &[style*="background:#ffffff"],
+      &[style*="background-color:#ffffff"] {
+        background: var(--color-bg-card) !important;
+        background-color: var(--color-bg-card) !important;
+      }
+    }
+    
+    /* 强制覆盖所有可能的白色背景类 */
+    .bg-white,
+    .bg-light,
+    .card-white,
+    .white-bg,
+    .white,
+    .light,
+    [class*="white"],
+    [class*="light"],
+    [class*="bg-white"],
+    [class*="bg-light"] {
+      background: var(--color-bg-card) !important;
+      background-color: var(--color-bg-card) !important;
+    }
+    
+    /* 强制覆盖所有卡片和容器 */
+    .card,
+    .card-body,
+    .card-header,
+    .card-footer,
+    .tabler-card,
+    .proxy-card,
+    .modernProxy,
+    .modernGroup,
+    .modernProvider,
+    [class*="card"],
+    [class*="proxy"],
+    [class*="modern"] {
+      background: var(--color-bg-card) !important;
+      
+      &:hover {
+        background: var(--color-background2) !important;
+      }
+      
+      &.now,
+      &.active,
+      &.selected {
+        background: var(--color-focus-blue) !important;
+        color: white !important;
+      }
+    }
+    
+    /* 特殊处理卡片头部 */
+    .card-header {
+      background: transparent !important;
+      border-bottom: 1px solid var(--color-separator) !important;
+    }
+    
+    /* 强制覆盖所有徽章 */
+    .badge,
+    .badge-outline,
+    [class*="badge"] {
+      &:not(.badge-success):not(.badge-warning):not(.badge-danger):not(.badge-info):not(.badge-primary) {
+        background: var(--color-background2) !important;
+        color: var(--color-text-secondary) !important;
+        border: 1px solid var(--color-separator) !important;
+      }
+    }
+    
+    /* 强制确保小圆点颜色在自动主题深色模式下正确显示 - 支持新的颜色分级 */
+    .proxySmall,
+    .modernDot,
+    [class*="proxy"][class*="Small"],
+    [class*="dot"] {
+      // 新的颜色分级支持 - 最高优先级
+      &[style*="background-color: #00c851"] { background-color: #00c851 !important; }  // 极快
+      &[style*="background-color: #2e7d32"] { background-color: #2e7d32 !important; }  // 很快
+      &[style*="background-color: #689f38"] { background-color: #689f38 !important; }  // 快
+      &[style*="background-color: #f57f17"] { background-color: #f57f17 !important; }  // 良好
+      &[style*="background-color: #ff8f00"] { background-color: #ff8f00 !important; }  // 一般
+      &[style*="background-color: #f4511e"] { background-color: #f4511e !important; }  // 较慢
+      &[style*="background-color: #d32f2f"] { background-color: #d32f2f !important; }  // 慢
+      &[style*="background-color: #b71c1c"] { background-color: #b71c1c !important; }  // 很慢
+      &[style*="background-color: #ff1744"] { background-color: #ff1744 !important; }  // 极慢
+      
+      // 确保内联样式的颜色能正确显示
+      &[style*="background-color: var(--tblr-success)"] {
+        background-color: var(--tblr-success) !important;
+      }
+      
+      &[style*="background-color: var(--tblr-warning)"] {
+        background-color: var(--tblr-warning) !important;
+      }
+      
+      &[style*="background-color: var(--tblr-danger)"] {
+        background-color: var(--tblr-danger) !important;
+      }
+      
+      &[style*="background-color: var(--color-text-secondary)"] {
+        background-color: var(--color-text-secondary) !important;
+      }
+      
+      // 确保选中状态的边框可见
+      &.now,
+      &.active,
+      &.selected {
+        border-color: var(--color-focus-blue) !important;
+        outline: 2px solid var(--color-focus-blue) !important;
+        outline-offset: 1px !important;
+      }
+    }
+  }
+}
+
+/* 最终的小圆点颜色强制规则 - 最高优先级 */
+div[style*="background-color: #00c851"] { background-color: #00c851 !important; }
+div[style*="background-color: #2e7d32"] { background-color: #2e7d32 !important; }
+div[style*="background-color: #689f38"] { background-color: #689f38 !important; }
+div[style*="background-color: #f57f17"] { background-color: #f57f17 !important; }
+div[style*="background-color: #ff8f00"] { background-color: #ff8f00 !important; }
+div[style*="background-color: #f4511e"] { background-color: #f4511e !important; }
+div[style*="background-color: #d32f2f"] { background-color: #d32f2f !important; }
+div[style*="background-color: #b71c1c"] { background-color: #b71c1c !important; }
+div[style*="background-color: #ff1744"] { background-color: #ff1744 !important; }
+
+/* 基于data属性的全局小圆点颜色设置 - 终极解决方案 */
+div[data-latency="fast"] { background-color: #2e7d32 !important; }           // 快 (< 200ms) - 深绿色
+div[data-latency="medium"] { background-color: #66bb6a !important; }         // 中等 (200-500ms) - 浅绿色
+div[data-latency="slow"] { background-color: #ff8f00 !important; }           // 慢 (500-2000ms) - 橙色
+div[data-latency="very-slow"] { background-color: #ef5350 !important; }      // 很慢 (2000-5000ms) - 浅红色
+div[data-latency="extremely-slow"] { background-color: #c62828 !important; } // 极慢 (> 5000ms) - 深红色
+
+div[data-proxy-type="direct"] { background-color: #2e7d32 !important; }      // 直连 - 深绿色
+div[data-proxy-type="reject"] { background-color: #c62828 !important; }      // 拒绝 - 深红色
+div[data-proxy-type="reject"] { background-color: #c62828 !important; }      // 拒绝 - 深红色

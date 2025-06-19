@@ -16,7 +16,7 @@ const rootEl = document.querySelector('html');
 
 const defaultClashAPIConfig = {
   baseURL: document.getElementById('app')?.getAttribute('data-base-url') ?? 'http://127.0.0.1:9090',
-  secret: '',
+  secret: '4e431a56ead99c',
   addedAt: 0,
 };
 

@@ -1,34 +1,151 @@
 .RuleProviderItem {
-  display: grid;
-  grid-template-columns: 40px 1fr 46px;
-  height: 100%;
+  padding: 16px;
+  border-bottom: 1px solid var(--color-separator);
+  background: var(--color-bg-card);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: var(--color-background2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
-.left {
-  display: inline-flex;
-  align-items: center;
-  color: var(--color-text-secondary);
-  opacity: 0.4;
+.providerCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-.middle {
-  display: grid;
-  gap: 6px;
-  grid-template-rows: 1fr auto auto;
-  align-items: center;
+.providerIcon {
+  position: relative;
+  flex-shrink: 0;
+  
+  .avatar {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    
+    i {
+      font-size: 20px;
+    }
+  }
 }
 
-.gray {
-  color: #777;
+.providerInfo {
+  flex: 1;
+  min-width: 0;
 }
 
-.action {
-  display: grid;
-  gap: 4px;
-  grid-template-columns: auto 1fr;
-  align-items: center;
+.providerHeader {
+  h4 {
+    font-size: 1.1rem;
+    color: var(--color-text);
+    margin: 0;
+    max-width: 300px;
+  }
 }
 
-.refreshBtn {
-  padding: 5px;
+.providerStats {
+  margin-top: 8px;
+  
+  .text-muted {
+    font-size: 0.875rem;
+  }
+}
+
+.providerActions {
+  flex-shrink: 0;
+  min-width: 120px;
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+    
+    &.btn-primary {
+      background: var(--tblr-primary);
+      border-color: var(--tblr-primary);
+      
+      &:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--tblr-primary) 90%, black);
+        border-color: color-mix(in srgb, var(--tblr-primary) 90%, black);
+      }
+      
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+// Responsive design
+@media screen and (max-width: 768px) {
+  .RuleProviderItem {
+    padding: 12px;
+  }
+  
+  .providerCard {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .providerIcon {
+    align-self: center;
+  }
+  
+  .providerActions {
+    width: 100%;
+    
+    .d-flex {
+      flex-direction: row;
+      gap: 8px;
+      
+      .btn {
+        flex: 1;
+      }
+    }
+  }
+}
+
+// Dark theme enhancements
+:root[data-theme='dark'] {
+  .RuleProviderItem {
+    background: var(--color-bg-card);
+    border-color: var(--color-separator);
+    
+    &:hover {
+      background: var(--color-row-hover);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+  }
+  
+  .providerIcon .avatar {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+:root[data-theme='auto'] {
+  @media (prefers-color-scheme: dark) {
+    .RuleProviderItem {
+      background: var(--color-bg-card);
+      border-color: var(--color-separator);
+      
+      &:hover {
+        background: var(--color-row-hover);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+    }
+    
+    .providerIcon .avatar {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+  }
 }

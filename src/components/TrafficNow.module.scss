@@ -6,20 +6,92 @@
 
   display: grid;
   grid-template-columns: repeat(auto-fit, 180px);
-  grid-gap: 10px;
+  grid-gap: 12px;
 
   .sec {
-    padding: 10px;
+    padding: 12px;
     background-color: var(--color-bg-card);
+    border: 1px solid var(--color-separator);
     border-radius: 10px;
-    box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    
+    &:hover {
+      border-color: var(--color-focus-blue);
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
+      transform: translateY(-1px);
+    }
+    
     div:nth-child(1) {
       color: var(--color-text-secondary);
-      font-size: 0.7em;
+      font-size: 0.75em;
+      font-weight: 500;
+      margin-bottom: 4px;
     }
     div:nth-child(2) {
-      padding: 10px 0 0;
+      padding: 8px 0 0;
       font-size: 1.8em;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+  }
+}
+
+// 深色主题优化
+:root[data-theme='dark'] {
+  .TrafficNow .sec {
+    background-color: var(--color-bg-card);
+    border-color: var(--color-separator);
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.3);
+    
+    &:hover {
+      border-color: var(--color-focus-blue);
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.4);
+    }
+  }
+}
+
+// 浅色主题优化
+:root[data-theme='light'] {
+  .TrafficNow .sec {
+    background-color: var(--color-bg-card);
+    border-color: var(--color-separator);
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.06);
+    
+    &:hover {
+      border-color: var(--color-focus-blue);
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+// 自动主题支持
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='auto'] {
+    .TrafficNow .sec {
+      background-color: var(--color-bg-card);
+      border-color: var(--color-separator);
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.3);
+      
+      &:hover {
+        border-color: var(--color-focus-blue);
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.4);
+      }
+    }
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root[data-theme='auto'] {
+    .TrafficNow .sec {
+      background-color: var(--color-bg-card);
+      border-color: var(--color-separator);
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.06);
+      
+      &:hover {
+        border-color: var(--color-focus-blue);
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+      }
     }
   }
 }

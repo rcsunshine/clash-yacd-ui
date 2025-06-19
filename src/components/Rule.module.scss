@@ -1,35 +1,111 @@
 .rule {
-  display: flex;
-  align-items: center;
-  padding: 6px 15px;
-  @media screen and (min-width: 30em) {
-    padding: 10px 40px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--color-separator);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: var(--color-background2);
+  }
+  
+  &:last-child {
+    border-bottom: none;
   }
 }
 
-.left {
-  width: 40px;
-  padding-right: 15px;
-  color: var(--color-text-secondary);
-  opacity: 0.4;
-}
-
-.a {
+.ruleCard {
   display: flex;
   align-items: center;
-  font-size: 12px;
-  opacity: 0.8;
+  gap: 16px;
+  padding: 12px 0;
 }
 
-.b {
-  padding: 10px 0;
-  font-family: 'Roboto Mono', Menlo, monospace;
-  font-size: 16px;
-  @media screen and (min-width: 30em) {
-    font-size: 19px;
+.ruleId {
+  flex-shrink: 0;
+  width: 60px;
+  display: flex;
+  justify-content: center;
+}
+
+.ruleContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payload {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 500;
+  
+  code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    color: var(--tblr-primary);
+    word-break: break-all;
   }
 }
 
-.type {
-  width: 110px;
+.ruleDetails {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ruleActions {
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  
+  .rule:hover & {
+    opacity: 1;
+  }
+}
+
+// Responsive design
+@media screen and (max-width: 768px) {
+  .rule {
+    padding: 6px 12px;
+  }
+  
+  .ruleCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .ruleId {
+    width: auto;
+    align-self: flex-start;
+  }
+  
+  .ruleActions {
+    opacity: 1;
+    align-self: flex-end;
+  }
+}
+
+// Dark theme enhancements
+:root[data-theme='dark'] {
+  .rule {
+    &:hover {
+      background: var(--color-row-hover);
+    }
+  }
+}
+
+:root[data-theme='auto'] {
+  @media (prefers-color-scheme: dark) {
+    .rule {
+      &:hover {
+        background: var(--color-row-hover);
+      }
+    }
+  }
 }

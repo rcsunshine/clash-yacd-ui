@@ -1,5 +1,12 @@
-on: [push]
 name: Deploy workflow
+on:
+  push:
+    branches: [ master ]
+    tags:
+      - '**'
+  workflow_dispatch:
+  pull_request:
+
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
@@ -31,7 +38,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-
 
-      - uses: pnpm/action-setup@v2.4.0
+      - uses: pnpm/action-setup@v4
         with:
           version: 8
           run_install: true
@@ -89,13 +96,6 @@ jobs:
           git commit -m "Push to gh-pages"
           git push -f https://$GITHUB_ACTOR:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:$BRANCH
 
-      - name: Send Notification
-        uses: haishanh/actions-telegram-notification@v1
-        if: ${{ always() }}
-        with:
-          notification-token: ${{ secrets.TG_NOTIFICATION_TOKEN }}
-          job-status: ${{ job.status }}
-
   docker:
     needs: install
     runs-on: ubuntu-latest
@@ -119,7 +119,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v5
         with:
-          images: haishanh/yacd
+          images: rcsunshine/clash-yacd-ui
 
       # - name: Set up QEMU
       #   uses: docker/setup-qemu-action@v1.2.0
@@ -135,12 +135,6 @@ jobs:
       - name: Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -154,9 +148,9 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.docker_meta.outputs.tags }},ghcr.io/${{ steps.docker_meta.outputs.tags }}
+          tags: ghcr.io/${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha
@@ -166,9 +160,3 @@ jobs:
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
 
-      - name: Send Notification
-        uses: haishanh/actions-telegram-notification@v1
-        if: ${{ always() }}
-        with:
-          notification-token: ${{ secrets.TG_NOTIFICATION_TOKEN }}
-          job-status: ${{ job.status }}

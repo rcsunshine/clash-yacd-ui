@@ -22,6 +22,7 @@ export const initialState: StateProxies = {
   delay: {},
   groupNames: [],
   showModalClosePrevConns: false,
+  isLoading: false,
 };
 
 const noop = () => null;
@@ -50,6 +51,7 @@ export const getProxyGroupNames = (s: State) => s.proxies.groupNames;
 export const getProxyProviders = (s: State) => s.proxies.proxyProviders || [];
 export const getDangleProxyNames = (s: State) => s.proxies.dangleProxyNames;
 export const getShowModalClosePrevConns = (s: State) => s.proxies.showModalClosePrevConns;
+export const getProxiesLoading = (s: State) => s.proxies.isLoading;
 
 function mapLatency(names: string[], getProxy: (name: string) => { history: LatencyHistory }) {
   const result: DelayMapping = {};
@@ -66,34 +68,48 @@ function mapLatency(names: string[], getProxy: (name: string) => { history: Late
 
 export function fetchProxies(apiConfig: ClashAPIConfig) {
   return async (dispatch: any, getState: any) => {
-    const [proxiesData, providersData] = await Promise.all([
-      proxiesAPI.fetchProxies(apiConfig),
-      proxiesAPI.fetchProviderProxies(apiConfig),
-    ]);
-
-    const { proxyProviders, providerProxyRecord } = formatProxyProviders(providersData.providers);
-
-    const proxies = { ...providerProxyRecord, ...proxiesData.proxies };
-    const [groupNames, proxyNames] = retrieveGroupNamesFrom(proxies);
-
-    const delayNext = {
-      ...getDelay(getState()),
-      ...mapLatency(Object.keys(proxies), (name) => proxies[name]),
-    };
-
-    // proxies that are not from a provider
-    const dangleProxyNames = [];
-    for (const v of proxyNames) {
-      if (!providerProxyRecord[v]) dangleProxyNames.push(v);
-    }
-
-    dispatch('store/proxies#fetchProxies', (s: State) => {
-      s.proxies.proxies = proxies;
-      s.proxies.groupNames = groupNames;
-      s.proxies.dangleProxyNames = dangleProxyNames;
-      s.proxies.delay = delayNext;
-      s.proxies.proxyProviders = proxyProviders;
+    // 设置加载状态
+    dispatch('store/proxies#setLoading', (s: State) => {
+      s.proxies.isLoading = true;
     });
+
+    try {
+      const [proxiesData, providersData] = await Promise.all([
+        proxiesAPI.fetchProxies(apiConfig),
+        proxiesAPI.fetchProviderProxies(apiConfig),
+      ]);
+
+      const { proxyProviders, providerProxyRecord } = formatProxyProviders(providersData.providers);
+
+      const proxies = { ...providerProxyRecord, ...proxiesData.proxies };
+      const [groupNames, proxyNames] = retrieveGroupNamesFrom(proxies);
+
+      const delayNext = {
+        ...getDelay(getState()),
+        ...mapLatency(Object.keys(proxies), (name) => proxies[name]),
+      };
+
+      // proxies that are not from a provider
+      const dangleProxyNames = [];
+      for (const v of proxyNames) {
+        if (!providerProxyRecord[v]) dangleProxyNames.push(v);
+      }
+
+      dispatch('store/proxies#fetchProxies', (s: State) => {
+        s.proxies.proxies = proxies;
+        s.proxies.groupNames = groupNames;
+        s.proxies.dangleProxyNames = dangleProxyNames;
+        s.proxies.delay = delayNext;
+        s.proxies.proxyProviders = proxyProviders;
+        s.proxies.isLoading = false;
+      });
+    } catch (error) {
+      // 出错时也要清除加载状态
+      dispatch('store/proxies#setLoadingError', (s: State) => {
+        s.proxies.isLoading = false;
+      });
+      throw error;
+    }
   };
 }
 
@@ -356,14 +372,44 @@ export function requestDelayForProxies(
 export function requestDelayAll(apiConfig: ClashAPIConfig, latencyTestUrl: string) {
   return async (dispatch: DispatchFn, getState: GetStateFn) => {
     const proxyNames = getDangleProxyNames(getState());
-    await Promise.all(
-      proxyNames.map((p) => proxiesAPI.requestDelayForProxy(apiConfig, p, latencyTestUrl)),
-    );
     const proxyProviders = getProxyProviders(getState());
-    // one by one
+    const proxies = getProxies(getState());
+    
+    // 首先为所有代理设置测试状态
+    const allProxyNames = [...proxyNames];
+    
+    // 添加来自provider的代理
+    proxyProviders.forEach(provider => {
+      if (provider.proxies && Array.isArray(provider.proxies)) {
+        provider.proxies.forEach(proxyName => {
+          if (!allProxyNames.includes(proxyName)) {
+            allProxyNames.push(proxyName);
+          }
+        });
+      }
+    });
+    
+    // 为所有代理设置测试状态
+    dispatch('set all proxies to testing state', (s) => {
+      const currentDelay = getDelay(getState());
+      const newDelay = { ...currentDelay };
+      allProxyNames.forEach(name => {
+        newDelay[name] = { kind: 'Testing' };
+      });
+      s.proxies.delay = newDelay;
+    });
+    
+    // 测试独立代理
+    await Promise.all(
+      proxyNames.map((p) => dispatch(requestDelayForProxyOnce(apiConfig, p, latencyTestUrl))),
+    );
+    
+    // 测试provider代理 (one by one to avoid overwhelming the server)
     for (const p of proxyProviders) {
       await healthcheckProviderByNameInternal(apiConfig, p.name);
     }
+    
+    // 最后获取最新的代理状态
     await dispatch(fetchProxies(apiConfig));
   };
 }

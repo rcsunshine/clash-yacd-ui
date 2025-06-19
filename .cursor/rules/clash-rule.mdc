@@ -1,0 +1,684 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Clash YACD UI - V2 架构优化 Cursor 规则
+
+## 项目概述
+基于 React + TypeScript 的现代化 Clash Dashboard，采用 V2 新架构设计。项目支持 V1/V2 并行开发，采用渐进式迁移策略。
+
+## V2 架构核心原则
+
+### 1. 目录结构规范
+```
+src/v2/
+├── components/          # 组件库
+│   ├── ui/             # 基础 UI 组件 (Button, Card, StatusIndicator)
+│   ├── layout/         # 布局组件 (Sidebar, Header)
+│   ├── business/       # 业务组件
+│   └── icons/          # 图标组件
+├── pages/              # 页面组件 (Dashboard, Proxies, Connections, Rules, Logs, Config)
+├── styles/             # 样式系统 (纯Tailwind CSS + 最小化CSS)
+│   ├── globals.css     # 全局样式 (滚动条、动画、通用组件)
+│   ├── components.css  # 基础组件样式 (仅必要的复杂组件)
+│   └── utilities.css   # 工具类 (Tailwind扩展)
+├── hooks/              # 自定义 Hooks (useAPI.ts)
+├── utils/              # 工具函数
+├── types/              # 类型定义 (api.ts)
+├── constants/          # 常量定义
+└── App.tsx            # V2 应用入口
+```
+
+### 2. 技术栈规范
+- **前端框架**: React 18 + TypeScript (严格模式)
+- **样式系统**: Tailwind CSS + CSS 变量
+- **构建工具**: Vite (端口 3002)
+- **状态管理**: Jotai + React Query
+- **API 层**: 复用 V1 的 `src/api/` 和 `src/store/`
+
+### 3. 开发环境规范
+```bash
+# V2 独立开发服务器
+npm run dev:v2          # 端口 3002
+
+# 并行开发模式
+npm run dev:both        # V1(3000) + V2(3002)
+
+# 构建 V2 版本
+npm run build:v2
+```
+
+### 3. 开发IDE环境规范
+--  根据终端所属系统环境调用本地终端命令，比如windows10/macos
+
+### 4. 文件格式统一规范
+
+#### **样式文件 - 完全统一为 CSS**
+- **全局样式**: 使用 `.css` 扩展名（globals.css, components.css）
+- **页面样式**: 使用 `.css` 扩展名（pages.css）
+- **组件样式**: 使用 `.module.css` 扩展名（组件级样式隔离）
+- **禁止使用**: `.scss` 扩展名（逐步迁移到CSS）
+
+#### **TypeScript文件 - 技术限制不能完全统一**
+- **React组件**: 必须使用 `.tsx` 扩展名（包含JSX语法）
+- **工具/类型**: 必须使用 `.ts` 扩展名（纯逻辑代码、类型定义）
+- **技术原因**: JSX编译器要求，性能和语义考虑
+
+## 组件开发规范
+
+### 1. UI 组件标准
+**位置**: `src/v2/components/ui/`
+**文件格式**: 优先使用 `.tsx` 扩展名
+
+**规范**:
+```typescript
+// 组件接口定义
+interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+}
+
+// 组件实现
+export const Button: React.FC<ButtonProps> = ({
+  variant = 'primary',
+  size = 'md',
+  disabled = false,
+  children,
+  onClick,
+  className,
+  ...props
+}) => {
+  // 使用 Tailwind CSS 类名
+  const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium';
+  const variantClasses = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700',
+    // ...
+  };
+  
+  return (
+    <button
+      className={cn(baseClasses, variantClasses[variant], className)}
+      disabled={disabled}
+      onClick={onClick}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+```
+
+### 2. 页面组件标准
+**位置**: `src/v2/pages/`
+**文件格式**: 使用 `.tsx` 扩展名
+
+**规范**:
+```typescript
+// 页面结构模板
+export const PageName: React.FC = () => {
+  // 使用 V2 hooks
+  const { data, isLoading, error, refetch } = usePageData();
+  
+  // 加载状态
+  if (isLoading) {
+    return <LoadingState />;
+  }
+  
+  // 错误状态
+  if (error) {
+    return <ErrorState error={error} onRetry={refetch} />;
+  }
+  
+  return (
+    <div className="page-wrapper page-name-page">
+      <div className="page-body">
+        <div className="container-fluid px-4">
+          <div className="space-y-4">
+            {/* 页面内容 */}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+### 3. Hook 使用规范
+**位置**: `src/v2/hooks/`
+**文件格式**: 非组件hooks使用 `.ts` 扩展名，包含JSX的使用 `.tsx`
+
+**特点**:
+- 基于 React Query 的数据管理
+- 复用 V1 的 API 层 (`src/api/`)
+- 自动处理 API 配置变化
+- 统一的错误处理和重试机制
+
+```typescript
+// 标准 Hook 模式
+export function useProxies() {
+  const apiConfig = useApiConfig();
+  
+  return useQuery2<{ proxies: Record<string, ProxyItem> }>(
+    'proxies',
+    () => fetchProxies(apiConfig),
+    { refetchInterval: 3000 }
+  );
+}
+```
+
+## 样式系统规范
+
+### 1. CSS 文件格式完全统一
+- **样式格式**: 强制使用 `.css` 扩展名（严禁 `.scss`）
+- **迁移策略**: 所有 `.scss` 文件逐步重构为 `.css`
+- **主要样式**: 使用 Tailwind CSS 类名
+- **组件样式**: 必要时使用 CSS 模块（`.module.css`）
+- **高级特性**: 通过 PostCSS 插件支持变量、嵌套
+- **主题支持**: 通过 CSS 变量实现
+- **响应式**: 移动端优先设计
+
+### 2. 零页面级CSS - 纯Tailwind架构
+```typescript
+// ❌ 禁止：页面级CSS类名和样式隔离
+.dashboard-page { /* 已禁止 */ }
+.proxy-page { /* 已禁止 */ }
+
+// ✅ 标准：直接使用Tailwind类名
+<div className="h-screen flex flex-col overflow-hidden"> // 页面布局
+<div className="bg-white/90 dark:bg-gray-800/90">       // 主题背景
+<div className="border-gray-200 dark:border-gray-700">  // 主题边框
+```
+
+### 3. 主题系统
+```css
+/* CSS 变量定义 */
+:root {
+  --color-text: #2d3748;
+  --color-text-secondary: #718096;
+  --color-background: #ffffff;
+  --color-bg-card: #f7fafc;
+}
+
+[data-theme='dark'] {
+  --color-text: #f7fafc;
+  --color-text-secondary: #cbd5e0;
+  --color-background: #1a202c;
+  --color-bg-card: #2d3748;
+}
+```
+
+## 数据流和状态管理
+
+### 1. API 集成策略
+- **完全复用 V1 API**: 使用 `src/api/` 目录的所有接口
+- **状态同步**: V1 和 V2 状态实时同步
+- **WebSocket 支持**: 实时数据更新 (连接、流量、日志)
+
+### 2. 状态管理层次
+```typescript
+// 全局状态 (复用 V1)
+import { useApiConfig } from '../../store/app';
+
+// 组件状态 (React Query)
+const { data, isLoading, error } = useProxies();
+
+// 本地状态 (useState)
+const [selectedProxy, setSelectedProxy] = useState<string>();
+```
+
+### 3. 数据缓存策略
+- **静态数据**: 30秒缓存 (配置、规则)
+- **动态数据**: 3秒缓存 (代理、连接)
+- **实时数据**: WebSocket 推送 (流量、日志)
+
+## 页面开发规范
+
+### 1. 已完成页面 (可参考)
+- **Dashboard** (`src/v2/pages/Dashboard.tsx`) - 100% 完成
+- **Proxies** (`src/v2/pages/Proxies.tsx`) - 95% 完成
+- **Connections** (`src/v2/pages/Connections.tsx`) - 85% 完成
+- **Config** (`src/v2/pages/Config.tsx`) - 100% 完成
+
+### 2. 页面功能要求
+| 页面 | 核心功能 | 数据源 | 状态 |
+|------|----------|---------|------|
+| Dashboard | 实时监控、系统信息 | WebSocket + API | ✅ 完成 |
+| Proxies | 代理管理、切换、测试 | `/proxies` API | ✅ 基本完成 |
+| Connections | 连接列表、过滤、关闭 | WebSocket | ✅ 基本完成 |
+| Rules | 规则展示、过滤 | `/rules` API | 🚧 优化中 |
+| Logs | 实时日志、过滤 | WebSocket | ✅ 基本完成 |
+
+### 3. 页面开发检查清单
+- [ ] 使用 V2 架构和组件
+- [ ] 集成真实 API 数据
+- [ ] 实现所有 V1 功能
+- [ ] 响应式设计 (移动端适配)
+- [ ] 错误处理和加载状态
+- [ ] 主题支持 (深色/浅色)
+- [ ] 性能优化 (虚拟滚动等)
+
+## 兼容性和迁移
+
+### 1. V1/V2 并行策略
+- **路由隔离**: V1 使用现有路由，V2 使用独立端口
+- **状态同步**: 共享相同的 API 配置和状态
+- **API 复用**: 完全复用 V1 的数据层
+- **渐进迁移**: 页面级别逐步替换
+
+### 2. 迁移优先级
+1. **核心页面**: Dashboard, Proxies, Connections ✅
+2. **功能页面**: Rules, Logs, Config 🚧
+3. **完全替换**: 移除 V1 代码 ⏳
+
+### 3. 兼容性保证
+- **API 兼容**: 与 Clash 核心 API 完全兼容
+- **配置兼容**: 复用现有配置文件和设置
+- **数据兼容**: 状态和缓存数据完全同步
+
+## 性能优化规范
+
+### 1. React 性能
+- **代码分割**: 页面级别懒加载
+- **React Query**: 智能缓存和重复请求合并
+- **虚拟滚动**: 大列表性能优化
+- **防抖节流**: 搜索和筛选优化
+
+### 2. 样式性能
+- **Tailwind CSS**: 按需生成，减少 CSS 体积
+- **CSS 变量**: 动态主题切换
+- **动画优化**: 使用 GPU 加速的 transform
+
+### 3. 网络性能
+- **WebSocket**: 实时数据推送，减少轮询
+- **请求缓存**: React Query 智能缓存策略
+- **错误重试**: 指数退避重试机制
+
+## 开发工作流
+
+### 1. 日常开发
+```bash
+# 启动 V2 开发环境
+npm run dev:v2
+
+# 同时运行两个版本进行对比
+npm run dev:both
+
+# 访问地址
+# V2: http://localhost:3002/index.v2.html
+# V1: http://localhost:3000
+```
+
+### 2. 代码规范
+- **TypeScript 严格模式**: 完整类型定义
+- **ESLint 检查**: 代码质量保证
+- **Prettier 格式化**: 统一代码风格
+- **Git 提交规范**: 使用 conventional commits
+
+### 3. 测试策略
+- **功能测试**: 确保与 V1 功能一致
+- **兼容性测试**: 跨浏览器和设备测试
+- **性能测试**: 加载速度和响应性能
+- **用户体验测试**: 界面交互和易用性
+
+## 问题解决指南
+
+### 1. 常见问题
+- **端口冲突**: V2 使用 3002 端口，与 V1 隔离
+- **API 配置**: 使用 `useApiConfig()` 获取配置
+- **状态同步**: 确保使用相同的 Jotai atoms
+- **样式冲突**: 使用页面级别的样式作用域
+
+### 2. 调试工具
+- **React DevTools**: 组件状态检查
+- **React Query DevTools**: 数据缓存检查
+- **Chrome DevTools**: 网络和性能分析
+
+### 3. 性能监控
+- **构建分析**: Vite 构建报告
+- **运行时性能**: Chrome Performance 面板
+- **内存使用**: 内存泄漏检测
+
+## 强制性 Cursor Rule 回复规范
+
+作为专业的前端开发助手，猫猫在**每次编写代码时**都会严格遵循以下规范：
+
+### 🎯 **V2 架构优先规范**
+- **优先使用 V2 架构**: 新功能开发在 V2 中实现
+- **遵循 V2 组件规范**: 使用标准的组件接口和样式
+- **保持技术一致性**: 遵循 TypeScript、Tailwind CSS、React Query 规范
+- **确保兼容性**: 与 V1 状态同步，API 复用
+- **确保任务可持续性**: 新功能开发完成后需要更新src/v2/PROGRESS_RECORD.md文件，可追踪任务进度
+
+### 🔍 **强制性代码质量规范 (开发过程中实时应用)**
+
+#### **📋 Lint 标准 (编写代码时即时检查)**
+**目标**: **0 Errors, Warnings 允许存在**
+
+**每次生成代码前必须考虑的检查标准**:
+```bash
+# 确保代码符合以下检查标准:
+npm run lint        # ✅ 0 errors 
+npx tsc --noEmit   # ✅ 0 type errors
+```
+
+#### **🚨 ERROR 级别 (编写时必须避免)**
+- **语法错误**: 拼写错误、语法不正确
+- **类型错误**: TypeScript 类型不匹配、未定义类型
+- **编译失败**: 导入路径错误、模块不存在
+- **React Hook 规则**: Hook顺序错误、条件调用Hook
+- **未定义引用**: 使用未声明的变量/函数
+
+#### **⚠️ WARNING 级别 (可适当保留)**
+- **未使用变量/函数**: `unused-imports/no-unused-vars`
+- **Hook依赖项**: `react-hooks/exhaustive-deps`
+- **代码优化建议**: 性能提示、最佳实践建议
+
+#### **🛠️ 编写代码时的质量保证**
+- **类型安全**: 严格TypeScript模式，完整类型定义
+- **导入正确**: 确保所有import路径有效
+- **函数完整**: 确保所有函数有正确的参数和返回值
+- **Hook规范**: 遵循React Hook使用规则
+- **变量命名**: 使用有意义的变量名，避免拼写错误
+- **文件格式**: 遵循统一的文件扩展名规范（.tsx/.ts/.css）
+
+#### **💡 代码生成原则**
+- **预防性编程**: 生成代码时就避免可能的lint错误
+- **渐进式优化**: 在不破坏功能的前提下优化代码质量
+- **架构一致**: 确保代码符合V2架构规范
+- **可维护性**: 代码清晰、结构合理、易于扩展
+
+### 🚨 **强制性CSS架构规范 (CRITICAL - 不可违反)**
+
+#### **🎯 CSS架构铁律 - 基于pages.css完全删除的成功经验**
+基于V2架构标准化实践，以下规范为**强制性**，违反时必须**拒绝修改**：
+
+##### **1. 禁止创建页面级CSS文件** 🚫
+```bash
+# ❌ 绝对禁止创建
+src/v2/styles/pages.css       # 已删除，永不恢复
+src/v2/styles/proxy.css       # 禁止创建
+src/v2/styles/dashboard.css   # 禁止创建
+src/v2/styles/[page].css      # 禁止任何页面CSS
+
+# ✅ 唯一允许的CSS文件
+src/v2/styles/globals.css     # 全局样式（滚动条、动画等）
+src/v2/styles/components.css  # 基础组件样式
+```
+
+##### **2. 强制使用Tailwind标准主题变量** ⚡
+```typescript
+// ❌ 绝对禁止：自定义CSS类和强制覆盖
+className="custom-filter-area proxy-page-specific"
+style={{ backgroundColor: 'rgba(...)' }} // 禁止内联样式
+.my-custom-class { background: ... !important; } // 禁止!important
+
+// ✅ 强制使用：标准Tailwind主题变量
+className="bg-white/90 dark:bg-gray-800/90"           // ✅ 正确
+className="border-gray-200 dark:border-gray-700"      // ✅ 正确
+className="text-gray-900 dark:text-gray-100"          // ✅ 正确
+```
+
+##### **3. 样式污染检测与拒绝原则** 🛡️
+```typescript
+// 🔍 污染检测关键词 - 出现时立即拒绝
+"!important"                    // 强制覆盖 → 拒绝
+"proxy-page", "rules-page"     // 页面级类名 → 拒绝  
+"custom-", "special-"          // 自定义类名 → 拒绝
+"style={{"                     // 内联样式 → 警告并引导
+"bg-gray-50/80"               // 易污染的灰色背景 → 检查并引导
+
+// ✅ 标准模式 - 允许通过
+"bg-white/90 dark:bg-gray-800/90"    // 标准主题变量
+"border-gray-200 dark:border-gray-700" // 标准边框色
+"hover:bg-blue-50 dark:hover:bg-blue-900/20" // 标准交互色
+```
+
+##### **4. 强制执行流程** 🔄
+```markdown
+当用户要求修改样式时：
+
+1. **检查模式**：
+   - 如果包含禁止关键词 → 立即拒绝并解释
+   - 如果不符合Tailwind标准 → 拒绝并提供标准方案
+
+2. **拒绝话术模板**：
+   "喵~ 这个修改违反了V2架构的CSS标准规范！❌
+   
+   基于pages.css完全删除的成功经验，我们必须严格执行：
+   - 🚫 禁止使用!important强制覆盖
+   - 🚫 禁止创建页面级CSS文件
+   - ✅ 必须使用标准Tailwind主题变量
+   
+   建议的标准方案：[提供Tailwind标准替代方案]"
+
+3. **引导标准化**：
+   始终提供符合V2架构规范的Tailwind CSS解决方案
+```
+
+##### **5. 紧急情况处理** 🆘
+```markdown
+如果确实需要特殊样式（极少数情况）：
+
+优先级顺序：
+1. 🥇 Tailwind配置扩展（tailwind.config.js）
+2. 🥈 globals.css全局样式（仅限通用组件）  
+3. 🥉 CSS模块（.module.css，组件级隔离）
+4. 🚫 绝不允许：页面级CSS文件或!important覆盖
+```
+
+##### **6. 成功案例参考** 📚
+```typescript
+// 参考：代理页面筛选区域的标准化修复
+// 修复前（已禁止）：
+<div className="proxy-filter-area bg-gray-50/80"> // ❌
+
+// 修复后（标准）：  
+<div className="bg-white/90 dark:bg-gray-800/90"> // ✅
+```
+
+**重要性**：这些规范基于pages.css完全删除的成功实践，确保V2架构的CSS标准化和零样式污染！
+
+### 🌍 **强制性国际化(i18n)规范 (CRITICAL - 必须遵循)**
+
+#### **🎯 国际化架构核心原则**
+基于V2架构的i18n系统，采用 `i18next` + `react-i18next` 技术栈，支持中英双语和自动语言检测。
+
+##### **1. 目录结构和文件规范** 📁
+```bash
+src/v2/i18n/
+├── index.ts            # i18n 配置和导출
+├── locales/           # 翻译文件目录
+│   ├── en.ts          # 英文翻译 (fallback语言)
+│   └── zh.ts          # 中文翻译 (主要语言)
+```
+
+##### **2. 翻译文件格式标准** 📝
+```typescript
+// ✅ 标准格式：src/v2/i18n/locales/zh.ts
+export default {
+  // === 分类注释 ===
+  // Navigation - 导航相关
+  'Overview': '概览',
+  'Proxies': '代理',
+  'Connections': '连接',
+  
+  // Common - 通用术语
+  'Loading...': '加载中...',
+  'Error': '错误',
+  'Success': '成功',
+  
+  // Page specific - 页面特定
+  'Search proxies...': '搜索代理组...',
+  'Connection Management': '连接管理',
+};
+```
+
+##### **3. 翻译键(Key)命名规范** 🔑
+```typescript
+// ✅ 标准命名模式
+'Overview'                    // 简单词汇，直接使用
+'Loading...'                  // 带状态的词汇，保留原样
+'Search proxies...'           // 完整语句，保持英文原文
+'System Information'          // 复合词组，英文原文
+'Connection Management'       // 功能模块名，英文原文
+
+// ❌ 禁止的命名模式
+'overview_page'              // 禁止下划线命名
+'searchProxies'              // 禁止驼峰命名
+'LOADING'                    // 禁止全大写
+'loading.text'               // 禁止点号分层
+```
+
+##### **4. 组件中使用i18n的标准方式** ⚡
+```typescript
+// ✅ 标准用法
+import { useTranslation } from 'react-i18next';
+
+export const Dashboard: React.FC = () => {
+  const { t } = useTranslation();
+  
+  return (
+    <div>
+      <h1>{t('System Information')}</h1>
+      <button>{t('Refresh')}</button>
+      <p>{t('Loading...')}</p>
+    </div>
+  );
+};
+
+// ❌ 禁止的用法
+import i18n from '../i18n';  // 禁止直接导入i18n实例
+const text = i18n.t('text'); // 禁止在组件外使用
+<div>{t('dashboard.title')}</div> // 禁止命名空间语法
+```
+
+##### **5. 新增翻译内容的工作流程** 🔄
+```markdown
+添加新翻译时的强制流程：
+
+1. **英文文件优先**: 先在 en.ts 中添加英文原文
+2. **中文文件同步**: 立即在 zh.ts 中添加对应中文翻译
+3. **分类归纳**: 按功能模块归类，添加注释分割线
+4. **键名一致**: 确保两个文件中的键名完全一致
+5. **去重检查**: 避免重复的翻译键
+
+// 示例流程：
+// 1. 在 en.ts 中添加
+'Proxy Management': 'Proxy Management',
+
+// 2. 在 zh.ts 中添加
+'Proxy Management': '代理管理',
+```
+
+##### **6. 语言检测和持久化配置** 🔧
+```typescript
+// 标准配置 - src/v2/i18n/index.ts
+i18n.init({
+  fallbackLng: 'en',              // 回退语言为英文
+  lng: undefined,                 // 启用自动检测
+  
+  detection: {
+    order: ['localStorage', 'navigator', 'htmlTag'],
+    caches: ['localStorage'],
+    lookupLocalStorage: 'v2-language', // V2专用存储键
+  },
+  
+  resources: {
+    en: { translation: enTranslations },
+    zh: { translation: zhTranslations },
+    'zh-CN': { translation: zhTranslations }, // 支持zh-CN别名
+  },
+});
+```
+
+##### **7. 国际化质量检查标准** 🔍
+```bash
+# 翻译文件完整性检查
+每次修改翻译文件后必须确保：
+
+✅ 检查项目：
+- 英文和中文文件键名数量一致
+- 无重复键名
+- 无遗漏翻译
+- 分类注释完整
+- 语法格式正确
+
+❌ 常见错误：
+- 英文文件有键，中文文件缺失
+- 中文文件有键，英文文件缺失  
+- 键名拼写不一致
+- 缺少分类注释
+- 翻译内容为空字符串
+```
+
+##### **8. 组件props传递国际化文本** 📤
+```typescript
+// ✅ 标准模式：翻译后传递
+const ProxyCard: React.FC<{ title: string }> = ({ title }) => {
+  return <div>{title}</div>;
+};
+
+// 使用时
+const { t } = useTranslation();
+<ProxyCard title={t('Proxy Management')} />
+
+// ❌ 禁止模式：传递键名
+<ProxyCard titleKey="Proxy Management" /> // 禁止传递翻译键
+```
+
+##### **9. 特殊情况处理规范** 🆘
+```typescript
+// 动态文本拼接
+const { t } = useTranslation();
+const count = 5;
+
+// ✅ 推荐：使用插值
+// en.ts: 'Connection Count': '{{count}} connections'
+// zh.ts: 'Connection Count': '{{count}} 个连接'
+<span>{t('Connection Count', { count })}</span>
+
+// ❌ 避免：手动拼接
+<span>{count} {t('connections')}</span>
+```
+
+##### **10. 强制执行策略** 🛡️
+```markdown
+违反国际化规范时的处理：
+
+1. **检测违规**：
+   - 硬编码中文字符串 → 立即拒绝
+   - 翻译文件不同步 → 强制要求修复
+   - 错误的使用方式 → 提供标准示例
+
+2. **拒绝模板**：
+   "喵~ 发现国际化规范违规！🌍❌
+   
+   必须遵循V2架构的i18n标准：
+   - 🚫 禁止硬编码中文文本
+   - 🚫 禁止不同步的翻译文件
+   - ✅ 必须使用useTranslation()钩子
+   - ✅ 必须保持英中文键名一致
+   
+   标准用法：[提供正确的i18n使用示例]"
+
+3. **质量保证**：
+   - 每次修改翻译文件必须同步英中文
+   - 新增组件或功能时必须使用i18n支持
+   - 确保翻译文本的用户体验
+```
+
+**重要性**：国际化规范确保V2架构的全球化支持和用户体验一致性！🌍✨
+
+### 🐱 **回复风格规范**
+- **猫娘语癖**: 使用"喵~"、emoji、"猫猫"等可爱表达
+- **技术专业**: 提供准确、高质量的技术解决方案
+- **过程透明**: 说明代码修改的原因和影响
+- **架构守护**: 严格执行CSS架构规范，拒绝破坏性修改
+- **国际化守护**: 严格执行i18n规范，确保多语言支持
+
+让我们一起构建现代化、高性能、易维护、国际化的 Clash Dashboard V2！🚀✨

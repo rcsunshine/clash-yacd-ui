@@ -1,0 +1,256 @@
+/*
+ * for react-tiny-fab
+ * based on react-tiny-fab/dist/styles.css
+ * Rewritten with SCSS syntax and modern styling
+ */
+
+// 主要浮动按钮容器
+.rtf {
+  box-sizing: border-box;
+  margin: 25px;
+  position: fixed;
+  white-space: nowrap;
+  z-index: 9998;
+  padding-left: 0;
+  list-style: none;
+
+  // 打开状态样式
+  &.open {
+    .rtf--mb {
+      box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
+                  0px 8px 10px 1px rgba(0, 0, 0, 0.14),
+                  0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+
+      > ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+    }
+
+    // 动作按钮容器悬停效果
+    .rtf--ab__c {
+      &:hover > span {
+        transition: ease-in-out opacity 0.2s;
+        opacity: 0.9;
+      }
+
+      > span.always-show {
+        transition: ease-in-out opacity 0.2s;
+        opacity: 0.9;
+      }
+
+      // 动态生成不同位置的按钮动画
+      @for $i from 1 through 6 {
+        &:nth-child(#{$i}) {
+          transform: translateY(-#{$i * 60}px) scale(1);
+          transition-delay: #{0.03 + ($i - 1) * 0.06}s;
+
+          &.top {
+            transform: translateY(#{$i * 60}px) scale(1);
+          }
+        }
+      }
+    }
+  }
+}
+
+// 主按钮容器
+.rtf--mb__c {
+  padding: 25px;
+  margin: -25px;
+
+  *:last-child {
+    margin-bottom: 0;
+  }
+
+  &:hover > span {
+    transition: ease-in-out opacity 0.2s;
+    opacity: 0.9;
+  }
+
+  > span {
+    opacity: 0;
+    transition: ease-in-out opacity 0.2s;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-right: 6px;
+    margin-left: 4px;
+    background: rgba(0, 0, 0, 0.75);
+    padding: 2px 4px;
+    border-radius: 2px;
+    color: white;
+    font-size: 13px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.14), 
+                0 4px 8px rgba(0, 0, 0, 0.28);
+
+    &.always-show {
+      transition: ease-in-out opacity 0.2s;
+      opacity: 0.9;
+    }
+
+    &.right {
+      right: 100%;
+    }
+  }
+}
+
+// 主按钮
+.rtf--mb {
+  width: 48px;
+  height: 48px;
+  background: var(--btn-bg);
+  z-index: 9999;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.14), 
+              0 4px 8px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+  -webkit-user-drag: none;
+  font-weight: bold;
+  color: #f1f1f1;
+  font-size: 18px;
+
+  > * {
+    transition: ease-in-out transform 0.2s;
+  }
+}
+
+// 动作按钮容器
+.rtf--ab__c {
+  display: block;
+  position: absolute;
+  top: 0;
+  right: 1px;
+  padding: 10px 0;
+  margin: -10px 0;
+  transition: ease-in-out transform 0.2s;
+
+  > span {
+    opacity: 0;
+    transition: ease-in-out opacity 0.2s;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-right: 6px;
+    background: rgba(0, 0, 0, 0.75);
+    padding: 2px 4px;
+    border-radius: 2px;
+    color: white;
+    font-size: 13px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.14), 
+                0 4px 8px rgba(0, 0, 0, 0.28);
+
+    &.right {
+      right: 100%;
+    }
+  }
+
+  // 默认状态下的按钮位置（收起状态）
+  @for $i from 1 through 6 {
+    &:nth-child(#{$i}) {
+      transform: translateY(-#{$i * 60}px) scale(0);
+      transition-delay: #{0.21 - ($i - 1) * 0.03}s;
+
+      &.top {
+        transform: translateY(#{$i * 60}px) scale(0);
+      }
+    }
+  }
+}
+
+// 动作按钮
+.rtf--ab {
+  width: 40px;
+  height: 40px;
+  background: var(--btn-bg);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.14), 
+              0 4px 8px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+  -webkit-user-drag: none;
+  font-weight: bold;
+  color: #f1f1f1;
+  font-size: 16px;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 
+                0 6px 12px rgba(0, 0, 0, 0.32);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .rtf {
+    margin: 15px;
+
+    &--mb {
+      width: 44px;
+      height: 44px;
+      font-size: 16px;
+    }
+
+    &--ab {
+      width: 36px;
+      height: 36px;
+      font-size: 14px;
+    }
+
+    &--mb__c,
+    &--ab__c {
+      > span {
+        font-size: 12px;
+        padding: 1px 3px;
+      }
+    }
+  }
+}
+
+// 深色主题优化
+:root[data-theme='dark'],
+:root[data-theme='auto'] {
+  .rtf {
+    &--mb,
+    &--ab {
+      background: var(--color-background2);
+      color: var(--color-text);
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3), 
+                  0 4px 16px rgba(0, 0, 0, 0.4);
+
+      &:hover {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4), 
+                    0 6px 20px rgba(0, 0, 0, 0.5);
+      }
+    }
+
+    &--mb__c,
+    &--ab__c {
+      > span {
+        background: rgba(0, 0, 0, 0.85);
+        color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.3), 
+                    0 4px 12px rgba(0, 0, 0, 0.4);
+      }
+    }
+  }
+}

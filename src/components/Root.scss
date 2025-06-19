@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import '../styles/tabler-theme.scss';
+
 .border-left,
 .border-top,
 .border-bottom {
@@ -57,6 +59,20 @@
   --font-normal: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Apple Color Emoji, Twemoji Country Flags, Segoe UI Emoji, Segoe UI Symbol, 'PingFang SC', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
   --color-focus-blue: #1a73e8;
   --btn-bg: #387cec;
+  
+  // 响应式布局变量
+  --sidebar-width: 280px;
+  --sidebar-width-collapsed: 80px;
+  --content-max-width: none;
+  --content-padding: 1.5rem;
+  
+  // 断点变量
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+  --breakpoint-xxl: 1400px;
+  --breakpoint-xxxl: 1600px;
 }
 
 body {
@@ -67,6 +83,149 @@ body {
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
+}
+
+// 优化的页面布局
+.page {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-background);
+  
+  // 响应式布局
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+// 侧边栏响应式优化
+.navbar-vertical {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  transition: width 0.3s ease;
+  
+  @media (max-width: 1200px) {
+    --sidebar-width: 240px;
+  }
+  
+  @media (max-width: 992px) {
+    --sidebar-width: 220px;
+  }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: auto;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    border-top: 1px solid var(--color-separator);
+    border-right: none;
+  }
+}
+
+// 主内容区域优化
+.page-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; // 防止flex子元素溢出
+  
+  @media (max-width: 768px) {
+    padding-bottom: 80px; // 为底部导航栏留出空间
+  }
+}
+
+.page-content {
+  flex: 1;
+  padding: 0;
+  overflow-x: auto;
+}
+
+// 容器响应式优化
+.container-xl {
+  max-width: none !important;
+  padding-left: var(--content-padding) !important;
+  padding-right: var(--content-padding) !important;
+  
+  // 大屏幕优化
+  @media (min-width: 1600px) {
+    --content-padding: 2rem;
+  }
+  
+  @media (min-width: 1920px) {
+    --content-padding: 2.5rem;
+  }
+  
+  @media (min-width: 2560px) {
+    --content-padding: 3rem;
+  }
+  
+  // 小屏幕优化
+  @media (max-width: 768px) {
+    --content-padding: 1rem;
+  }
+  
+  @media (max-width: 576px) {
+    --content-padding: 0.75rem;
+  }
+}
+
+// 页面头部优化
+.page-header {
+  padding: 1.5rem 0 1rem 0;
+  border-bottom: 1px solid var(--color-separator);
+  background: var(--color-background);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  
+  @media (max-width: 768px) {
+    padding: 1rem 0 0.75rem 0;
+    position: static;
+  }
+}
+
+// 页面主体优化
+.page-body {
+  flex: 1;
+  padding: 1.5rem 0;
+  
+  @media (max-width: 768px) {
+    padding: 1rem 0;
+  }
+}
+
+// 卡片布局优化
+.card {
+  margin-bottom: 1.5rem;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+    border-radius: 8px !important;
+  }
+}
+
+// 网格布局优化
+.row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  
+  > .col,
+  > [class*="col-"] {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    
+    @media (max-width: 768px) {
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+    }
+  }
 }
 
 @mixin dark {
@@ -87,7 +246,8 @@ body {
   --color-btn-bg: #232323;
   --color-btn-fg: #bebebe;
   --color-bg-proxy: #303030;
-  --color-row-odd: #333;
+  --color-row-odd: #2a2a2a;
+  --color-row-hover: #323232;
   --bg-log-info-tag: #454545;
   --bg-modal: #1f1f20;
   --bg-near-transparent: rgba(255, 255, 255, 0.1);
@@ -116,7 +276,8 @@ body {
   --color-btn-bg: #f4f4f4;
   --color-btn-fg: #101010;
   --color-bg-proxy: #fafafa;
-  --color-row-odd: #e1e1e1;
+  --color-row-odd: #f5f5f5;
+  --color-row-hover: #f0f0f0;
   --bg-log-info-tag: #888;
   --bg-modal: #fbfbfb;
   --bg-near-transparent: rgba(0, 0, 0, 0.1);
@@ -181,6 +342,10 @@ body {
   z-index: 3;
   right: 20px;
   bottom: 20px;
+  
+  @media (max-width: 768px) {
+    bottom: 100px; // 避免与底部导航栏重叠
+  }
 }
 
 .visually-hidden {
