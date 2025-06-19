@@ -345,6 +345,27 @@
 - 确保用户常用的页面和组件都有良好的多语言支持
 - V2架构的国际化覆盖率进一步提升
 
+### 🔧 后续发现和修复（同日）
+用户发现搜索语法帮助提示中的示例代码没有翻译：
+- **问题**：组合搜索示例代码 `type:DOMAIN proxy:DIRECT google` 硬编码
+- **修复**：添加 `'Combined Search Example'` 翻译键，保持示例代码的一致性
+- **文件**：修改 Rules.tsx 和两个翻译文件
+
+### 🔧 搜索提示文本翻译修复（同日）
+用户发现Rules页面搜索提示中的硬编码中文：
+- **问题**：useRulesSearch hook中的搜索提示硬编码中文
+  - "搜索语法: type:DOMAIN payload:\"google.com\""
+  - "可用类型: ..."
+  - "可用代理: ..."
+- **修复**：
+  - 在 useRulesSearch hook 中导入 useTranslation
+  - 替换硬编码文本为翻译键：t('Search Syntax')、t('Available Types')、t('Available Proxies')
+  - 添加对应的英中文翻译
+- **文件**：
+  - `src/v2/hooks/useRulesSearch.ts` - 修改搜索提示生成逻辑
+  - `src/v2/i18n/locales/en.ts` - 添加英文翻译
+  - `src/v2/i18n/locales/zh.ts` - 添加中文翻译
+
 ---
 
 ## 📋 2025/1/3 - Rules页面剩余未翻译内容修复
@@ -386,6 +407,12 @@
 - 规则提供者的类型、行为、载体都正确显示中文
 - 规则筛选器中的类型选项也显示为中文
 - Rules页面实现了完整的国际化支持
+
+### 🔧 后续发现和修复（同日）
+用户发现搜索语法帮助提示中的示例代码没有翻译：
+- **问题**：组合搜索示例代码 `type:DOMAIN proxy:DIRECT google` 硬编码
+- **修复**：添加 `'Combined Search Example'` 翻译键，保持示例代码的一致性
+- **文件**：修改 Rules.tsx 和两个翻译文件
 
 ---
 

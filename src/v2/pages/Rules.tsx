@@ -334,7 +334,7 @@ const RulesContent: React.FC = () => {
                             <div>
                               <div className="font-medium mb-1">{t('Combined Search')}:</div>
                               <div className="pl-2">
-                                <code>type:DOMAIN proxy:DIRECT google</code>
+                                <code>{t('Combined Search Example')}</code>
                               </div>
                             </div>
                           </div>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Rule, RuleType } from '../types/api';
 
@@ -111,6 +112,7 @@ export function useRulesSearch(
     caseInsensitive = true,
   } = options;
   
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<RuleType | 'all'>('all');
   
@@ -122,11 +124,11 @@ export function useRulesSearch(
     const proxies = [...new Set(rules.map(rule => rule.proxy))];
     
     return [
-      '搜索语法: type:DOMAIN payload:"google.com"',
-      `可用类型: ${types.slice(0, 3).join(', ')}${types.length > 3 ? '...' : ''}`,
-      `可用代理: ${proxies.slice(0, 3).join(', ')}${proxies.length > 3 ? '...' : ''}`,
+      `${t('Search Syntax')}: type:DOMAIN payload:"google.com"`,
+      `${t('Available Types')}: ${types.slice(0, 3).join(', ')}${types.length > 3 ? '...' : ''}`,
+      `${t('Available Proxies')}: ${proxies.slice(0, 3).join(', ')}${proxies.length > 3 ? '...' : ''}`,
     ];
-  }, [rules]);
+  }, [rules, t]);
   
   // 过滤规则
   const filteredRules = useMemo(() => {
