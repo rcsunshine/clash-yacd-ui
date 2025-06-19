@@ -262,9 +262,9 @@ export const APIConfig: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-theme hidden lg:block">API 配置</h1>
+            <h1 className="text-xl font-bold text-theme hidden lg:block">{t('API Configuration')}</h1>
             <p className="text-sm text-theme-secondary">
-              管理 Clash API 连接和多配置切换
+              {t('Manage your Clash API connections')}
             </p>
           </div>
         </div>
@@ -279,13 +279,13 @@ export const APIConfig: React.FC = () => {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {testingCurrent ? '测试中...' : '测试连接'}
+            {testingCurrent ? t('Testing...') : t('Test Connection')}
           </Button>
           <Button variant="outline" size="sm" className="text-sm" onClick={() => window.location.reload()}>
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            刷新
+            {t('Refresh')}
           </Button>
         </div>
       </div>

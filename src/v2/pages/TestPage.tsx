@@ -2,7 +2,6 @@ import { useAtom } from 'jotai';
 import React, { useEffect,useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { APIConfig } from '../components/APIConfig';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardFooter,CardHeader } from '../components/ui/Card';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
@@ -91,7 +90,6 @@ export const TestPage: React.FC = () => {
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
           {t('API Configuration')}
         </h2>
-        <APIConfig />
       </div>
 
       {/* Button Tests */}
