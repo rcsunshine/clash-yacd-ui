@@ -180,6 +180,22 @@ export default {
   'Connection successful': '连接成功',
   'Connection failed': '连接失败',
   'Clash Version': 'Clash 版本',
+  
+  // API Config - Additional test translations
+  'Test failed': '测试失败',
+  'Please enter API address': '请输入API地址',
+  'Connection timeout': '连接超时',
+  'Network error': '网络错误',
+  'Cannot delete default configuration': '不能删除默认配置',
+  'Are you sure you want to delete this configuration?': '确定要删除这个配置吗？',
+  'Loading API configuration...': '加载API配置中...',
+  'Add New Configuration': '添加新配置',
+  'Edit Configuration': '编辑配置',
+  'API Address': 'API地址',
+  'Leave empty for no password': '留空表示无密码',
+  'Test': '测试',
+  'Request timeout (10 seconds)': '请求超时（10秒）',
+  'Unknown error': '未知错误',
 
   // About
   'About YACD V2': '关于 YACD V2',
@@ -466,7 +482,6 @@ export default {
   // API connection info
   'API Connection Information': 'API 连接信息',
   'Current connected Clash API information': '当前连接的 Clash API 信息',
-  'API Address': 'API 地址',
   'Clash API service address': 'Clash API 服务地址',
   'Authentication Key': '认证密钥',
   'API access key': 'API 访问密钥',
@@ -574,9 +589,6 @@ export default {
   'If using secret, please ensure correct input': '如果使用了 secret，请确保输入正确',
   'Switch': '切换',
   'Testing...': '测试中...',
-  'Add New Configuration': '添加新配置',
-  'Edit Configuration': '编辑配置',
-  'Leave empty for no password': '留空表示无密码',
 
   // 错误边界
   'Application Error': '应用程序错误',
@@ -617,7 +629,6 @@ export default {
   'Loading {{pageName}}...': '正在加载{{pageName}}...',
 
   // UI组件翻译
-  'Loading API configuration...': '正在加载API配置...',
   'Close menu': '关闭菜单',
   'Open menu': '打开菜单',
   'Search...': '搜索...',

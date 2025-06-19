@@ -180,6 +180,22 @@ export default {
   'Connection successful': 'Connection successful',
   'Connection failed': 'Connection failed',
   'Clash Version': 'Clash Version',
+  
+  // API Config - Additional test translations
+  'Test failed': 'Test failed',
+  'Please enter API address': 'Please enter API address',
+  'Connection timeout': 'Connection timeout',
+  'Network error': 'Network error',
+  'Cannot delete default configuration': 'Cannot delete default configuration',
+  'Are you sure you want to delete this configuration?': 'Are you sure you want to delete this configuration?',
+  'Loading API configuration...': 'Loading API configuration...',
+  'Add New Configuration': 'Add New Configuration',
+  'Edit Configuration': 'Edit Configuration',
+  'API Address': 'API Address',
+  'Leave empty for no password': 'Leave empty for no password',
+  'Test': 'Test',
+  'Request timeout (10 seconds)': 'Request timeout (10 seconds)',
+  'Unknown error': 'Unknown error',
 
   // About
   'About YACD V2': 'About YACD V2',
@@ -466,7 +482,6 @@ export default {
   // API connection info
   'API Connection Information': 'API Connection Information',
   'Current connected Clash API information': 'Current connected Clash API information',
-  'API Address': 'API Address',
   'Clash API service address': 'Clash API service address',
   'Authentication Key': 'Authentication Key',
   'API access key': 'API access key',
@@ -574,9 +589,6 @@ export default {
   'If using secret, please ensure correct input': 'If using secret, please ensure correct input',
   'Switch': 'Switch',
   'Testing...': 'Testing...',
-  'Add New Configuration': 'Add New Configuration',
-  'Edit Configuration': 'Edit Configuration',
-  'Leave empty for no password': 'Leave empty for no password',
 
   // Error Boundary
   'Application Error': 'Application Error',
@@ -617,7 +629,6 @@ export default {
   'Loading {{pageName}}...': 'Loading {{pageName}}...',
 
   // UI Component Translations
-  'Loading API configuration...': 'Loading API configuration...',
   'Close menu': 'Close menu',
   'Open menu': 'Open menu',
   'Search...': 'Search...',
