@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useReducer,useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent } from '../components/ui/Card';
+
+import { fetchConfigs2, updateConfigs } from '../../api/configs';
 import { Button } from '../components/ui/Button';
-import { StatusIndicator } from '../components/ui/StatusIndicator';
-import { Select } from '../components/ui/Select';
+import { Card, CardContent } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import { StatusIndicator } from '../components/ui/StatusIndicator';
+import { useLatencyTestUrl, useSystemInfo } from '../hooks/useAPI';
 import { useApiConfig } from '../hooks/useApiConfig';
-import { useLatencyTestUrl } from '../hooks/useAPI';
-import { fetchConfigs, updateConfigs } from '../../api/configs';
 
 const ConfigSection: React.FC<{
   title: string;
@@ -59,6 +60,7 @@ const LATENCY_TEST_PRESETS = [
 export const Config: React.FC = () => {
   const { t } = useTranslation();
   const apiConfig = useApiConfig();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const { latencyTestUrl, setLatencyTestUrl } = useLatencyTestUrl();
   const [selectedPreset, setSelectedPreset] = useState('gstatic');
@@ -82,27 +84,19 @@ export const Config: React.FC = () => {
   // 获取配置数据
   const { data: config, isLoading, error } = useQuery({
     queryKey: ['configs', apiConfig.baseURL],
-    queryFn: () => fetchConfigs(apiConfig),
+    queryFn: () => fetchConfigs2({ queryKey: ['configs', apiConfig] as const }),
     enabled: !!apiConfig.baseURL,
     retry: 1,
   });
 
-  // 获取系统信息
-  const { data: systemInfo, isLoading: systemLoading } = useQuery({
-    queryKey: ['version', apiConfig.baseURL],
-    queryFn: async () => {
-      const response = await fetch(`${apiConfig.baseURL}/version`);
-      if (!response.ok) throw new Error('Failed to fetch version');
-      return response.json();
-    },
-    enabled: !!apiConfig.baseURL,
-    retry: 1,
-  });
+  // 获取系统信息 - 使用V2标准的hook
+  const { data: systemInfo, isLoading: systemLoading } = useSystemInfo();
 
   const handleModeChange = async (newMode: string) => {
     setSaving(true);
     try {
-      await updateConfigs(apiConfig, { mode: newMode });
+      await updateConfigs(apiConfig)({ mode: newMode });
+      queryClient.invalidateQueries({ queryKey: ['configs', apiConfig.baseURL] });
     } catch (err) {
       console.error('Failed to update mode:', err);
     } finally {
@@ -113,7 +107,8 @@ export const Config: React.FC = () => {
   const handleLogLevelChange = async (newLevel: string) => {
     setSaving(true);
     try {
-      await updateConfigs(apiConfig, { 'log-level': newLevel });
+      await updateConfigs(apiConfig)({ 'log-level': newLevel });
+      queryClient.invalidateQueries({ queryKey: ['configs', apiConfig.baseURL] });
     } catch (err) {
       console.error('Failed to update log level:', err);
     } finally {
@@ -124,7 +119,8 @@ export const Config: React.FC = () => {
   const handleAllowLanChange = async (allowLan: boolean) => {
     setSaving(true);
     try {
-      await updateConfigs(apiConfig, { 'allow-lan': allowLan });
+      await updateConfigs(apiConfig)({ 'allow-lan': allowLan });
+      queryClient.invalidateQueries({ queryKey: ['configs', apiConfig.baseURL] });
     } catch (err) {
       console.error('Failed to update allow-lan:', err);
     } finally {
@@ -179,6 +175,18 @@ export const Config: React.FC = () => {
                   </h3>
                   <p className="text-theme-secondary mb-4">{String(error)}</p>
                   <Button onClick={() => window.location.reload()}>{t('Retry')}</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 加载状态显示 */}
+          {isLoading && (
+            <Card>
+              <CardContent>
+                <div className="text-center py-8">
+                  <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p className="text-theme-secondary">{t('Loading...')}</p>
                 </div>
               </CardContent>
             </Card>

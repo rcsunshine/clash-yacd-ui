@@ -268,6 +268,8 @@ export default {
   'Network error occurred': '网络错误',
   'API connection lost': 'API 连接丢失',
   'Reconnecting...': '重新连接中...',
+  'Saving...': '保存中...',
+  '检查连接中...': '检查连接中...',
 
   // Units
   'B': 'B',

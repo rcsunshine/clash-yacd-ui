@@ -267,6 +267,8 @@ export default {
   'Network error occurred': 'Network error occurred',
   'API connection lost': 'API connection lost',
   'Reconnecting...': 'Reconnecting...',
+  'Saving...': 'Saving...',
+  '检查连接中...': 'Checking connection...',
 
   // Units
   'B': 'B',

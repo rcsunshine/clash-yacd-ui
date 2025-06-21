@@ -22,9 +22,14 @@ export async function query(ctx: QueryCtx) {
   const apiConfig = ctx.queryKey[1];
   const { url, init } = getURLAndInit(apiConfig);
 
+  // 修复URL拼接问题：确保baseURL和endpoint之间有正确的斜杠
+  const baseUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+  const endpointPath = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
+  const fullUrl = baseUrl + endpointPath;
+
   let res: Response;
   try {
-    res = await req(url + endpoint, init);
+    res = await req(fullUrl, init);
   } catch (err) {
     handleFetchError(err, { endpoint, apiConfig });
   }
