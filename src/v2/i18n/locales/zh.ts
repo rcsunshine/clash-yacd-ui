@@ -318,6 +318,7 @@ export default {
   'Test completed! Success {{success}}, Failed {{failed}}, Total {{total}} proxy nodes': '测试完成！成功 {{success}} 个，失败 {{failed}} 个，共 {{total}} 个代理节点',
   'Cancelled all proxy tests': '已取消所有代理测试',
   'Test failed, please check network connection or proxy configuration': '测试失败，请检查网络连接或代理配置',
+  'Cancelled proxy "{{proxyName}}" test': '已取消代理 "{{proxyName}}" 的测试',
 
   // Additional Connections page translations (only truly new keys)
   'API Configuration Not Set': 'API 配置未设置',

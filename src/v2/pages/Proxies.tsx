@@ -1,4 +1,4 @@
-import React, { useMemo,useRef,useState } from 'react';
+import React, { useMemo,useRef,useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '../components/ui/Button';
@@ -514,38 +514,71 @@ export const Proxies: React.FC = () => {
   const { t } = useTranslation();
   const { data: proxiesData, isLoading, error, refetch, switchProxy, testDelay } = useProxies();
   const { data: config } = useClashConfig();
+  
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('Natural');
+  const [filterType, setFilterType] = useState('all');
+  const [sortBy, setSortBy] = useState('Natural');
   const [hideUnavailable, setHideUnavailable] = useState(false);
+  
+  // 测速状态管理
   const [testingProxies, setTestingProxies] = useState<Set<string>>(new Set());
   const [testingSingleProxies, setTestingSingleProxies] = useState<Set<string>>(new Set());
   const [testingAllProxies, setTestingAllProxies] = useState(false);
   const [testingAllProxiesNodes, setTestingAllProxiesNodes] = useState<Set<string>>(new Set());
   const [testingGroupProxiesNodes, setTestingGroupProxiesNodes] = useState<Set<string>>(new Set());
   
-  // 使用 useRef 来跟踪取消状态，避免异步循环中状态更新问题
-  const cancelAllTestingRef = useRef(false);
-  
-  // 测速进度状态
+  // 进度显示
+  const [showTestingProgress, setShowTestingProgress] = useState(false);
   const [testingProgress, setTestingProgress] = useState({ current: 0, total: 0 });
   const [testingStats, setTestingStats] = useState({ success: 0, failed: 0 });
-  const [showTestingProgress, setShowTestingProgress] = useState(false);
   
-  // 通知提示状态
-  const [notification, setNotification] = useState<{
-    type: 'success' | 'error' | 'info';
-    message: string;
-    show: boolean;
-  }>({ type: 'info', message: '', show: false });
+  // 通知状态
+  const [notification, setNotification] = useState({ 
+    show: false, 
+    type: 'info' as 'success' | 'error' | 'info', 
+    message: '' 
+  });
+
+  // 取消控制器管理
+  const cancelAllTestingRef = useRef(false);
+  const groupTestControllers = useRef<Map<string, AbortController>>(new Map());
+  const singleTestControllers = useRef<Map<string, AbortController>>(new Map());
+
+  // 清理函数 - 取消所有正在进行的测试
+  const cleanupAllTests = useCallback(() => {
+    // 取消所有组测试
+    groupTestControllers.current.forEach((controller) => {
+      controller.abort();
+    });
+    groupTestControllers.current.clear();
+    
+    // 取消所有单个代理测试
+    singleTestControllers.current.forEach((controller) => {
+      controller.abort();
+    });
+    singleTestControllers.current.clear();
+    
+    // 清理状态
+    setTestingProxies(new Set());
+    setTestingSingleProxies(new Set());
+    setTestingGroupProxiesNodes(new Set());
+    setTestingAllProxiesNodes(new Set());
+  }, []);
+
+  // 组件卸载时清理
+  useEffect(() => {
+    return () => {
+      cleanupAllTests();
+    };
+  }, [cleanupAllTests]);
 
   // 显示通知的辅助函数
-  const showNotification = (type: 'success' | 'error' | 'info', message: string) => {
+  const showNotification = useCallback((type: 'success' | 'error' | 'info', message: string) => {
     setNotification({ type, message, show: true });
     setTimeout(() => {
       setNotification(prev => ({ ...prev, show: false }));
     }, 3000);
-  };
+  }, []);
 
   // 获取排序后的代理组列表
   const sortedGroupNames = useMemo(() => {
@@ -589,59 +622,111 @@ export const Proxies: React.FC = () => {
     }
   };
 
-  // 测试代理组延迟
+  // 测试代理组延迟 - 添加真正的取消支持 + 批量并发测速 + 实时结果刷新
   const handleTestGroupDelay = async (group: ProxyGroup) => {
+    const groupName = group.name;
+    
     // 如果正在测试，则取消测试
-    if (testingProxies.has(group.name)) {
+    if (testingProxies.has(groupName)) {
+      // 取消当前组的测试控制器
+      const controller = groupTestControllers.current.get(groupName);
+      if (controller) {
+        controller.abort();
+        groupTestControllers.current.delete(groupName);
+      }
+      
+      // 清除状态
       setTestingProxies(prev => {
         const next = new Set(prev);
-        next.delete(group.name);
+        next.delete(groupName);
         return next;
       });
-      // 清除组内节点的测试状态
       setTestingGroupProxiesNodes(prev => {
         const next = new Set(prev);
         group.all.forEach(proxyName => next.delete(proxyName));
         return next;
       });
-      showNotification('info', t('Cancelled proxy group "{{groupName}}" test', { groupName: group.name }));
+      
+      showNotification('info', t('Cancelled proxy group "{{groupName}}" test', { groupName }));
       return;
     }
     
-    setTestingProxies(prev => new Set([...prev, group.name]));
+    // 创建新的取消控制器
+    const controller = new AbortController();
+    groupTestControllers.current.set(groupName, controller);
+    
+    setTestingProxies(prev => new Set([...prev, groupName]));
     
     try {
-      // 逐个测试组内代理的延迟（串行执行，显示当前测试节点）
-      for (const proxyName of group.all) {
-        // 添加当前节点到测试状态
-        setTestingGroupProxiesNodes(prev => new Set([...prev, proxyName]));
+      let completedCount = 0;
+      const totalCount = group.all.length;
+      
+      // 批量并发测试组内代理的延迟（每批10个同时测试）
+      const batchSize = 10;
+      for (let i = 0; i < group.all.length; i += batchSize) {
+        // 检查是否被取消
+        if (controller.signal.aborted) {
+          break;
+        }
         
-        try {
-          await testDelay(proxyName);
-        } catch (error) {
-          console.error(`Failed to test delay for ${proxyName}:`, error);
-        } finally {
-          // 完成后从组测试状态中移除该节点
-          setTestingGroupProxiesNodes(prev => {
-            const next = new Set(prev);
-            next.delete(proxyName);
-            return next;
-          });
+        const batch = group.all.slice(i, i + batchSize);
+        const batchPromises = batch.map(async (proxyName) => {
+          // 在开始测试前再次检查是否被取消
+          if (controller.signal.aborted) {
+            return;
+          }
+          
+          // 添加当前节点到测试状态
+          setTestingGroupProxiesNodes(prev => new Set([...prev, proxyName]));
+          
+          try {
+            await testDelay(proxyName, undefined, controller.signal);
+            completedCount++;
+          } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+              return; // 取消了，停止这个代理的测试
+            }
+            console.error(`Failed to test delay for ${proxyName}:`, error);
+          } finally {
+            // 完成后从组测试状态中移除该节点
+            setTestingGroupProxiesNodes(prev => {
+              const next = new Set(prev);
+              next.delete(proxyName);
+              return next;
+            });
+          }
+        });
+        
+        // 等待当前批次完成
+        await Promise.all(batchPromises);
+        
+        // 每个批次完成后立即刷新数据，让延迟时间实时显示
+        if (!controller.signal.aborted) {
+          refetch();
         }
       }
       
-      refetch(); // 刷新数据以获取最新的延迟结果
-      showNotification('success', t('Proxy group "{{groupName}}" test completed! Tested {{count}} nodes', { groupName: group.name, count: group.all.length }));
+      if (!controller.signal.aborted) {
+        // 最后再刷新一次确保数据完整
+        refetch();
+        showNotification('success', t('Proxy group "{{groupName}}" test completed! Tested {{count}} nodes', { 
+          groupName, 
+          count: completedCount 
+        }));
+      }
     } catch (error) {
-      console.error('Failed to test group delay:', error);
-      showNotification('error', t('Proxy group "{{groupName}}" test failed, please retry', { groupName: group.name }));
+      if (!(error instanceof Error && error.name === 'AbortError')) {
+        console.error('Failed to test group delay:', error);
+        showNotification('error', t('Proxy group "{{groupName}}" test failed, please retry', { groupName }));
+      }
     } finally {
+      // 清理
+      groupTestControllers.current.delete(groupName);
       setTestingProxies(prev => {
         const next = new Set(prev);
-        next.delete(group.name);
+        next.delete(groupName);
         return next;
       });
-      // 确保清除所有组内节点的测试状态
       setTestingGroupProxiesNodes(prev => {
         const next = new Set(prev);
         group.all.forEach(proxyName => next.delete(proxyName));
@@ -650,20 +735,46 @@ export const Proxies: React.FC = () => {
     }
   };
 
-  // 测试单个代理延迟
+  // 测试单个代理延迟 - 添加真正的取消支持
   const handleTestSingleProxy = async (proxyName: string) => {
-    if (testingSingleProxies.has(proxyName)) return;
+    // 如果正在测试，则取消测试
+    if (testingSingleProxies.has(proxyName)) {
+      const controller = singleTestControllers.current.get(proxyName);
+      if (controller) {
+        controller.abort();
+        singleTestControllers.current.delete(proxyName);
+      }
+      
+      setTestingSingleProxies(prev => {
+        const next = new Set(prev);
+        next.delete(proxyName);
+        return next;
+      });
+      
+      showNotification('info', t('Cancelled proxy "{{proxyName}}" test', { proxyName }));
+      return;
+    }
+    
+    // 创建新的取消控制器
+    const controller = new AbortController();
+    singleTestControllers.current.set(proxyName, controller);
     
     setTestingSingleProxies(prev => new Set([...prev, proxyName]));
     
     try {
-      await testDelay(proxyName);
-      refetch(); // 刷新数据以获取最新的延迟结果
-      showNotification('success', t('Proxy "{{proxyName}}" latency test completed', { proxyName }));
+      await testDelay(proxyName, undefined, controller.signal);
+      
+      if (!controller.signal.aborted) {
+        refetch(); // 刷新数据以获取最新的延迟结果
+        showNotification('success', t('Proxy "{{proxyName}}" latency test completed', { proxyName }));
+      }
     } catch (error) {
-      console.error(`Failed to test delay for ${proxyName}:`, error);
-      showNotification('error', t('Proxy "{{proxyName}}" test failed, please retry', { proxyName }));
+      if (!(error instanceof Error && error.name === 'AbortError')) {
+        console.error(`Failed to test delay for ${proxyName}:`, error);
+        showNotification('error', t('Proxy "{{proxyName}}" test failed, please retry', { proxyName }));
+      }
     } finally {
+      singleTestControllers.current.delete(proxyName);
       setTestingSingleProxies(prev => {
         const next = new Set(prev);
         next.delete(proxyName);
@@ -741,6 +852,11 @@ export const Proxies: React.FC = () => {
           }
         });
         await Promise.all(batchPromises);
+        
+        // 每个批次完成后立即刷新数据，让延迟时间实时显示
+        if (!cancelAllTestingRef.current) {
+          refetch();
+        }
       }
       
       // 只有在未被取消且完全完成时才刷新和显示成功消息

@@ -21,10 +21,10 @@ export class ClashAPIClient {
     return headers;
   }
 
-  // 基础请求方法
+  // 基础请求方法 - 添加AbortSignal支持
   async request<T = any>(
     endpoint: string, 
-    options: RequestInit = {}
+    options: RequestInit & { signal?: AbortSignal } = {}
   ): Promise<APIResponse<T>> {
     const url = `${this.config.baseURL}${endpoint}`;
     const headers = this.buildHeaders();
@@ -36,6 +36,7 @@ export class ClashAPIClient {
           ...headers,
           ...options.headers,
         },
+        signal: options.signal, // 支持取消信号
       });
 
       if (response.status === 401) {
@@ -64,6 +65,14 @@ export class ClashAPIClient {
       return { status: response.status, data };
       
     } catch (error) {
+      // 检查是否是取消错误
+      if (error instanceof Error && error.name === 'AbortError') {
+        return {
+          status: 0,
+          error: 'Request cancelled',
+        };
+      }
+      
       return {
         status: 0,
         error: error instanceof Error ? error.message : 'Network error',
@@ -71,38 +80,41 @@ export class ClashAPIClient {
     }
   }
 
-  // GET请求
-  async get<T = any>(endpoint: string): Promise<APIResponse<T>> {
-    return this.request<T>(endpoint, { method: 'GET' });
+  // GET请求 - 添加AbortSignal支持
+  async get<T = any>(endpoint: string, signal?: AbortSignal): Promise<APIResponse<T>> {
+    return this.request<T>(endpoint, { method: 'GET', signal });
   }
 
-  // POST请求
-  async post<T = any>(endpoint: string, data?: any): Promise<APIResponse<T>> {
+  // POST请求 - 添加AbortSignal支持
+  async post<T = any>(endpoint: string, data?: any, signal?: AbortSignal): Promise<APIResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
+      signal,
     });
   }
 
-  // PUT请求
-  async put<T = any>(endpoint: string, data?: any): Promise<APIResponse<T>> {
+  // PUT请求 - 添加AbortSignal支持
+  async put<T = any>(endpoint: string, data?: any, signal?: AbortSignal): Promise<APIResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
+      signal,
     });
   }
 
-  // PATCH请求
-  async patch<T = any>(endpoint: string, data?: any): Promise<APIResponse<T>> {
+  // PATCH请求 - 添加AbortSignal支持
+  async patch<T = any>(endpoint: string, data?: any, signal?: AbortSignal): Promise<APIResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
+      signal,
     });
   }
 
-  // DELETE请求
-  async delete<T = any>(endpoint: string): Promise<APIResponse<T>> {
-    return this.request<T>(endpoint, { method: 'DELETE' });
+  // DELETE请求 - 添加AbortSignal支持
+  async delete<T = any>(endpoint: string, signal?: AbortSignal): Promise<APIResponse<T>> {
+    return this.request<T>(endpoint, { method: 'DELETE', signal });
   }
 
   // 构建WebSocket URL

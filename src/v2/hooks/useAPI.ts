@@ -822,7 +822,7 @@ export function useProxies() {
     }
   }, [apiConfig, queryClient]);
 
-  const testDelay = useCallback(async (proxyName: string, testUrl?: string) => {
+  const testDelay = useCallback(async (proxyName: string, testUrl?: string, signal?: AbortSignal) => {
     if (!apiConfig?.baseURL) {
       return { error: 'API configuration not available' };
     }
@@ -831,12 +831,15 @@ export function useProxies() {
       const url = testUrl || 'http://www.gstatic.com/generate_204';
       const endpoint = `/proxies/${encodeURIComponent(proxyName)}/delay?timeout=5000&url=${encodeURIComponent(url)}`;
       const client = createAPIClient(apiConfig);
-      const response = await client.get(endpoint);
+      const response = await client.get(endpoint, signal);
       if (response.data) {
         return { data: response.data, error: null };
       }
       return { data: null, error: response.error || 'Failed to test delay' };
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return { error: 'Request cancelled' };
+      }
       return { error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }, [apiConfig]);

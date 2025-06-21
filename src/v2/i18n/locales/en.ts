@@ -317,6 +317,7 @@ export default {
   'Test completed! Success {{success}}, Failed {{failed}}, Total {{total}} proxy nodes': 'Test completed! Success {{success}}, Failed {{failed}}, Total {{total}} proxy nodes',
   'Cancelled all proxy tests': 'Cancelled all proxy tests',
   'Test failed, please check network connection or proxy configuration': 'Test failed, please check network connection or proxy configuration',
+  'Cancelled proxy "{{proxyName}}" test': 'Cancelled proxy "{{proxyName}}" test',
 
   // Additional Connections page translations (only truly new keys)
   'API Configuration Not Set': 'API Configuration Not Set',
