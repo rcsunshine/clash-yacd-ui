@@ -585,3 +585,77 @@
 **代码行数**: ~15,000 行 (TypeScript/CSS)
 **组件数量**: 50+ 个
 **页面数量**: 8 个主要页面
+
+### 🌐 2024-12-19 自定义测速服务器功能
+**功能**: 支持自定义测速服务器，提供多种预设选项和自定义URL输入。
+
+**功能特点**:
+1. **预设服务器选项**:
+   - 🌍 **Google (默认)**: `http://www.gstatic.com/generate_204` - 推荐国际用户
+   - ☁️ **Cloudflare**: `https://1.1.1.1/cdn-cgi/trace` - 全球CDN，响应快速
+   - 🐙 **GitHub**: `https://github.com` - 稳定可靠的服务
+   - 🇨🇳 **Baidu**: `https://www.baidu.com` - 推荐中国用户
+   - 🇨🇳 **163.com**: `http://www.163.com` - 网易官网，国内节点
+
+2. **自定义URL支持**:
+   - 支持输入任意HTTP/HTTPS测速URL
+   - 实时应用配置，立即生效
+   - 输入验证和错误处理
+
+3. **智能配置管理**:
+   - 自动检测当前配置并显示对应的预设选项
+   - localStorage持久化存储用户选择
+   - 页面刷新后保持用户配置
+
+4. **用户体验优化**:
+   - 直观的下拉选择界面
+   - 当前测试URL实时显示
+   - 详细的服务器说明和推荐
+
+**技术实现**:
+```typescript
+// 状态管理 - V2独立的测速URL配置
+export const v2LatencyTestUrlAtom = atom<string>(getInitialLatencyTestUrl());
+
+// 预设服务器配置
+export const LATENCY_TEST_PRESETS = [
+  { name: 'Google (Default)', url: 'http://www.gstatic.com/generate_204' },
+  { name: 'Cloudflare', url: 'https://1.1.1.1/cdn-cgi/trace' },
+  // ...更多预设选项
+];
+
+// 测速函数自动使用配置的URL
+const testDelay = async (proxyName: string, testUrl?: string, signal?: AbortSignal) => {
+  const url = testUrl || latencyTestUrl || 'http://www.gstatic.com/generate_204';
+  // ...测速逻辑
+};
+```
+
+**配置界面**:
+- 📍 位置: Config页面 → "延迟测试配置"部分
+- 🎛️ 控件: 下拉选择 + 自定义输入框 + 应用按钮
+- 📊 显示: 当前测试URL + 服务器说明
+
+**性能考虑**:
+- ✅ 不同地区用户可选择最优测速服务器
+- ✅ 减少测速延迟，提高测试准确性
+- ✅ 支持企业内网或私有服务器测速
+
+**用户价值**:
+| 用户类型 | 推荐服务器 | 优势 |
+|---------|-----------|------|
+| 国际用户 | Google/Cloudflare | 🌍 全球覆盖，低延迟 |
+| 中国用户 | Baidu/163.com | 🇨🇳 国内节点，更准确 |
+| 企业用户 | 自定义URL | 🏢 内网测试，精确控制 |
+| 开发者 | GitHub | 🔧 稳定可靠，开发友好 |
+
+**国际化支持**:
+- 🌍 完整的中英文翻译
+- 📝 详细的功能说明和使用指南
+- 🎯 本地化的服务器推荐
+
+**影响范围**:
+- ✅ 所有测速功能自动使用新配置
+- ✅ 向后兼容，默认配置不变
+- ✅ 配置持久化，用户体验流畅
+- ✅ 支持V2架构的独立配置管理

@@ -85,4 +85,52 @@ function getInitialPage(): string {
   return 'dashboard';
 }
 
-export const v2CurrentPageAtom = atom<string>(getInitialPage()); 
+export const v2CurrentPageAtom = atom<string>(getInitialPage());
+
+// V2测速URL配置 - 支持持久化
+function getInitialLatencyTestUrl(): string {
+  if (typeof window === 'undefined') return 'http://www.gstatic.com/generate_204';
+  
+  try {
+    const saved = localStorage.getItem('v2-latency-test-url');
+    if (saved && typeof saved === 'string' && saved.trim()) {
+      return saved.trim();
+    }
+  } catch (error) {
+    console.warn('Failed to load V2 latency test URL from localStorage:', error);
+  }
+  
+  // 默认使用谷歌的204响应端点
+  return 'http://www.gstatic.com/generate_204';
+}
+
+export const v2LatencyTestUrlAtom = atom<string>(getInitialLatencyTestUrl());
+
+// 预设的测速服务器选项
+export const LATENCY_TEST_PRESETS = [
+  {
+    name: 'Google (Default)',
+    url: 'http://www.gstatic.com/generate_204',
+    description: 'Google 默认测速服务器'
+  },
+  {
+    name: 'Cloudflare',
+    url: 'https://1.1.1.1/cdn-cgi/trace',
+    description: 'Cloudflare 全球节点'
+  },
+  {
+    name: 'GitHub',
+    url: 'https://github.com',
+    description: 'GitHub 官方站点'
+  },
+  {
+    name: 'Baidu',
+    url: 'https://www.baidu.com',
+    description: '百度首页（国内用户推荐）'
+  },
+  {
+    name: '163.com',
+    url: 'http://www.163.com',
+    description: '网易官网（国内节点）'
+  }
+] as const; 

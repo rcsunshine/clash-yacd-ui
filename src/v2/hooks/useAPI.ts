@@ -1,7 +1,9 @@
 import { useMutation,useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef,useState } from 'react';
 
 import { createAPIClient } from '../api/client';
+import { v2LatencyTestUrlAtom } from '../store/atoms';
 // 导入 V2 类型定义
 import { 
   ClashConfig,
@@ -781,46 +783,46 @@ export function useClashConfig() {
 // 代理Hook - 移除重复的useApiConfigEffect调用
 export function useProxies() {
   const apiConfig = useApiConfig();
-  const queryClient = useQueryClient();
+  const { latencyTestUrl } = useLatencyTestUrl(); // 添加测速URL配置
   
   const queryResult = useQuery2<{ proxies: Record<string, ProxyItem> }>(
     'proxies',
     async () => {
+      if (!apiConfig?.baseURL) {
+        throw new Error('API configuration not available');
+      }
+      
       const client = createAPIClient(apiConfig);
       const response = await client.get('/proxies');
-      if (response.data) {
-        return response.data;
+      if (response.error) {
+        throw new Error(response.error);
       }
-      throw new Error(response.error || 'Failed to fetch proxies');
+      return response.data;
     },
-    { refetchInterval: 3000 }
+    { 
+      refetchInterval: 3000,
+      enabled: !!apiConfig?.baseURL,
+    }
   );
 
-  const switchProxy = useCallback(async (groupName: string, proxyName: string) => {
+  const switchProxy = useCallback(async (proxyGroupName: string, proxyName: string) => {
     if (!apiConfig?.baseURL) {
       return { error: 'API configuration not available' };
     }
 
     try {
-      const response = await fetch(`${apiConfig.baseURL}/proxies/${encodeURIComponent(groupName)}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(apiConfig.secret && { 'Authorization': `Bearer ${apiConfig.secret}` }),
-        },
-        body: JSON.stringify({ name: proxyName }),
+      const client = createAPIClient(apiConfig);
+      const response = await client.put(`/proxies/${encodeURIComponent(proxyGroupName)}`, {
+        name: proxyName
       });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      if (response.data) {
+        return { data: response.data, error: null };
       }
-      
-      queryClient.invalidateQueries({ queryKey: ['proxies'] });
-      return { error: null };
+      return { data: null, error: response.error || 'Failed to switch proxy' };
     } catch (error) {
       return { error: error instanceof Error ? error.message : 'Unknown error' };
     }
-  }, [apiConfig, queryClient]);
+  }, [apiConfig]);
 
   const testDelay = useCallback(async (proxyName: string, testUrl?: string, signal?: AbortSignal) => {
     if (!apiConfig?.baseURL) {
@@ -828,7 +830,8 @@ export function useProxies() {
     }
 
     try {
-      const url = testUrl || 'http://www.gstatic.com/generate_204';
+      // 使用传入的testUrl，或者配置的latencyTestUrl，最后fallback到默认值
+      const url = testUrl || latencyTestUrl || 'http://www.gstatic.com/generate_204';
       const endpoint = `/proxies/${encodeURIComponent(proxyName)}/delay?timeout=5000&url=${encodeURIComponent(url)}`;
       const client = createAPIClient(apiConfig);
       const response = await client.get(endpoint, signal);
@@ -842,7 +845,7 @@ export function useProxies() {
       }
       return { error: error instanceof Error ? error.message : 'Unknown error' };
     }
-  }, [apiConfig]);
+  }, [apiConfig, latencyTestUrl]); // 添加latencyTestUrl依赖
 
   return {
     ...queryResult,
@@ -1279,4 +1282,21 @@ export function useCloseAllConnections() {
       queryClient.invalidateQueries({ queryKey: ['connections'] });
     },
   });
+}
+
+// 添加测速URL配置hook，支持自动持久化
+export function useLatencyTestUrl() {
+  const [latencyTestUrl, setLatencyTestUrlAtom] = useAtom(v2LatencyTestUrlAtom);
+
+  const setLatencyTestUrl = useCallback((url: string) => {
+    // 更新atom状态
+    setLatencyTestUrlAtom(url);
+    // 同时保存到localStorage确保持久化
+    localStorage.setItem('v2-latency-test-url', url);
+  }, [setLatencyTestUrlAtom]);
+
+  return {
+    latencyTestUrl,
+    setLatencyTestUrl,
+  };
 }

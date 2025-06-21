@@ -211,240 +211,258 @@ export const BundleAnalysis: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 p-6">
-      {/* 页面头部 */}
-      <div className="flex items-center justify-between py-6 px-6 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 rounded-lg border border-indigo-300/50 dark:border-indigo-600/50">
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-lg flex items-center justify-center">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-theme hidden lg:block">{t('Bundle Analysis')}</h1>
-            <p className="text-sm text-theme-secondary">
-              {t('Build artifact analysis')} • {t('Total size')} {formatBytes(bundleStats.totalSize)} • {t('Compressed size')} {formatBytes(bundleStats.gzipSize)}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-sm"
-            onClick={() => setShowDetails(!showDetails)}
-          >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {showDetails ? t('Hide Details') : t('Show Details')}
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-sm"
-            onClick={exportBundleReport}
-          >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            {t('Export Report')}
-          </Button>
-        </div>
-      </div>
-
-      {/* 总览统计 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="overflow-hidden border-0 shadow-lg card-hover">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                  {formatBytes(bundleStats.totalSize)}
-                </div>
-                <div className="text-xs text-theme-secondary font-medium">{t('Total size')}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="overflow-hidden border-0 shadow-lg card-hover">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-700 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-green-700 dark:text-green-300">
-                  {formatBytes(bundleStats.gzipSize)}
-                </div>
-                <div className="text-xs text-theme-secondary font-medium">{t('Gzip Size')}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="overflow-hidden border-0 shadow-lg card-hover">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-                  {getCompressionRatio(bundleStats.totalSize, bundleStats.gzipSize).toFixed(1)}%
-                </div>
-                <div className="text-xs text-theme-secondary font-medium">{t('Compression Rate')}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="overflow-hidden border-0 shadow-lg card-hover">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-600 to-orange-700 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
-                  {bundleStats.chunks.length}
-                </div>
-                <div className="text-xs text-theme-secondary font-medium">{t('File Count')}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 性能评分 */}
-      <Card className="border-0 shadow-lg">
-        <CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-theme mb-4 flex items-center">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            {t('Performance Score')}
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
-                <span className="text-2xl font-bold text-white">B+</span>
-              </div>
-              <div className="font-semibold text-theme">{t('Overall Score')}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">{t('Compressed < 200KB is excellent')}</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-xl font-bold text-white">1.2s</span>
-              </div>
-              <div className="font-semibold text-theme">{t('Load Time')}</div>
-              <div className="text-sm text-theme-secondary">{t('10Mbps network environment')}</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-xl font-bold text-white">74%</span>
-              </div>
-              <div className="font-semibold text-theme">{t('Compression Efficiency')}</div>
-              <div className="text-sm text-theme-secondary">{t('Gzip compression rate')}</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 详细分析 */}
-      {showDetails && (
-        <Card className="border-0 shadow-lg">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold text-theme mb-4 flex items-center">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="h-screen flex flex-col overflow-hidden">
+      {/* 统一的页面头部样式 - 固定顶部 */}
+      <div className="flex-none p-6">
+        <div className="flex items-center justify-between py-6 px-6 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 rounded-lg border border-indigo-300/50 dark:border-indigo-600/50">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              {t('File Detail Analysis')}
-            </h3>
-            
-            <div className="space-y-3">
-              {bundleStats.chunks
-                .sort((a, b) => b.size - a.size)
-                .map((chunk, _index) => {
-                  const percentage = ((chunk.gzipSize / bundleStats.gzipSize) * 100).toFixed(1);
-                  return (
-                    <div key={chunk.name} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 ${getTypeColor(chunk.type)} rounded-lg flex items-center justify-center text-white`}>
-                          {getTypeIcon(chunk.type)}
-                        </div>
-                        <div>
-                          <div className="font-medium text-theme">{chunk.name}</div>
-                          <div className="text-xs text-theme-secondary capitalize">{chunk.type} • {percentage}% of total</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium text-theme">{formatBytes(chunk.size)}</div>
-                        <div className="text-xs text-theme-secondary">
-                          gzip: {formatBytes(chunk.gzipSize)} ({getCompressionRatio(chunk.size, chunk.gzipSize).toFixed(1)}%)
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div>
+              <h1 className="text-xl font-bold text-theme hidden lg:block">{t('Bundle Analysis')}</h1>
+              <p className="text-sm text-theme-secondary">
+                {t('Build artifact analysis')} • {t('Total size')} {formatBytes(bundleStats.totalSize)} • {t('Compressed size')} {formatBytes(bundleStats.gzipSize)}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-sm"
+              onClick={() => setShowDetails(!showDetails)}
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {showDetails ? t('Hide Details') : t('Show Details')}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-sm"
+              onClick={exportBundleReport}
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {t('Export Report')}
+            </Button>
+          </div>
+        </div>
+      </div>
 
-      {/* 优化建议 */}
-      <Card className="border-0 shadow-lg">
-        <CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-theme mb-4 flex items-center">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-            {t('Optimization Suggestions')}
-          </h3>
-          
+      {/* 内容区域 - 分层布局 */}
+      <div className="flex-1 overflow-hidden flex flex-col px-6 pb-6">
+        {/* 固定内容区域 - 仅包含基础统计和性能评分 */}
+        <div className="flex-none">
           <div className="space-y-4">
-            {optimizationSuggestions.map((suggestion, _index) => (
-              <div key={_index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <h4 className="font-medium text-theme">{suggestion.title}</h4>
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 text-xs rounded-full font-medium ${getPriorityColor(suggestion.priority)}`}>
-                      {suggestion.priority}
-                    </span>
-                    <span className={`px-2 py-1 text-xs rounded-full font-medium ${getStatusColor(suggestion.status)}`}>
-                      {suggestion.status}
-                    </span>
+            {/* 总览统计 */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="overflow-hidden border-0 shadow-lg card-hover">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                        {formatBytes(bundleStats.totalSize)}
+                      </div>
+                      <div className="text-xs text-theme-secondary font-medium">{t('Total size')}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="overflow-hidden border-0 shadow-lg card-hover">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-700 rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+                        {formatBytes(bundleStats.gzipSize)}
+                      </div>
+                      <div className="text-xs text-theme-secondary font-medium">{t('Gzip Size')}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="overflow-hidden border-0 shadow-lg card-hover">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                        {getCompressionRatio(bundleStats.totalSize, bundleStats.gzipSize).toFixed(1)}%
+                      </div>
+                      <div className="text-xs text-theme-secondary font-medium">{t('Compression Rate')}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="overflow-hidden border-0 shadow-lg card-hover">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-orange-600 to-orange-700 rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+                        {bundleStats.chunks.length}
+                      </div>
+                      <div className="text-xs text-theme-secondary font-medium">{t('File Count')}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* 性能评分 */}
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-4">
+                <h3 className="text-lg font-semibold text-theme mb-3 flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  {t('Performance Score')}
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="text-center">
+                    <div className="w-10 h-10 mx-auto mb-2 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-bold text-white">B+</span>
+                    </div>
+                    <div className="font-medium text-theme text-sm">{t('Overall Score')}</div>
+                    <div className="text-xs text-theme-secondary">{t('Compressed < 200KB is excellent')}</div>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="w-10 h-10 mx-auto mb-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-bold text-white">1.2s</span>
+                    </div>
+                    <div className="font-medium text-theme text-sm">{t('Load Time')}</div>
+                    <div className="text-xs text-theme-secondary">{t('10Mbps network environment')}</div>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="w-10 h-10 mx-auto mb-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-bold text-white">74%</span>
+                    </div>
+                    <div className="font-medium text-theme text-sm">{t('Compression Efficiency')}</div>
+                    <div className="text-xs text-theme-secondary">{t('Gzip compression rate')}</div>
                   </div>
                 </div>
-                <p className="text-sm text-theme-secondary mb-2">{suggestion.description}</p>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-green-600 dark:text-green-400 font-medium">
-                    {t('Expected Impact')}: {suggestion.impact}
-                  </span>
-                  <span className="text-theme-tertiary">
-                    {t('Suggestion')}: {suggestion.action}
-                  </span>
-                </div>
-              </div>
-            ))}
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* 可滚动内容区域 - 包含详细分析和优化建议 */}
+        <div className="flex-1 mt-4 overflow-y-auto">
+          {/* 文件详细分析 - 可选显示 */}
+          {showDetails && (
+            <div className="mb-4">
+              <Card className="border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-theme mb-4 flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    {t('File Detail Analysis')}
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    {bundleStats.chunks
+                      .sort((a, b) => b.size - a.size)
+                      .map((chunk, _index) => {
+                        const percentage = ((chunk.gzipSize / bundleStats.gzipSize) * 100).toFixed(1);
+                        return (
+                          <div key={chunk.name} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-8 h-8 ${getTypeColor(chunk.type)} rounded-lg flex items-center justify-center text-white`}>
+                                {getTypeIcon(chunk.type)}
+                              </div>
+                              <div>
+                                <div className="font-medium text-theme">{chunk.name}</div>
+                                <div className="text-xs text-theme-secondary capitalize">{chunk.type} • {percentage}% of total</div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-medium text-theme">{formatBytes(chunk.size)}</div>
+                              <div className="text-xs text-theme-secondary">
+                                gzip: {formatBytes(chunk.gzipSize)} ({getCompressionRatio(chunk.size, chunk.gzipSize).toFixed(1)}%)
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
+          {/* Sticky 标题 - 在滚动容器的直接子元素中 */}
+          <div className="sticky top-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 z-10 px-6 py-4 border-b border-indigo-200/50 dark:border-indigo-600/50 backdrop-blur-sm">
+            <h3 className="text-lg font-semibold text-theme flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              {t('Optimization Suggestions')}
+            </h3>
+          </div>
+          
+          {/* 内容区域 */}
+          <div className="px-6 pb-6">
+            <div className="space-y-4 pt-4">
+              {optimizationSuggestions.map((suggestion, _index) => (
+                <Card key={_index} className="border-0 shadow-md">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-medium text-theme">{suggestion.title}</h4>
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${getPriorityColor(suggestion.priority)}`}>
+                          {suggestion.priority}
+                        </span>
+                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${getStatusColor(suggestion.status)}`}>
+                          {suggestion.status}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-theme-secondary mb-2">{suggestion.description}</p>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-green-600 dark:text-green-400 font-medium">
+                        {t('Expected Impact')}: {suggestion.impact}
+                      </span>
+                      <span className="text-theme-tertiary">
+                        {t('Suggestion')}: {suggestion.action}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }; 

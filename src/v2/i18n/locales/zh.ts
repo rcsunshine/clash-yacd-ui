@@ -689,4 +689,20 @@ export default {
   'Classical': '经典',
   'Compatible': '兼容',
 
+  // Config page - Latency test configuration
+  'Latency Test Configuration': '延迟测试配置',
+  'Configure custom latency test server for more accurate speed testing': '配置自定义延迟测试服务器，获得更准确的测速结果',
+  'Test Server': '测试服务器',
+  'Select a predefined test server or use custom URL': '选择预设的测试服务器或使用自定义URL',
+  'Current Test URL': '当前测试URL',
+  'Currently configured latency test URL': '当前配置的延迟测试URL',
+  'Custom URL': '自定义URL',
+  'Enter a custom latency test URL (e.g., https://example.com)': '输入自定义延迟测试URL（例如：https://example.com）',
+  'Apply': '应用',
+  'Test Servers Description': '测试服务器说明',
+  'Different test servers may yield different results based on your location': '不同的测试服务器可能会因您的地理位置而产生不同的结果',
+  'Recommended for international users': '推荐国际用户使用',
+  'Global CDN with fast response': '全球CDN，响应速度快',
+  'Stable and reliable service': '稳定可靠的服务',
+  'Recommended for users in China': '推荐中国用户使用',
 }; 

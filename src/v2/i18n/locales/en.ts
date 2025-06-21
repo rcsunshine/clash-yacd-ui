@@ -688,4 +688,20 @@ export default {
   'Classical': 'Classical',
   'Compatible': 'Compatible',
   
+  // Config page - Latency test configuration
+  'Latency Test Configuration': 'Latency Test Configuration',
+  'Configure custom latency test server for more accurate speed testing': 'Configure custom latency test server for more accurate speed testing',
+  'Test Server': 'Test Server',
+  'Select a predefined test server or use custom URL': 'Select a predefined test server or use custom URL',
+  'Current Test URL': 'Current Test URL',
+  'Currently configured latency test URL': 'Currently configured latency test URL',
+  'Custom URL': 'Custom URL',
+  'Enter a custom latency test URL (e.g., https://example.com)': 'Enter a custom latency test URL (e.g., https://example.com)',
+  'Apply': 'Apply',
+  'Test Servers Description': 'Test Servers Description',
+  'Different test servers may yield different results based on your location': 'Different test servers may yield different results based on your location',
+  'Recommended for international users': 'Recommended for international users',
+  'Global CDN with fast response': 'Global CDN with fast response',
+  'Stable and reliable service': 'Stable and reliable service',
+  'Recommended for users in China': 'Recommended for users in China',
 }; 
