@@ -800,10 +800,13 @@ export function useProxies() {
       return response.data;
     },
     { 
-      refetchInterval: 3000,
+      refetchInterval: 30000, // 🚀 优化：从3秒改为30秒，减少不必要的API调用
       enabled: !!apiConfig?.baseURL,
+      staleTime: 15000, // 15秒内的数据视为新鲜，避免过度刷新
     }
   );
+
+
 
   const switchProxy = useCallback(async (proxyGroupName: string, proxyName: string) => {
     if (!apiConfig?.baseURL) {
@@ -824,6 +827,7 @@ export function useProxies() {
     }
   }, [apiConfig]);
 
+  // ⚡ 简化：直接返回测速接口结果，不更新缓存
   const testDelay = useCallback(async (proxyName: string, testUrl?: string, signal?: AbortSignal) => {
     if (!apiConfig?.baseURL) {
       return { error: 'API configuration not available' };
@@ -835,7 +839,9 @@ export function useProxies() {
       const endpoint = `/proxies/${encodeURIComponent(proxyName)}/delay?timeout=5000&url=${encodeURIComponent(url)}`;
       const client = createAPIClient(apiConfig);
       const response = await client.get(endpoint, signal);
-      if (response.data) {
+      
+      if (response.data && response.data.delay !== undefined) {
+        // 🎯 直接返回API响应，不做额外的缓存更新
         return { data: response.data, error: null };
       }
       return { data: null, error: response.error || 'Failed to test delay' };
@@ -845,7 +851,7 @@ export function useProxies() {
       }
       return { error: error instanceof Error ? error.message : 'Unknown error' };
     }
-  }, [apiConfig, latencyTestUrl]); // 添加latencyTestUrl依赖
+  }, [apiConfig, latencyTestUrl]);
 
   return {
     ...queryResult,

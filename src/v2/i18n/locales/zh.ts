@@ -96,6 +96,7 @@ export default {
   'Test completed': '测试完成',
   'Completed!': '完成!',
   'Testing All...': '全局测试中...',
+  'Testing Priority': '优先测速',
   '+{{count}} more': '+{{count}} 个更多',
   'In Use': '使用中',
   'Available': '可用',

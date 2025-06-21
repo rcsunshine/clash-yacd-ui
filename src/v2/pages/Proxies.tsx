@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect,useMemo,useRef,useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '../components/ui/Button';
@@ -26,14 +26,12 @@ const ProxyGroupCard: React.FC<{
   testingGroupProxiesNodes: Set<string>;
   sortBy: string;
   hideUnavailable: boolean;
-}> = ({ group, proxiesData, onSwitchProxy, onTestGroupDelay, onTestSingleProxy, testingProxies, testingSingleProxies, testingAllProxiesNodes, testingGroupProxiesNodes, sortBy, hideUnavailable }) => {
+  getProxyDelay: (proxyName: string) => number; // 接收外部传入的函数
+  isCurrentTestingGroup?: boolean; // 🚀 新增：是否为当前测试组
+  renderKey?: number; // 🚀 新增：渲染key用于强制重新渲染
+}> = ({ group, proxiesData, onSwitchProxy, onTestGroupDelay, onTestSingleProxy, testingProxies, testingSingleProxies, testingAllProxiesNodes, testingGroupProxiesNodes, sortBy, hideUnavailable, getProxyDelay, isCurrentTestingGroup = false, renderKey = 0 }) => {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
-
-  const getProxyDelay = (proxyName: string) => {
-    const proxy = proxiesData?.proxies?.[proxyName];
-    return proxy?.history?.[0]?.delay || 0;
-  };
 
   const getProxyType = (proxyName: string) => {
     const proxy = proxiesData?.proxies?.[proxyName];
@@ -181,8 +179,19 @@ const ProxyGroupCard: React.FC<{
   };
 
   return (
-    <Card className="overflow-hidden border-0 shadow-lg card-hover">
-      <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-600/50">
+    <Card 
+      key={`${group.name}-${renderKey}`} // 🚀 使用renderKey确保重新渲染
+      className={`overflow-hidden border-0 shadow-lg card-hover transition-all duration-300 ${
+        isCurrentTestingGroup 
+          ? 'ring-2 ring-blue-400 ring-opacity-75 shadow-blue-200/50 dark:shadow-blue-900/30' 
+          : ''
+      }`}
+    >
+      <CardHeader className={`bg-gradient-to-r border-b ${
+        isCurrentTestingGroup
+          ? 'from-blue-50 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 border-blue-200 dark:border-blue-600/50'
+          : 'from-slate-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-gray-200 dark:border-gray-600/50'
+      }`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-stone-700 rounded-lg flex items-center justify-center">
@@ -191,7 +200,18 @@ const ProxyGroupCard: React.FC<{
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-theme">{group.name}</h3>
+              <div className="flex items-center space-x-2">
+                <h3 className="text-lg font-semibold text-theme">{group.name}</h3>
+                {/* 🚀 当前测试组指示器 */}
+                {isCurrentTestingGroup && (
+                  <div className="flex items-center space-x-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
+                    <svg className="w-3 h-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>{t('Testing Priority')}</span>
+                  </div>
+                )}
+              </div>
               <div className="flex items-center space-x-2 text-sm mb-2">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   group.type === 'Selector' 
@@ -514,9 +534,9 @@ export const Proxies: React.FC = () => {
   const { t } = useTranslation();
   const { data: proxiesData, isLoading, error, refetch, switchProxy, testDelay } = useProxies();
   const { data: config } = useClashConfig();
-  
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('all');
+  const [filterType, setFilterType] = useState('all'); 
   const [sortBy, setSortBy] = useState('Natural');
   const [hideUnavailable, setHideUnavailable] = useState(false);
   
@@ -526,6 +546,13 @@ export const Proxies: React.FC = () => {
   const [testingAllProxies, setTestingAllProxies] = useState(false);
   const [testingAllProxiesNodes, setTestingAllProxiesNodes] = useState<Set<string>>(new Set());
   const [testingGroupProxiesNodes, setTestingGroupProxiesNodes] = useState<Set<string>>(new Set());
+  
+  // 🎯 新增：本地延迟结果状态，优先使用最新测速结果
+  const [latestDelayResults, setLatestDelayResults] = useState<Map<string, {delay: number, timestamp: number}>>(new Map());
+  
+  // 🚀 渲染优化：当前测试组状态
+  const [currentTestingGroup, setCurrentTestingGroup] = useState<string | null>(null);
+  const [groupRenderKeys, setGroupRenderKeys] = useState<Map<string, number>>(new Map());
   
   // 进度显示
   const [showTestingProgress, setShowTestingProgress] = useState(false);
@@ -538,7 +565,7 @@ export const Proxies: React.FC = () => {
     type: 'info' as 'success' | 'error' | 'info', 
     message: '' 
   });
-
+  
   // 取消控制器管理
   const cancelAllTestingRef = useRef(false);
   const groupTestControllers = useRef<Map<string, AbortController>>(new Map());
@@ -613,7 +640,7 @@ export const Proxies: React.FC = () => {
         showNotification('error', t('Switched to "{{proxyName}}" failed, please retry', { proxyName }));
       } else {
         console.log(`Successfully switched ${groupName} to ${proxyName}`);
-                  showNotification('success', t('Switched to "{{proxyName}}"', { proxyName }));
+        showNotification('success', t('Switched to "{{proxyName}}"', { proxyName }));
         refetch();
       }
     } catch (error) {
@@ -622,7 +649,93 @@ export const Proxies: React.FC = () => {
     }
   };
 
-  // 测试代理组延迟 - 添加真正的取消支持 + 批量并发测速 + 实时结果刷新
+  // 🎯 优化：获取代理延迟，优先使用最新测速结果
+  const getProxyDelay = useCallback((proxyName: string) => {
+    // 优先使用最新的测速结果
+    const latestResult = latestDelayResults.get(proxyName);
+    if (latestResult) {
+      return latestResult.delay;
+    }
+    
+    // 回退到缓存中的历史数据
+    const proxy = proxiesData?.proxies?.[proxyName];
+    return proxy?.history?.[0]?.delay || 0;
+  }, [proxiesData, latestDelayResults]);
+
+  // 🚀 更新本地延迟结果 + 渲染优化
+  const updateLocalDelayResult = useCallback((proxyName: string, delay: number) => {
+    setLatestDelayResults(prev => {
+      const newMap = new Map(prev);
+      newMap.set(proxyName, { delay, timestamp: Date.now() });
+      return newMap;
+    });
+    
+    // 🎯 渲染优化：如果属于当前测试组，强制该组重新渲染
+    if (currentTestingGroup) {
+      // 检查该代理是否属于当前测试组
+      const currentGroup = proxyGroups.find(g => g.name === currentTestingGroup);
+      if (currentGroup?.all.includes(proxyName)) {
+        setGroupRenderKeys(prev => {
+          const newMap = new Map(prev);
+          const currentKey = newMap.get(currentTestingGroup) || 0;
+          newMap.set(currentTestingGroup, currentKey + 1);
+          return newMap;
+        });
+      }
+    }
+  }, [currentTestingGroup, proxyGroups]);
+
+  // 根据当前排序获取测速顺序
+  const getTestingOrder = useCallback((proxies: string[]) => {
+    const sortedProxies = [...proxies];
+    
+    switch (sortBy) {
+      case 'LatencyAsc':
+        // 延迟升序：优先测试未测试的，然后按延迟从小到大
+        sortedProxies.sort((a, b) => {
+          const delayA = getProxyDelay(a) || 999999;
+          const delayB = getProxyDelay(b) || 999999;
+          
+          // 未测试的节点(延迟为0)优先测试
+          if (delayA === 0 && delayB > 0) return -1;
+          if (delayA > 0 && delayB === 0) return 1;
+          if (delayA === 0 && delayB === 0) return 0;
+          
+          return delayA - delayB;
+        });
+        break;
+      case 'LatencyDesc':
+        // 延迟降序：优先测试延迟高的，未测试的放最后
+        sortedProxies.sort((a, b) => {
+          const delayA = getProxyDelay(a) || 0;
+          const delayB = getProxyDelay(b) || 0;
+          
+          // 未测试的节点(延迟为0)最后测试
+          if (delayA === 0 && delayB > 0) return 1;
+          if (delayA > 0 && delayB === 0) return -1;
+          if (delayA === 0 && delayB === 0) return 0;
+          
+          return delayB - delayA;
+        });
+        break;
+      case 'NameAsc':
+        // 名称升序
+        sortedProxies.sort((a, b) => a.localeCompare(b));
+        break;
+      case 'NameDesc':
+        // 名称降序
+        sortedProxies.sort((a, b) => b.localeCompare(a));
+        break;
+      case 'Natural':
+      default:
+        // 保持原始顺序
+        break;
+    }
+    
+    return sortedProxies;
+  }, [sortBy, getProxyDelay]);
+
+  // 🚀 简化批量组测速：直接使用API返回的延迟值
   const handleTestGroupDelay = async (group: ProxyGroup) => {
     const groupName = group.name;
     
@@ -647,6 +760,9 @@ export const Proxies: React.FC = () => {
         return next;
       });
       
+      // 🚀 清除当前测试组状态
+      setCurrentTestingGroup(null);
+      
       showNotification('info', t('Cancelled proxy group "{{groupName}}" test', { groupName }));
       return;
     }
@@ -657,58 +773,77 @@ export const Proxies: React.FC = () => {
     
     setTestingProxies(prev => new Set([...prev, groupName]));
     
+    // 🚀 设置当前测试组（渲染优化）
+    setCurrentTestingGroup(groupName);
+    
     try {
       let completedCount = 0;
       const totalCount = group.all.length;
       
-      // 批量并发测试组内代理的延迟（每批10个同时测试）
-      const batchSize = 10;
-      for (let i = 0; i < group.all.length; i += batchSize) {
+      // 🎯 根据当前排序方式获取测速顺序
+      const testingOrder = getTestingOrder(group.all);
+      
+      // ⚡ 简化测速：直接使用API返回的延迟值更新本地状态
+      const testProxyWithLocalUpdate = async (proxyName: string) => {
+        // 在开始测试前检查是否被取消
+        if (controller.signal.aborted) {
+          return false;
+        }
+        
+        // 添加当前节点到测试状态
+        setTestingGroupProxiesNodes(prev => new Set([...prev, proxyName]));
+        
+        try {
+          // 🎯 直接使用testDelay API，获取延迟结果
+          const result = await testDelay(proxyName, undefined, controller.signal);
+          
+          if (result.data?.delay !== undefined && !controller.signal.aborted) {
+            // 🚀 立即更新本地延迟状态，实现实时显示
+            updateLocalDelayResult(proxyName, result.data.delay);
+            completedCount++;
+          }
+          
+          return true;
+        } catch (error) {
+          if (error instanceof Error && error.name === 'AbortError') {
+            return false; // 取消了，停止这个代理的测试
+          }
+          console.error(`Failed to test delay for ${proxyName}:`, error);
+          completedCount++;
+          return true;
+        } finally {
+          // 完成后从组测试状态中移除该节点
+          setTestingGroupProxiesNodes(prev => {
+            const next = new Set(prev);
+            next.delete(proxyName);
+            return next;
+          });
+        }
+      };
+      
+      // 🚀 智能并发控制：根据节点数量动态调整并发数
+      const dynamicBatchSize = Math.min(8, Math.max(3, Math.ceil(totalCount / 10)));
+      
+      // 按智能排序顺序进行批量并发测试
+      for (let i = 0; i < testingOrder.length; i += dynamicBatchSize) {
         // 检查是否被取消
         if (controller.signal.aborted) {
           break;
         }
         
-        const batch = group.all.slice(i, i + batchSize);
-        const batchPromises = batch.map(async (proxyName) => {
-          // 在开始测试前再次检查是否被取消
-          if (controller.signal.aborted) {
-            return;
-          }
-          
-          // 添加当前节点到测试状态
-          setTestingGroupProxiesNodes(prev => new Set([...prev, proxyName]));
-          
-          try {
-            await testDelay(proxyName, undefined, controller.signal);
-            completedCount++;
-          } catch (error) {
-            if (error instanceof Error && error.name === 'AbortError') {
-              return; // 取消了，停止这个代理的测试
-            }
-            console.error(`Failed to test delay for ${proxyName}:`, error);
-          } finally {
-            // 完成后从组测试状态中移除该节点
-            setTestingGroupProxiesNodes(prev => {
-              const next = new Set(prev);
-              next.delete(proxyName);
-              return next;
-            });
-          }
-        });
+        const batch = testingOrder.slice(i, i + dynamicBatchSize);
+        const batchPromises = batch.map(testProxyWithLocalUpdate);
         
         // 等待当前批次完成
         await Promise.all(batchPromises);
         
-        // 每个批次完成后立即刷新数据，让延迟时间实时显示
-        if (!controller.signal.aborted) {
-          refetch();
+        // 小延迟以避免过度频繁的UI更新
+        if (!controller.signal.aborted && i + dynamicBatchSize < testingOrder.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
       
       if (!controller.signal.aborted) {
-        // 最后再刷新一次确保数据完整
-        refetch();
         showNotification('success', t('Proxy group "{{groupName}}" test completed! Tested {{count}} nodes', { 
           groupName, 
           count: completedCount 
@@ -732,10 +867,13 @@ export const Proxies: React.FC = () => {
         group.all.forEach(proxyName => next.delete(proxyName));
         return next;
       });
+      
+      // 🚀 清除当前测试组状态（渲染优化）
+      setCurrentTestingGroup(null);
     }
   };
 
-  // 测试单个代理延迟 - 添加真正的取消支持
+  // 测试单个代理延迟 - 简化逻辑
   const handleTestSingleProxy = async (proxyName: string) => {
     // 如果正在测试，则取消测试
     if (testingSingleProxies.has(proxyName)) {
@@ -762,11 +900,15 @@ export const Proxies: React.FC = () => {
     setTestingSingleProxies(prev => new Set([...prev, proxyName]));
     
     try {
-      await testDelay(proxyName, undefined, controller.signal);
+      // 🎯 直接使用testDelay API获取结果
+      const result = await testDelay(proxyName, undefined, controller.signal);
       
-      if (!controller.signal.aborted) {
-        refetch(); // 刷新数据以获取最新的延迟结果
+      if (result.data?.delay !== undefined && !controller.signal.aborted) {
+        // 🚀 立即更新本地延迟状态
+        updateLocalDelayResult(proxyName, result.data.delay);
         showNotification('success', t('Proxy "{{proxyName}}" latency test completed', { proxyName }));
+      } else if (result.error && !controller.signal.aborted) {
+        showNotification('error', t('Proxy "{{proxyName}}" test failed, please retry', { proxyName }));
       }
     } catch (error) {
       if (!(error instanceof Error && error.name === 'AbortError')) {
@@ -783,7 +925,7 @@ export const Proxies: React.FC = () => {
     }
   };
 
-  // 测试所有代理延迟
+  // 🚀 简化全部测速：智能排序 + 本地状态更新
   const handleTestAllProxies = async () => {
     // 如果正在测试，则取消测试
     if (testingAllProxies) {
@@ -801,12 +943,13 @@ export const Proxies: React.FC = () => {
     setShowTestingProgress(true);
     
     try {
-      // 获取所有代理名称
+      // 🎯 获取所有代理并按当前排序方式排序
       const allProxyNames = proxyGroups.flatMap(group => group.all);
       const uniqueProxyNames = [...new Set(allProxyNames)];
+      const sortedProxyNames = getTestingOrder(uniqueProxyNames);
       
       // 初始化进度
-      const total = uniqueProxyNames.length;
+      const total = sortedProxyNames.length;
       setTestingProgress({ current: 0, total });
       setTestingStats({ success: 0, failed: 0 });
       
@@ -814,55 +957,66 @@ export const Proxies: React.FC = () => {
       let success = 0;
       let failed = 0;
       
-      // 并发测试所有代理的延迟（限制并发数以避免过载）
-      const batchSize = 10; // 每批测试10个代理
-      for (let i = 0; i < uniqueProxyNames.length; i += batchSize) {
-        // 检查是否已被取消 - 使用ref而不是state
+      // ⚡ 简化测速函数 - 直接使用API返回值更新本地状态
+      const testProxyWithLocalUpdate = async (proxyName: string) => {
+        // 在开始测试前检查是否被取消
+        if (cancelAllTestingRef.current) {
+          return;
+        }
+        
+        // 添加当前节点到测试状态
+        setTestingAllProxiesNodes(prev => new Set([...prev, proxyName]));
+        
+        try {
+          // 🎯 直接使用testDelay API
+          const result = await testDelay(proxyName);
+          
+          if (result.data?.delay !== undefined && !cancelAllTestingRef.current) {
+            // 🚀 立即更新本地延迟状态
+            updateLocalDelayResult(proxyName, result.data.delay);
+            success++;
+          } else {
+            failed++;
+          }
+        } catch (error) {
+          console.error(`Failed to test delay for ${proxyName}:`, error);
+          failed++;
+        } finally {
+          completed++;
+          setTestingProgress({ current: completed, total });
+          setTestingStats({ success, failed });
+          // 从测试节点集合中移除已完成的节点
+          setTestingAllProxiesNodes(prev => {
+            const next = new Set(prev);
+            next.delete(proxyName);
+            return next;
+          });
+        }
+      };
+      
+      // 🚀 智能并发控制：根据总节点数动态调整并发数
+      const dynamicBatchSize = Math.min(12, Math.max(4, Math.ceil(total / 15)));
+      
+      // 按智能排序顺序进行批量并发测试
+      for (let i = 0; i < sortedProxyNames.length; i += dynamicBatchSize) {
+        // 检查是否已被取消
         if (cancelAllTestingRef.current) {
           console.log('Test cancelled by user');
           break;
         }
         
-        const batch = uniqueProxyNames.slice(i, i + batchSize);
-        const batchPromises = batch.map(async (proxyName) => {
-          // 在开始测试前再次检查是否被取消
-          if (cancelAllTestingRef.current) {
-            return;
-          }
-          
-          // 添加当前节点到测试状态
-          setTestingAllProxiesNodes(prev => new Set([...prev, proxyName]));
-          
-          try {
-            await testDelay(proxyName);
-            success++;
-          } catch (error) {
-            console.error(`Failed to test delay for ${proxyName}:`, error);
-            failed++;
-          } finally {
-            completed++;
-            setTestingProgress({ current: completed, total });
-            setTestingStats({ success, failed });
-            // 从测试节点集合中移除已完成的节点
-            setTestingAllProxiesNodes(prev => {
-              const next = new Set(prev);
-              next.delete(proxyName);
-              return next;
-            });
-          }
-        });
+        const batch = sortedProxyNames.slice(i, i + dynamicBatchSize);
+        const batchPromises = batch.map(testProxyWithLocalUpdate);
         await Promise.all(batchPromises);
         
-        // 每个批次完成后立即刷新数据，让延迟时间实时显示
-        if (!cancelAllTestingRef.current) {
-          refetch();
+        // 小延迟以避免过度频繁的UI更新和API请求
+        if (!cancelAllTestingRef.current && i + dynamicBatchSize < sortedProxyNames.length) {
+          await new Promise(resolve => setTimeout(resolve, 200));
         }
       }
       
-      // 只有在未被取消且完全完成时才刷新和显示成功消息
-      if (!cancelAllTestingRef.current && completed === uniqueProxyNames.length) {
-        refetch(); // 刷新数据以获取最新的延迟结果
-        
+      // 只有在未被取消且完全完成时才显示成功消息
+      if (!cancelAllTestingRef.current && completed === sortedProxyNames.length) {
         // 显示完成提示，3秒后隐藏进度条
         showNotification('success', t('Test completed! Success {{success}}, Failed {{failed}}, Total {{total}} proxy nodes', { success, failed, total }));
         setTimeout(() => {
@@ -937,6 +1091,9 @@ export const Proxies: React.FC = () => {
                     testingGroupProxiesNodes={testingGroupProxiesNodes}
                     sortBy={sortBy}
                     hideUnavailable={hideUnavailable}
+                    getProxyDelay={getProxyDelay}
+                    isCurrentTestingGroup={currentTestingGroup === groupName} // 🚀 传递当前测试组状态
+                    renderKey={groupRenderKeys.get(groupName) || 0} // 🚀 传递渲染key
                   />
                 </div>
               );

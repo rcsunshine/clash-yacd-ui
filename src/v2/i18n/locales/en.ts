@@ -94,6 +94,7 @@ export default {
   'Test completed': 'Test completed',
   'Completed!': 'Completed!',
   'Testing All...': 'Testing All...',
+  'Testing Priority': 'Testing Priority',
   '+{{count}} more': '+{{count}} more',
   'In Use': 'In Use',
   'Available': 'Available',
